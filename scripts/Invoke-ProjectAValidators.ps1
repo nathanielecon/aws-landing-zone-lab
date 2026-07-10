@@ -55,7 +55,7 @@ function Get-ProjectText([string[]]$RelativeRoots,[string[]]$Extensions=@('.tf',
 }
 
 function Test-RequiredPatterns([string]$Text,[System.Collections.Specialized.OrderedDictionary]$Patterns){
-    $missing=@();foreach($entry in $Patterns.GetEnumerator()){if($Text -notmatch $entry.Value){$missing+=$entry.Key}};return @($missing)
+    $missing=@();foreach($entry in $Patterns.GetEnumerator()){if($Text -notmatch $entry.Value){$missing+=$entry.Key}};Write-Output -NoEnumerate $missing
 }
 
 function Invoke-TerraformBehavioralTests([string]$Id,[string]$ModuleRelative,[string]$TestsRelative,[int]$TimeoutSeconds){
