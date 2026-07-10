@@ -171,6 +171,7 @@ if (Test-Path -LiteralPath $statePath) {
     foreach ($binding in @{profile_id='project-a';bundle_hash=$bundleHash;policy_sha256=$policyHash;validator_sha256=$validatorHash;branch=$branch}.GetEnumerator()) {
         if ([string]$state.($binding.Key) -ne [string]$binding.Value) { throw "Persisted state binding mismatch: $($binding.Key)" }
     }
+    if ($state.status -eq 'blocked') { throw "Task $taskId is blocked and requires explicit operator recovery: $($state.last_failure)" }
     if ($state.status -eq 'completed') { throw "Task $taskId is already completed." }
     if ([string]$state.starting_commit -ne $head) {
         $parent = (& git -C $root rev-parse "$head^").Trim(); $subject = (& git -C $root log -1 --format=%s).Trim()

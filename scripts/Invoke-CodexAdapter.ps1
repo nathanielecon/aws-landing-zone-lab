@@ -5,6 +5,11 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'Harness.Common.psm1') -Force
 
+if ($env:HARNESS_ROOT) {
+    $globalStopFlag = Join-Path $env:HARNESS_ROOT '.harness/runtime/stop.flag'
+    if (Test-Path -LiteralPath $globalStopFlag) { throw 'A prior task failed; the terminal sentinel blocks every additional model call until explicit resume.' }
+}
+
 if ($env:HARNESS_PROFILE_ID -eq 'project-a') {
     & (Join-Path $PSScriptRoot 'Invoke-ProjectAAdapter.ps1') @CodexArguments
     exit $LASTEXITCODE

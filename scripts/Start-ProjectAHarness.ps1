@@ -11,6 +11,7 @@ if ($branch -notmatch [string]$profile.expected_branch_pattern) { throw "Project
 $approval = Read-JsonFile -Path (Resolve-PathUnderRoot -Root $root -RelativePath ([string]$profile.approval_file))
 if (-not [bool]$approval.spec_approved) { throw 'Project A specification is not approved.' }
 $executionApproval = Read-JsonFile -Path (Resolve-PathUnderRoot -Root $root -RelativePath ([string]$profile.execution_approval_file))
+$toolVersions = Read-JsonFile -Path (Resolve-PathUnderRoot -Root $root -RelativePath ([string]$profile.tool_versions_file))
 $computedSpec = & (Join-Path $PSScriptRoot 'Get-ProjectASpecHash.ps1') -Root $root | ConvertFrom-Json
 if ([string]$approval.spec_bundle_sha256 -ne [string]$computedSpec.sha256) { throw 'Approved Project A specification hash drifted.' }
 $execution = & (Join-Path $PSScriptRoot 'Get-ProjectAExecutionHash.ps1') -Root $root | ConvertFrom-Json
@@ -31,6 +32,10 @@ $system32 = Join-Path $env:SystemRoot 'System32'; if (-not (($env:PATH -split ';
 $realCodex = (Get-Command codex.cmd -All | Where-Object { -not ([IO.Path]::GetFullPath($_.Source)).StartsWith([IO.Path]::GetFullPath($adapterDir),[StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1).Source
 $realRalphy = (Get-Command ralphy.cmd -All | Select-Object -First 1).Source
 if (-not $realCodex -or -not $realRalphy) { throw 'Codex and Ralphy must be installed before Project A execution.' }
+$codexVersion = (& $realCodex --version 2>&1 | Out-String).Trim()
+if ($codexVersion -notmatch [string]$toolVersions.codex_regex) { throw "Unsupported Codex CLI: $codexVersion. Expected $($toolVersions.codex_regex)." }
+$ralphyVersion = (& $realRalphy --version 2>&1 | Out-String).Trim()
+if ($ralphyVersion -notmatch [regex]::Escape([string]$toolVersions.ralphy)) { throw "Unsupported Ralphy CLI: $ralphyVersion" }
 $login = (& $realCodex login status 2>&1 | Out-String); if ($LASTEXITCODE -ne 0 -or $login -notmatch 'Logged in using ChatGPT') { throw 'Codex ChatGPT login is required.' }
 
 $runtimeRoot = Join-Path $root '.harness/runtime/project-a'
@@ -41,6 +46,10 @@ try {
     $changed = @(Get-ChangedPaths -Root $root)
     if (-not $Resume -and $changed.Count -gt 0) { throw "Normal Project A launch requires a clean tree: $($changed -join ', ')" }
     if (-not (Test-Path -LiteralPath $manifestPath)) { [IO.Directory]::CreateDirectory($runtimeRoot)|Out-Null; Copy-Item -LiteralPath (Resolve-PathUnderRoot -Root $root -RelativePath ([string]$profile.manifest_template)) -Destination $manifestPath }
+    $manifest=Read-JsonFile -Path $manifestPath
+    foreach($task in $manifest.tasks){$id=Get-TaskIdFromArguments -Arguments @([string]$task.title);$taskStatePath=Join-Path $runtimeRoot "state/$id.json";$task.completed=$false;if(Test-Path -LiteralPath $taskStatePath){$taskState=Read-JsonFile -Path $taskStatePath;$task.completed=$taskState.status -eq 'completed'}}
+    Write-JsonNoBom -Path $manifestPath -Value $manifest
+    $stopFlag=Join-Path $root '.harness/runtime/stop.flag';if($Resume){Remove-Item -LiteralPath $stopFlag -Force -ErrorAction SilentlyContinue}elseif(Test-Path -LiteralPath $stopFlag){throw 'A terminal sentinel exists. Use -Resume only after reviewing the failed task.'}
     $runId=[DateTimeOffset]::UtcNow.ToString('yyyyMMddTHHmmssZ')+'-'+[Guid]::NewGuid().ToString('N').Substring(0,8)
     $localBase=if($env:LOCALAPPDATA){$env:LOCALAPPDATA}else{Join-Path $env:USERPROFILE 'AppData/Local'}
     $logRoot=Join-Path $localBase "RalphyHarness/cloud/$runId"; [IO.Directory]::CreateDirectory($logRoot)|Out-Null
