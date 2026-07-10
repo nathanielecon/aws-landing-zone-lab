@@ -120,10 +120,6 @@ function New-SafeInitialCodexArguments {
     $clean = [System.Collections.Generic.List[string]]::new()
     for ($index = 0; $index -lt $Arguments.Count; $index++) {
         $argument = $Arguments[$index]
-        if ($index -gt 0 -and ($argument -eq '--' -or -not $argument.StartsWith('-'))) {
-            for (; $index -lt $Arguments.Count; $index++) { $clean.Add($Arguments[$index]) }
-            break
-        }
         if ($argument -in @('--full-auto', '--dangerously-bypass-approvals-and-sandbox', '--dangerously-bypass-hook-trust')) { continue }
         if ($argument -match '^(--full-auto|--dangerously-bypass-approvals-and-sandbox|--dangerously-bypass-hook-trust)=') { continue }
         if ($argument -in @('--model', '-m', '--sandbox', '-s')) {
@@ -245,7 +241,7 @@ function Get-RepoOnlyCodexConfigArguments {
         '-c', 'allow_login_shell=false',
         '-c', 'shell_environment_policy.inherit="core"',
         '-c', 'shell_environment_policy.ignore_default_excludes=false',
-        '-c', 'shell_environment_policy.exclude=["AWS_*","AZURE_*","ARM_*","TF_VAR_*","TF_CLI_ARGS*","GOOGLE_*","GH_*","GITHUB_*","CODEX_HOME","OPENAI_*","ANTHROPIC_*","*TOKEN*","*SECRET*","*KEY*","*PASSWORD*","HTTP_PROXY","HTTPS_PROXY","ALL_PROXY"]'
+        '-c', "shell_environment_policy.exclude=['AWS_*','AZURE_*','ARM_*','TF_VAR_*','TF_CLI_ARGS*','GOOGLE_*','GH_*','GITHUB_*','CODEX_HOME','OPENAI_*','ANTHROPIC_*','*TOKEN*','*SECRET*','*KEY*','*PASSWORD*','HTTP_PROXY','HTTPS_PROXY','ALL_PROXY']"
     )
 }
 
