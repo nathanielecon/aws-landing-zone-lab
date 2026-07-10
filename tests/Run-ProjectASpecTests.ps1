@@ -18,7 +18,7 @@ $policies = @($policyFiles | ForEach-Object { Get-Content -Raw -LiteralPath $_.F
 Assert-True ($manifest.tasks.Count -eq 7) 'manifest contains exactly seven sequential tasks'
 Assert-True ($policies.Count -eq 7) 'one policy exists for every Project A task'
 
-$validatorAllowlist = @('scope','credential_boundary','forbidden_operations','secret_scan','terraform_fmt_check','terraform_validate_offline','terraform_validate_all_offline','terraform_tests_offline','organizations_semantics','iam_policy_semantics','iam_negative_tests','network_boundary_semantics','network_negative_tests','audit_semantics','cross_module_negative_tests','docs_links','required_evidence','claims_boundary','diagram_links','graphify_evidence','final_repo_validation')
+$validatorAllowlist = @('scope','credential_boundary','forbidden_operations','secret_scan','terraform_fmt_check','terraform_validate_offline','terraform_validate_all_offline','terraform_tests_offline','backend_state_semantics','organizations_semantics','iam_policy_semantics','governance_semantics','iam_negative_tests','network_boundary_semantics','network_negative_tests','audit_semantics','operations_semantics','cross_module_negative_tests','docs_links','required_evidence','claims_boundary','claim_language_semantics','diagram_links','graphify_evidence','final_repo_validation')
 $requiredForbidden = @('aws','az','terraform apply','terraform destroy','terraform import','terraform plan','credential read')
 for ($index = 0; $index -lt 7; $index++) {
     $expectedId = 'A-{0:D3}' -f ($index + 1)
@@ -50,15 +50,23 @@ foreach ($policy in $policies | Where-Object { $_.approval.required }) {
 }
 
 $approval = Get-Content -Raw -LiteralPath (Join-Path $projectRoot 'harness/bundle-approval.json') | ConvertFrom-Json
-Assert-True ([bool]$approval.spec_approved -and -not [bool]$approval.execution_approved -and [string]$approval.status -eq 'spec_approved_execution_blocked') 'specification approval does not authorize Project A execution'
+Assert-True (-not [bool]$approval.spec_approved -and -not [bool]$approval.execution_approved -and [string]$approval.status -eq 'revision_pending_approval') 'revised specification requires fresh approval and does not authorize execution'
 $computedBundle = & (Join-Path $root 'scripts/Get-ProjectASpecHash.ps1') -Root $root | ConvertFrom-Json
 Assert-True ([string]$approval.spec_bundle_sha256 -eq [string]$computedBundle.sha256) 'candidate spec aggregate hash matches every declared bundle member'
-$expectedMembers = @('project-a/PROJECT_A_PLAN.md','project-a/SOURCES.md','project-a/harness/PRD.template.json','project-a/harness/policy.schema.json','project-a/harness/tool-versions.json','tests/Run-ProjectASpecTests.ps1') + @(1..7 | ForEach-Object { 'project-a/harness/tasks/A-{0:D3}.json' -f $_ })
+$expectedMembers = @('project-a/PROJECT_A_PLAN.md','project-a/PROJECT_A_ADDITIONS.md','project-a/SOURCES.md','project-a/harness/PRD.template.json','project-a/harness/policy.schema.json','project-a/harness/tool-versions.json','tests/Run-ProjectASpecTests.ps1') + @(1..7 | ForEach-Object { 'project-a/harness/tasks/A-{0:D3}.json' -f $_ })
 $actualMembers = @($computedBundle.members.psobject.Properties.Name | Sort-Object)
 Assert-True (($actualMembers -join ',') -eq (($expectedMembers | Sort-Object) -join ',')) 'aggregate hash contains exactly the declared spec members'
 $hashImplementation = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $root 'scripts/Get-ProjectASpecHash.ps1')).Hash
 Assert-True ([string]$approval.hash_implementation_sha256 -eq $hashImplementation) 'hash implementation is independently pinned'
-Assert-True ($null -eq $approval.validator_implementation_sha256) 'generic validator implementation remains intentionally unapproved until Phase 4'
+Assert-True ($null -eq $approval.validator_implementation_sha256) 'revised validator implementation remains intentionally unapproved'
+
+$additions = Get-Content -Raw -LiteralPath (Join-Path $projectRoot 'PROJECT_A_ADDITIONS.md')
+foreach($signal in @('Backend and state discipline','Policy and validation as code','Network decisions','Secrets discipline','Logging and audit proof','Cost and teardown discipline','Operator troubleshooting','Claim boundaries')) { Assert-True ($additions.Contains($signal)) "gap-closure spec includes $signal" }
+Assert-True (@($policies[0].validators.id) -contains 'backend_state_semantics' -and @($policies[0].expected_artifacts) -contains 'project-a/docs/decisions/secrets.md') 'A-001 gates backend, state, environment separation, and secrets discipline'
+Assert-True (@($policies[2].validators.id) -contains 'governance_semantics' -and @($policies[2].expected_artifacts) -contains 'project-a/docs/guardrails/policy-validation.md') 'A-003 gates validation-as-code and blocked-change examples'
+Assert-True (@($policies[3].expected_artifacts) -contains 'project-a/docs/operations/network-failure-cases.md') 'A-004 requires concrete connectivity failure cases'
+Assert-True (@($policies[5].validators.id) -contains 'operations_semantics' -and @($policies[5].expected_artifacts) -contains 'project-a/docs/operations/cost-and-teardown.md') 'A-006 gates troubleshooting and cost/teardown discipline'
+Assert-True (@($policies[6].validators.id) -contains 'claim_language_semantics' -and @($policies[6].expected_artifacts) -contains 'project-a/docs/portfolio/claims-boundary.md') 'A-007 gates accurate portfolio claim language'
 
 $invalidPolicy = (Get-Content -Raw -LiteralPath $policyFiles[0].FullName) -replace '"title":', '"unexpected":true,"title":'
 Assert-True (-not (Test-Json -Json $invalidPolicy -SchemaFile (Join-Path $projectRoot 'harness/policy.schema.json') -ErrorAction SilentlyContinue)) 'schema rejects undeclared policy properties'

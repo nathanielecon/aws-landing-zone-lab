@@ -11,7 +11,7 @@ $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'Harness.Common.psm1') -Force
 $Root = [System.IO.Path]::GetFullPath($Root)
 $policy = Read-JsonFile -Path $PolicyPath
-$knownValidators = @('scope','credential_boundary','forbidden_operations','secret_scan','terraform_fmt_check','terraform_validate_offline','terraform_validate_all_offline','terraform_tests_offline','organizations_semantics','iam_policy_semantics','iam_negative_tests','network_boundary_semantics','network_negative_tests','audit_semantics','cross_module_negative_tests','docs_links','required_evidence','claims_boundary','diagram_links','graphify_evidence','final_repo_validation')
+$knownValidators = @('scope','credential_boundary','forbidden_operations','secret_scan','terraform_fmt_check','terraform_validate_offline','terraform_validate_all_offline','terraform_tests_offline','backend_state_semantics','organizations_semantics','iam_policy_semantics','governance_semantics','iam_negative_tests','network_boundary_semantics','network_negative_tests','audit_semantics','operations_semantics','cross_module_negative_tests','docs_links','required_evidence','claims_boundary','claim_language_semantics','diagram_links','graphify_evidence','final_repo_validation')
 $results = [System.Collections.Generic.List[object]]::new()
 
 function Add-Result([string]$Id, [bool]$Passed, [string]$Message, [long]$DurationMs) {
@@ -131,6 +131,9 @@ try {
                 $target = Resolve-PathUnderRoot -Root $Root -RelativePath ([string]$validator.args[0])
                 Invoke-ExternalCheck $id $terraform @('test','-no-color') $target ([int]$validator.timeout_seconds)
             }
+            'backend_state_semantics' {
+                Assert-ExpectedArtifacts;$text=Get-ProjectText @('project-a/docs/decisions/backend.md','project-a/docs/decisions/secrets.md','project-a/terraform/bootstrap','project-a/examples/backend');$missing=Test-RequiredPatterns $text ([ordered]@{s3='(?i)S3';lockfile='(?i)(use_lockfile|lockfile|concurren)';versioning='(?i)version';encryption='(?i)(encrypt|KMS)';environment_separation='(?i)(nonproduction|production).*(key|state)|state.*(nonproduction|production)';recovery='(?i)(recover|rollback|overwrite|drift)';secret_store='(?i)(Secrets Manager|Parameter Store|secret store)';do_not_commit='(?i)(do not|never).*(commit|tfvars|state).*secret';least_privilege='(?i)least.?privilege'});$message=if($missing){"Backend/secrets contract missing: $($missing -join ', ')"}else{'Backend concurrency, recovery, environment separation, and secrets boundaries are documented.'};Add-Result $id ($missing.Count -eq 0) $message $timer.ElapsedMilliseconds
+            }
             'organizations_semantics' {
                 Assert-ExpectedArtifacts;$text=Get-ProjectText @('project-a/terraform/organization','project-a/docs/architecture/accounts.md','project-a/docs/guardrails/organizations.md')
                 $missing=Test-RequiredPatterns $text ([ordered]@{organization='aws_organizations_organization';ou='aws_organizations_organizational_unit';account='aws_organizations_account';scp='aws_organizations_policy';attachment='aws_organizations_policy_attachment'})
@@ -141,6 +144,9 @@ try {
                 $missing=Test-RequiredPatterns $text ([ordered]@{iam_policy='aws_iam_policy';boundary='permission.?boundar';trust='trust';break_glass='break.?glass';least_privilege='least.?privilege'})
                 $unsafe=$false;foreach($file in Get-ChildItem (Join-Path $Root 'project-a/policies') -Recurse -Filter *.json -File -ErrorAction SilentlyContinue){try{$doc=Get-Content -Raw $file.FullName|ConvertFrom-Json;foreach($statement in @($doc.Statement)){if($statement.Effect -eq 'Allow' -and (@($statement.Action)-contains '*' -or @($statement.Resource)-contains '*')){$unsafe=$true}}}catch{throw "Invalid IAM policy JSON: $($file.FullName)"}}
                 $message=if($unsafe){'Allow statement contains wildcard Action or Resource.'}elseif($missing){"Missing IAM constructs: $($missing -join ', ')"}else{'IAM policy, boundary, trust, break-glass, and least-privilege contracts are present.'};Add-Result $id ($missing.Count -eq 0 -and -not $unsafe) $message $timer.ElapsedMilliseconds
+            }
+            'governance_semantics' {
+                Assert-ExpectedArtifacts;$text=Get-ProjectText @('project-a/docs/guardrails/policy-validation.md','project-a/tests/governance','project-a/tests/iam');$missing=Test-RequiredPatterns $text ([ordered]@{fmt='(?i)terraform fmt';validate='(?i)terraform validate';lint='(?i)(tflint|lint)';required_tags='(?i)required tags?|tagging';naming='(?i)naming';blocked_example='(?i)(blocked|reject|fail).*(change|example|test)|change.*(blocked|rejected)';assert='(?m)^\s*assert\s*\{'});$message=if($missing){"Governance-as-code contract missing: $($missing -join ', ')"}else{'Validation, lint, naming/tagging, and blocked-change examples are present.'};Add-Result $id ($missing.Count -eq 0) $message $timer.ElapsedMilliseconds
             }
             'iam_negative_tests' {
                 Assert-ExpectedArtifacts;Invoke-TerraformBehavioralTests $id 'project-a/terraform/identity' 'project-a/tests/iam' ([int]$validator.timeout_seconds)
@@ -157,6 +163,9 @@ try {
                 Assert-ExpectedArtifacts;$text=Get-ProjectText @('project-a/terraform/audit','project-a/docs/operations/audit-review.md','project-a/docs/architecture/logging.md');$missing=Test-RequiredPatterns $text ([ordered]@{trail='aws_cloudtrail';multi_region='is_multi_region_trail';integrity='enable_log_file_validation';kms='aws_kms_key';public_block='aws_s3_bucket_public_access_block';config='aws_config';retention='retention';recovery='recover'})
                 $message=if($missing){"Audit constructs missing: $($missing -join ', ')"}else{'CloudTrail, Config, KMS, public blocking, integrity, retention, and recovery are present.'};Add-Result $id ($missing.Count -eq 0) $message $timer.ElapsedMilliseconds
             }
+            'operations_semantics' {
+                Assert-ExpectedArtifacts;$text=Get-ProjectText @('project-a/docs/operations','project-a/docs/validation.md','project-a/docs/architecture/logging.md');$missing=Test-RequiredPatterns $text ([ordered]@{provisioning='(?i)provision.*(fail|first check|troubleshoot)';access='(?i)access.*(fail|first check|troubleshoot)';audit_missing='(?i)(audit|logging).*(missing|first check|troubleshoot)';cost='(?i)(cost|charge|billing)';teardown='(?i)(tear.?down|destroy after validation|remove after validation)';cost_drivers='(?i)(NAT Gateway|Transit Gateway|log storage|KMS|cost driver)';captured_events='(?i)(events captured|captures?).*(CloudTrail|Config|flow)';log_destination='(?i)(log archive|destination|S3)';stop_condition='(?i)(stop|escalat).*(condition|when|if)'});$message=if($missing){"Operator/cost/logging contract missing: $($missing -join ', ')"}else{'Troubleshooting, audit proof, cost drivers, teardown, and escalation guidance are present.'};Add-Result $id ($missing.Count -eq 0) $message $timer.ElapsedMilliseconds
+            }
             'cross_module_negative_tests' {
                 Assert-ExpectedArtifacts;Invoke-TerraformBehavioralTests $id 'project-a' 'project-a/tests/integration' ([int]$validator.timeout_seconds)
             }
@@ -171,6 +180,9 @@ try {
             'claims_boundary' {
                 Assert-ExpectedArtifacts;$text=Get-ProjectText @('project-a/docs/azure-government','project-a/evidence-index.md');$required=$text -match '(?i)not implemented' -and $text -match '(?i)not (cloud )?validated';$overclaim=$text -match '(?i)azure government (is|was|has been) (implemented|deployed|validated)'
                 $message=if($required -and -not $overclaim){'Azure Government claims remain translation-only.'}else{'Azure Government non-implementation/non-validation wording is missing or contradicted.'};Add-Result $id ($required -and -not $overclaim) $message $timer.ElapsedMilliseconds
+            }
+            'claim_language_semantics' {
+                Assert-ExpectedArtifacts;$text=Get-ProjectText @('project-a/docs/portfolio/claims-boundary.md','project-a/docs/review','project-a/README.md');$missing=Test-RequiredPatterns $text ([ordered]@{proves='(?i)what (this )?(project|repository) proves';does_not_prove='(?i)(does not|doesn.t) prove';junior_mid='(?i)junior.?to.?mid|junior.*mid';avoid_claims='(?i)(avoid|do not claim|unsupported).*(production|senior|enterprise)';repo_only='(?i)repo.?only';not_cloud_validated='(?i)not (cloud )?validated'});$message=if($missing){"Claim-language contract missing: $($missing -join ', ')"}else{'Portfolio wording states supported and unsupported claims at the intended level.'};Add-Result $id ($missing.Count -eq 0) $message $timer.ElapsedMilliseconds
             }
             'diagram_links' {
                 Assert-ExpectedArtifacts;$required=@('platform.svg','network.svg');$docs=Get-ProjectText @('project-a/README.md','project-a/docs') @('.md');$errors=@()

@@ -1,6 +1,6 @@
 # Project A candidate execution plan
 
-Status: `candidate-specification`
+Status: `revision-pending-approval`
 Plan ID: `project-a-repo-baseline-v1`
 
 This is the single approved-plan candidate for a repo-only AWS platform baseline.
@@ -69,7 +69,13 @@ Every evidence record must set:
 6. `A-006` composes non-secret example environments and runs all static,
    offline-capable validation and negative tests.
 7. `A-007` assembles evidence, Graphify output, Azure Government translation
-   notes, reviewer pushback/narrowing, and the final handoff.
+   notes, reviewer pushback/narrowing, claim-safe portfolio wording, and the
+   final handoff.
+
+The task stream must also satisfy every normative requirement in
+`PROJECT_A_ADDITIONS.md`: backend/state discipline, validation-as-code,
+connectivity reasoning, secrets handling, inspectable audit defaults,
+cost/teardown guidance, operator troubleshooting, and claim boundaries.
 
 ## Human gates
 
@@ -88,7 +94,8 @@ Human review owns these decisions:
   emergency-access design.
 - `H3`: CIDRs, ingress/egress intent, route ownership, and network boundaries.
 - `H4`: retention, KMS administration, log readers, integrity, and recovery.
-- `H5`: evidence completeness, Azure wording, narrowing, and merge readiness.
+- `H5`: evidence completeness, Azure wording, claim boundaries, cost/teardown
+  guidance, troubleshooting quality, narrowing, and merge readiness.
 
 ## Deterministic validation contract
 
@@ -122,5 +129,7 @@ may edit only `allowed_paths`; the adapter alone creates and stages the single
 The final repo must contain evidence-linked commits, architecture and network
 diagrams, an IAM/guardrail summary, audit-review path, Azure Government
 translation note with explicit non-implementation language, reviewer pushback,
-and escalation/handoff instructions. Final merge and any cloud-validation phase
-remain human decisions.
+backend/state and secrets decisions, blocked-change examples, connectivity
+failure cases, cost/teardown guidance, a pressure-usable troubleshooting
+runbook, claim-safe portfolio wording, and escalation/handoff instructions.
+Final merge and any cloud-validation phase remain human decisions.

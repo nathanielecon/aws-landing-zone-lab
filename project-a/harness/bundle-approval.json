@@ -1,14 +1,14 @@
 {
   "plan_id": "project-a-repo-baseline-v1",
-  "status": "spec_approved_execution_blocked",
-  "spec_approved": true,
+  "status": "revision_pending_approval",
+  "spec_approved": false,
   "execution_approved": false,
-  "spec_approved_by": "user",
-  "spec_approved_at": "2026-07-10",
-  "approval_source": "Codex task: Proceed",
-  "spec_bundle_sha256": "B5D7B947FE62F11C06D3B605503D3E51B2DAF7A5D58BF33BFE4F6DEB9F2BA204",
+  "spec_approved_by": null,
+  "spec_approved_at": null,
+  "approval_source": "Project Additions.txt revision request",
+  "spec_bundle_sha256": "52D06784AE67AB795C3DF0D530F71C0716B1089C95C97E1E9D5F52943635686E",
   "execution_bundle_sha256": null,
-  "hash_implementation_sha256": "BC0E9FC54886D22E7C1A9529B207A9AACFD347BE245B1B2F4E623A3109D3A435",
+  "hash_implementation_sha256": "B0C0F0A11F75A5F879EEDCFEA427CF7B73F779B3EFC3C9DBB0E7DC2FDDA3DC2E",
   "validator_implementation_sha256": null,
-  "reason": "The specification is approved. Project A execution remains blocked until Phase 4 implements and hashes generic validators, credential scrubbing, and diff-bound human approvals, followed by a separate explicit user approval."
+  "reason": "Project A was revised with the requested gap-closure package. The new exact specification and execution bundles require fresh explicit approval before Terra begins."
 }
