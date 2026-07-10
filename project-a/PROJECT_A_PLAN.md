@@ -1,6 +1,6 @@
 # Project A candidate execution plan
 
-Status: `candidate-specification`  
+Status: `candidate-specification`
 Plan ID: `project-a-repo-baseline-v1`
 
 This is the single approved-plan candidate for a repo-only AWS platform baseline.
