@@ -40,6 +40,7 @@ Assert-True ($initialText -match 'network_access=false' -and $initialText -match
 Assert-True ($initialText -match 'windows.sandbox="elevated"') 'Windows workspace-write explicitly selects the tested elevated sandbox implementation'
 Assert-True ($initialText -match 'shell_environment_policy.inherit="core"' -and $initialText -match 'CODEX_HOME') 'model shell receives a filtered core environment without Codex home'
 Assert-True ((Get-Content -Raw (Join-Path $root 'scripts/Invoke-CodexAdapter.ps1')) -match 'terminal sentinel blocks every additional model call') 'global terminal sentinel blocks later Ralphy task invocations'
+Assert-True ((Get-Content -Raw (Join-Path $root '.harness/bin/codex.cmd')) -notmatch 'if "%ADAPTER_EXIT%"=="75" exit') 'human approval pauses also set the terminal sentinel before Ralphy can advance'
 Assert-True ((Get-Content -Raw (Join-Path $root 'scripts/Start-ProjectAHarness.ps1')) -match 'toolVersions.codex_regex' -and (Get-Content -Raw (Join-Path $root 'scripts/Start-ProjectAHarness.ps1')) -match 'task.completed=\$false') 'launcher fails closed on tool drift and reconstructs manifest completion from persisted state'
 Assert-True ((Get-Content -Raw (Join-Path $root 'scripts/Invoke-ProjectAValidators.ps1')) -match 'Write-Output -NoEnumerate \$missing') 'semantic validator helper preserves an empty collection under StrictMode'
 $resume=@(New-RepoOnlyResumeCodexArguments -Model 'gpt-5.6-sol' -ThreadId 'thread' -Prompt 'repair' -OutputLastMessage $null) -join ' '
