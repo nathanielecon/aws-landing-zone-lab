@@ -12,7 +12,6 @@ permissions:
 env:
   CI: '1'
   HARNESS_CONTRACT_ONLY: '1'
-  CODEX_HOME: ${{ runner.temp }}\codex-home
 
 concurrency:
   group: harness-contracts-${{ github.ref }}
@@ -47,4 +46,6 @@ jobs:
 
       - name: Run no-token harness contracts
         shell: pwsh
+        env:
+          CODEX_HOME: ${{ runner.temp }}\codex-home
         run: pwsh -NoLogo -NoProfile -NonInteractive -File ./tests/Run-ContractTests.ps1
