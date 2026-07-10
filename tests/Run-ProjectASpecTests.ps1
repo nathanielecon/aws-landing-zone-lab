@@ -50,7 +50,10 @@ foreach ($policy in $policies | Where-Object { $_.approval.required }) {
 }
 
 $approval = Get-Content -Raw -LiteralPath (Join-Path $projectRoot 'harness/bundle-approval.json') | ConvertFrom-Json
-Assert-True (-not [bool]$approval.spec_approved -and -not [bool]$approval.execution_approved -and [string]$approval.status -eq 'revision_pending_approval') 'revised specification requires fresh approval and does not authorize execution'
+Assert-True (-not [bool]$approval.execution_approved -and (
+    ([bool]$approval.spec_approved -and [string]$approval.status -eq 'spec_approved_execution_blocked') -or
+    (-not [bool]$approval.spec_approved -and [string]$approval.status -eq 'revision_pending_approval')
+)) 'spec approval state is internally consistent and never authorizes execution'
 $computedBundle = & (Join-Path $root 'scripts/Get-ProjectASpecHash.ps1') -Root $root | ConvertFrom-Json
 Assert-True ([string]$approval.spec_bundle_sha256 -eq [string]$computedBundle.sha256) 'candidate spec aggregate hash matches every declared bundle member'
 $expectedMembers = @('project-a/PROJECT_A_PLAN.md','project-a/PROJECT_A_ADDITIONS.md','project-a/SOURCES.md','project-a/harness/PRD.template.json','project-a/harness/policy.schema.json','project-a/harness/tool-versions.json','tests/Run-ProjectASpecTests.ps1') + @(1..7 | ForEach-Object { 'project-a/harness/tasks/A-{0:D3}.json' -f $_ })

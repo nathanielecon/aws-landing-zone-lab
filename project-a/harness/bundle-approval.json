@@ -1,14 +1,14 @@
 {
   "plan_id": "project-a-repo-baseline-v1",
-  "status": "revision_pending_approval",
-  "spec_approved": false,
+  "status": "spec_approved_execution_blocked",
+  "spec_approved": true,
   "execution_approved": false,
-  "spec_approved_by": null,
-  "spec_approved_at": null,
-  "approval_source": "Project Additions.txt revision request",
-  "spec_bundle_sha256": "52D06784AE67AB795C3DF0D530F71C0716B1089C95C97E1E9D5F52943635686E",
+  "spec_approved_by": "user",
+  "spec_approved_at": "2026-07-10",
+  "approval_source": "Codex task: Proceed after revised roadmap",
+  "spec_bundle_sha256": "000C92484FB691388DEB6DF956249274E422CD6F64B440343F9D65F0297CA5A2",
   "execution_bundle_sha256": null,
   "hash_implementation_sha256": "B0C0F0A11F75A5F879EEDCFEA427CF7B73F779B3EFC3C9DBB0E7DC2FDDA3DC2E",
   "validator_implementation_sha256": null,
-  "reason": "Project A was revised with the requested gap-closure package. The new exact specification and execution bundles require fresh explicit approval before Terra begins."
+  "reason": "The revised Project A specification is approved. Execution remains blocked pending the separately pinned execution bundle and prerequisite verification."
 }
