@@ -6,6 +6,7 @@ $ErrorActionPreference = 'Stop'
 $Root = [System.IO.Path]::GetFullPath($Root)
 $members = @(
     'project-a/PROJECT_A_PLAN.md'
+    'project-a/PROJECT_A_ADDITIONS.md'
     'project-a/SOURCES.md'
     'project-a/harness/PRD.template.json'
     'project-a/harness/policy.schema.json'
