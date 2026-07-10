@@ -8,7 +8,6 @@ if not exist "%PWSH%" (
 "%PWSH%" -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\..\scripts\Invoke-CodexAdapter.ps1" %*
 set "ADAPTER_EXIT=%ERRORLEVEL%"
 if not "%ADAPTER_EXIT%"=="0" (
-  if "%ADAPTER_EXIT%"=="75" exit /b 75
   if defined HARNESS_ROOT (
     if not exist "%HARNESS_ROOT%\.harness\runtime" mkdir "%HARNESS_ROOT%\.harness\runtime"
     >"%HARNESS_ROOT%\.harness\runtime\stop.flag" echo adapter_failed
