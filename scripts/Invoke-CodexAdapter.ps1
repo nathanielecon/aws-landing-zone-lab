@@ -19,6 +19,12 @@ $realCodex = [System.IO.Path]::GetFullPath($realCodex)
 $adapterPath = [System.IO.Path]::GetFullPath((Join-Path $root '.harness/bin/codex.cmd'))
 if ($realCodex.Equals($adapterPath, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Real Codex path resolves to the adapter; refusing recursion.' }
 if (-not (Test-Path -LiteralPath $realCodex -PathType Leaf)) { throw "Real Codex executable not found: $realCodex" }
+if ($env:HARNESS_CONTRACT_ONLY -eq '1') {
+    $fixturePath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../tests/fixtures/fake-codex.cmd'))
+    if (-not $realCodex.Equals($fixturePath, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Contract-only mode refuses every Codex executable except the committed fake fixture.'
+    }
+}
 
 $stopFlag = Join-Path $root '.harness/runtime/stop.flag'
 if (Test-Path -LiteralPath $stopFlag) { throw 'A prior task failed; the stop sentinel blocks additional model calls until explicit resume.' }
@@ -63,19 +69,34 @@ function Invoke-CodexProcess {
     param([Parameter(Mandatory)][string[]]$Arguments, [Parameter(Mandatory)][string]$Label, [AllowEmptyString()][string]$StandardInput = '')
     $stdoutPath = Join-Path $taskLogRoot "$Label.stdout.jsonl"
     $stderrPath = Join-Path $taskLogRoot "$Label.stderr.log"
-    Push-Location $root
+    $encodedArguments = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(($Arguments | ConvertTo-Json -Compress)))
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = (Get-Command pwsh -ErrorAction Stop).Source
+    $startInfo.WorkingDirectory = $root
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardInput = $true
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    foreach ($value in @('-NoLogo', '-NoProfile', '-NonInteractive', '-File', (Join-Path $PSScriptRoot 'Invoke-NativeCodex.ps1'), '-Executable', $realCodex, '-ArgumentsBase64', $encodedArguments, '-CommonModulePath', (Join-Path $PSScriptRoot 'Harness.Common.psm1'))) {
+        [void]$startInfo.ArgumentList.Add($value)
+    }
+    $process = [System.Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
     try {
-        if ($StandardInput) {
-            $StandardInput | & $realCodex @Arguments 1> $stdoutPath 2> $stderrPath
-        } else {
-            & $realCodex @Arguments 1> $stdoutPath 2> $stderrPath
-        }
-        $exitCode = $LASTEXITCODE
-    } finally { Pop-Location }
-    $stdout = if (Test-Path -LiteralPath $stdoutPath) { Get-Content -Raw -LiteralPath $stdoutPath } else { '' }
-    $stderr = if (Test-Path -LiteralPath $stderrPath) { Get-Content -Raw -LiteralPath $stderrPath } else { '' }
-    Write-Utf8NoBom -Path $stdoutPath -Text (Protect-LogText -Text $stdout)
-    Write-Utf8NoBom -Path $stderrPath -Text (Protect-LogText -Text $stderr)
+        [void]$process.Start()
+        if ($StandardInput) { $process.StandardInput.Write($StandardInput) }
+        $process.StandardInput.Close()
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        $process.WaitForExit()
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
+        $exitCode = $process.ExitCode
+    } finally {
+        $process.Dispose()
+    }
+    Write-Utf8NoBom -Path $stdoutPath -Text $stdout
+    Write-Utf8NoBom -Path $stderrPath -Text $stderr
     if ($stdout) { [Console]::Out.Write($stdout) }
     if ($stderr) { [Console]::Error.Write($stderr) }
     return [pscustomobject]@{ exit_code = $exitCode; stdout = $stdout; stderr = $stderr; thread_id = Get-ThreadIdFromJsonLines -Text $stdout }
@@ -109,6 +130,16 @@ $($policy.gate.sol_content.Replace("`n", '\n'))
 
 Do not commit. Do not change any other tracked path.
 "@
+}
+
+function Test-CommittedTaskContent {
+    param([Parameter(Mandatory)][ValidateSet('terra', 'sol')][string]$Phase)
+    $fixturePath = Join-Path $root ([string]$policy.gate.path)
+    if (-not (Test-Path -LiteralPath $fixturePath -PathType Leaf)) { return $false }
+    $expectedText = if ($Phase -eq 'sol') { [string]$policy.gate.sol_content } else { [string]$policy.gate.terra_content }
+    $expectedBytes = [System.Text.UTF8Encoding]::new($false).GetBytes($expectedText)
+    $actualBytes = [System.IO.File]::ReadAllBytes($fixturePath)
+    return [System.Linq.Enumerable]::SequenceEqual[byte]($actualBytes, $expectedBytes)
 }
 
 function Complete-GatedCommit {
@@ -158,6 +189,26 @@ if (Test-Path -LiteralPath $statePath) {
     $state = Read-JsonFile -Path $statePath
     if ($state.plan_hash -ne $planHash -or $state.branch -ne $branch) { throw 'Persisted task state does not match the approved plan and branch.' }
     if ($state.status -eq 'completed') { throw "Task $taskId already completed at $($state.commit_sha); duplicate invocation blocked." }
+    if ([string]$state.starting_commit -ne $head) {
+        $parent = (& git -C $root rev-parse "$head^" 2>$null).Trim()
+        $subject = (& git -C $root log -1 --format=%s).Trim()
+        $commitPaths = @(& git -C $root diff-tree --no-commit-id --name-only -r $head | ForEach-Object { $_ -replace '\\', '/' })
+        $allowedCommitPaths = @($policy.allowed_paths | ForEach-Object { [string]$_ }) + @([string]$policy.expected_evidence)
+        $commitIsOwned = $parent -eq [string]$state.starting_commit -and
+            $subject -eq [string]$policy.commit_message -and
+            $commitPaths.Count -gt 0 -and
+            @($commitPaths | Where-Object { -not (Test-AllowedPath -Path $_ -AllowedPaths $allowedCommitPaths) }).Count -eq 0 -and
+            @(Get-ChangedPaths -Root $root).Count -eq 0
+        if (-not $commitIsOwned) { throw 'Current HEAD does not match the interrupted task starting commit or its single gated commit.' }
+        $reconcilePhase = if ($state.phase -eq 'sol') { 'sol' } else { 'terra' }
+        if (-not (Test-CommittedTaskContent -Phase $reconcilePhase)) { throw 'The interrupted task commit no longer passes its deterministic content gate.' }
+        $state.status = 'completed'
+        $state.commit_sha = $head
+        $state.completed_at = [DateTimeOffset]::UtcNow.ToString('o')
+        Save-State
+        Write-JsonNoBom -Path (Join-Path $taskLogRoot 'summary.json') -Value ([ordered]@{ task_id = $taskId; status = 'completed'; commit_sha = $head; evidence = [string]$policy.expected_evidence; terra_attempts = $state.terra_attempts; sol_attempts = $state.sol_attempts; reconciled_after_commit = $true })
+        exit 0
+    }
     $resumeAllowed = @($policy.allowed_paths | ForEach-Object { [string]$_ }) + @([string]$policy.expected_evidence)
     [void](Assert-OnlyAllowedChanges -Root $root -AllowedPaths $resumeAllowed)
 } else {
@@ -213,9 +264,7 @@ while ($true) {
             $arguments = New-SafeInitialCodexArguments -Arguments $CodexArguments -Model 'gpt-5.6-terra'
         } else {
             $repairPrompt = "Repair task $taskId without committing. Last gate: $($state.last_failure). Change only $($policy.allowed_paths -join ', '), then stop."
-            $arguments = @('exec', 'resume', '--model', 'gpt-5.6-terra', '--json')
-            if ($outputLastMessage) { $arguments += @('--output-last-message', $outputLastMessage) }
-            $arguments += @([string]$state.terra_thread_id, $repairPrompt)
+            $arguments = New-SafeResumeCodexArguments -Model 'gpt-5.6-terra' -ThreadId ([string]$state.terra_thread_id) -Prompt $repairPrompt -OutputLastMessage $outputLastMessage
         }
         Save-State
         $attemptInput = if ($state.terra_attempts -eq 1 -and -not $state.terra_thread_id) { $stdinText } else { '' }
@@ -261,9 +310,7 @@ while ($true) {
         if ($outputLastMessage) { $arguments += @('--output-last-message', $outputLastMessage) }
         $arguments += $takeoverPrompt
     } else {
-        $arguments = @('exec', 'resume', '--model', 'gpt-5.6-sol', '--json')
-        if ($outputLastMessage) { $arguments += @('--output-last-message', $outputLastMessage) }
-        $arguments += @([string]$state.sol_thread_id, "Repair $taskId. Last gate: $($state.last_failure). Do not commit.")
+        $arguments = New-SafeResumeCodexArguments -Model 'gpt-5.6-sol' -ThreadId ([string]$state.sol_thread_id) -Prompt "Repair $taskId. Last gate: $($state.last_failure). Do not commit." -OutputLastMessage $outputLastMessage
     }
     Save-State
     $execution = Invoke-CodexProcess -Arguments $arguments -Label $label
