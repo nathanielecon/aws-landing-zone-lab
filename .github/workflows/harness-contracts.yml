@@ -51,3 +51,4 @@ jobs:
         run: |
           pwsh -NoLogo -NoProfile -NonInteractive -File ./tests/Run-ContractTests.ps1
           pwsh -NoLogo -NoProfile -NonInteractive -File ./tests/Run-ProjectASpecTests.ps1
+          pwsh -NoLogo -NoProfile -NonInteractive -File ./tests/Run-ProjectAHarnessTests.ps1

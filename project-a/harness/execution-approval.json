@@ -1,0 +1,19 @@
+{
+  "schema_version": "project-a-execution-approval-v1",
+  "status": "execution_approved",
+  "execution_approved": true,
+  "spec_bundle_sha256": "133EFF92587078F211B7B0B301F381E9C6B38E9FCADF879F4A49E51BC20C9627",
+  "execution_bundle_sha256": "C5FA3409ED8A6E175B3400D50571B1F572C4BC2E8348D09577368028B03BC72D",
+  "validator_implementation_sha256": "FD680EDD644FB1E61E4B09131E56A17018FBFC60CDF621F1BCCFACE91BBE8AF1",
+  "execution_hash_implementation_sha256": "AC7906A0B796C6430251A64DD70ED6FBD291786E0F42DD14FFEA9FE75E3447ED",
+  "proven_with": {
+    "live_models": false,
+    "fake_codex_only": true,
+    "cloud_credentials": false,
+    "project_a_harness_assertions": 47
+  },
+  "approved_by": "user",
+  "approved_at": "2026-07-10",
+  "approval_source": "Codex task: stay in the loop until running, then allow autonomous execution",
+  "reason": "The user authorized the bounded marker-contract repair after the first launch failed and requested autonomous execution once the repaired loop is verified running."
+}
