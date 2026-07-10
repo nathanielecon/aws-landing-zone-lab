@@ -1,0 +1,7 @@
+{
+  "codex_regex": "^codex-cli 0\\.144\\.",
+  "ralphy": "4.7.2",
+  "node_regex": "^v24\\.",
+  "git_regex": "^git version 2\\.54\\.",
+  "powershell_minimum": "7.0.0"
+}

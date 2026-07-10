@@ -1,0 +1,16 @@
+{
+  "id": "S-002",
+  "risk": "high",
+  "allowed_paths": ["smoke/takeover.txt"],
+  "validation_commands": ["scope", "exact_utf8_no_bom", "forced_sol_takeover"],
+  "terra_attempt_limit": 3,
+  "elapsed_limit_minutes": 25,
+  "force_smoke_escalation": true,
+  "expected_evidence": "evidence/S-002.json",
+  "commit_message": "test(S-002): prove Terra-to-Sol takeover",
+  "gate": {
+    "path": "smoke/takeover.txt",
+    "terra_content": "TERRA_INITIAL_OK\n",
+    "sol_content": "SOL_TAKEOVER_OK\n"
+  }
+}

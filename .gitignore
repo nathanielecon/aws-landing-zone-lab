@@ -1,0 +1,6 @@
+.harness/runtime/
+.ralphy/
+*.tmp
+*.log
+*.jsonl
+.codex-last-message-*
