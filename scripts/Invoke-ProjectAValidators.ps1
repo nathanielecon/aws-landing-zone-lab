@@ -19,12 +19,12 @@ function Add-Result([string]$Id, [bool]$Passed, [string]$Message, [long]$Duratio
     if (-not $Passed) { throw "VALIDATOR_FAILED: $Id - $Message" }
 }
 
-function Invoke-ExternalCheck([string]$Id, [string]$FileName, [string[]]$Arguments, [string]$WorkingDirectory, [int]$TimeoutSeconds) {
+function Invoke-ExternalCheck([string]$Id, [string]$FileName, [string[]]$Arguments, [string]$WorkingDirectory, [int]$TimeoutSeconds, [string]$EnvironmentId = $Id) {
     $info = [System.Diagnostics.ProcessStartInfo]::new()
     $info.FileName = $FileName; $info.WorkingDirectory = $WorkingDirectory; $info.UseShellExecute = $false
     $info.RedirectStandardOutput = $true; $info.RedirectStandardError = $true
     foreach ($argument in $Arguments) { [void]$info.ArgumentList.Add($argument) }
-    Set-RepoOnlyProcessEnvironment -StartInfo $info -IsolationRoot (Join-Path $IsolationRoot $Id)
+    Set-RepoOnlyProcessEnvironment -StartInfo $info -IsolationRoot (Join-Path $IsolationRoot $EnvironmentId)
     $process = [System.Diagnostics.Process]::new(); $process.StartInfo = $info
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     try {
@@ -123,7 +123,7 @@ try {
             { $_ -in @('terraform_validate_offline','terraform_validate_all_offline') } {
                 $terraform = (Get-Command terraform.exe -ErrorAction Stop).Source
                 $target = Resolve-PathUnderRoot -Root $Root -RelativePath ([string]$validator.args[0])
-                Invoke-ExternalCheck "$id-init" $terraform @('init','-backend=false','-input=false','-lockfile=readonly') $target ([int]$validator.timeout_seconds)
+                Invoke-ExternalCheck "$id-init" $terraform @('init','-backend=false','-input=false','-lockfile=readonly') $target ([int]$validator.timeout_seconds) $id
                 Invoke-ExternalCheck $id $terraform @('validate','-no-color') $target ([int]$validator.timeout_seconds)
             }
             'terraform_tests_offline' {

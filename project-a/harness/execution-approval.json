@@ -3,17 +3,17 @@
   "status": "execution_approved",
   "execution_approved": true,
   "spec_bundle_sha256": "C4AF5F60EF138C17F2745D16092C38D459A5D396995F7330C386787A9A93DD0C",
-  "execution_bundle_sha256": "1F12DA7E69B52E0871BD82700090A61227A72C48EFD1B16DA7F89BD6D89FF2EE",
-  "validator_implementation_sha256": "E7D55B218092ED8887F2CE16E4C629954DFE32883DC868D7302D90A43E0827C7",
+  "execution_bundle_sha256": "CD2B6AD040743E3C5CFE1B28B2F8F4F6465A27E3B68D64DCF2FCA0492F4C2CCE",
+  "validator_implementation_sha256": "E70FD94B7E55ED0A1B314C70245B2EA5AEFDEB83F9CA076898D87EEC60C351DE",
   "execution_hash_implementation_sha256": "AC7906A0B796C6430251A64DD70ED6FBD291786E0F42DD14FFEA9FE75E3447ED",
   "proven_with": {
     "live_models": false,
     "fake_codex_only": true,
     "cloud_credentials": false,
-    "project_a_harness_assertions": 53
+    "project_a_harness_assertions": 54
   },
   "approved_by": "user",
   "approved_at": "2026-07-10",
   "approval_source": "Codex task: stay in the loop until running, then allow autonomous execution",
-  "reason": "The user authorized bounded recovery; the final control repair makes human approval exit 75 terminal for subsequent Ralphy model calls until explicit resume."
+  "reason": "The user authorized supervision through 25%; live A-002 validation justified sharing one isolated Terraform provider directory between init and validate."
 }
