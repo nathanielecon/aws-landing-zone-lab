@@ -1,0 +1,12 @@
+{
+  "profile_id": "smoke",
+  "task_id_pattern": "^S-00[12]$",
+  "expected_branch_pattern": "^codex/ralphy-harness$",
+  "manifest_template": "harness/PRD.template.json",
+  "policy_root": "harness/tasks",
+  "approval_file": "harness/plan-approval.json",
+  "tool_versions_file": "harness/tool-versions.json",
+  "runtime_namespace": "smoke",
+  "gate_kind": "smoke_exact_fixture",
+  "task_ids": ["S-001", "S-002"]
+}

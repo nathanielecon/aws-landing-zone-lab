@@ -29,3 +29,6 @@ The proven smoke harness is tagged `ralphy-harness-v0.1.0`. The Phase 3
 repo-only tasks and their human gates. It is intentionally marked non-executable
 until Phase 4 generalizes the smoke adapter, scrubs cloud credentials, implements
 the allowlisted validators, and binds explicit approval receipts to exact diffs.
+
+Phase 4 implementation and its remaining execution-approval gate are documented
+in [project-a/HARNESS.md](project-a/HARNESS.md).

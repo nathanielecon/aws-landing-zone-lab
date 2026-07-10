@@ -5,10 +5,10 @@
   "execution_approved": false,
   "spec_approved_by": "user",
   "spec_approved_at": "2026-07-10",
-  "approval_source": "Codex task: Proceed",
-  "spec_bundle_sha256": "B5D7B947FE62F11C06D3B605503D3E51B2DAF7A5D58BF33BFE4F6DEB9F2BA204",
+  "approval_source": "Codex task: Proceed after revised roadmap",
+  "spec_bundle_sha256": "133EFF92587078F211B7B0B301F381E9C6B38E9FCADF879F4A49E51BC20C9627",
   "execution_bundle_sha256": null,
-  "hash_implementation_sha256": "BC0E9FC54886D22E7C1A9529B207A9AACFD347BE245B1B2F4E623A3109D3A435",
+  "hash_implementation_sha256": "355A672293C178681192155CFF74F30437D542B4227D388510BF95FB813F67DB",
   "validator_implementation_sha256": null,
-  "reason": "The specification is approved. Project A execution remains blocked until Phase 4 implements and hashes generic validators, credential scrubbing, and diff-bound human approvals, followed by a separate explicit user approval."
+  "reason": "The revised Project A specification is approved. Execution remains blocked pending the separately pinned execution bundle and prerequisite verification."
 }
