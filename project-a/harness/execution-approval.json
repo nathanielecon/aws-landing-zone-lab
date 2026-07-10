@@ -2,18 +2,18 @@
   "schema_version": "project-a-execution-approval-v1",
   "status": "execution_approved",
   "execution_approved": true,
-  "spec_bundle_sha256": "133EFF92587078F211B7B0B301F381E9C6B38E9FCADF879F4A49E51BC20C9627",
-  "execution_bundle_sha256": "58D87FCBC862FB108BCB425CE319623464B1086561B68F471F4F091407ADB527",
+  "spec_bundle_sha256": "C4AF5F60EF138C17F2745D16092C38D459A5D396995F7330C386787A9A93DD0C",
+  "execution_bundle_sha256": "D603CA82A7AE3E3A8B8BD80BF1114122A535BD3BCD7CF694D89BD58A58CF6C03",
   "validator_implementation_sha256": "FD680EDD644FB1E61E4B09131E56A17018FBFC60CDF621F1BCCFACE91BBE8AF1",
   "execution_hash_implementation_sha256": "AC7906A0B796C6430251A64DD70ED6FBD291786E0F42DD14FFEA9FE75E3447ED",
   "proven_with": {
     "live_models": false,
     "fake_codex_only": true,
     "cloud_credentials": false,
-    "project_a_harness_assertions": 48
+    "project_a_harness_assertions": 51
   },
   "approved_by": "user",
   "approved_at": "2026-07-10",
   "approval_source": "Codex task: stay in the loop until running, then allow autonomous execution",
-  "reason": "The user authorized bounded launch-contract repairs after live verification exposed Ralphy option ordering and Windows TOML quoting defects."
+  "reason": "The user authorized bounded recovery after live verification exposed Codex 0.144 Windows sandbox selection, tool-version drift, and Ralphy terminal-failure continuation defects."
 }

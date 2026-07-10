@@ -6,5 +6,5 @@
   "validator_contract": "project-a-gates-v1",
   "ralphy": "4.7.2",
   "codex_regex": "^codex-cli 0\\.144\\.",
-  "execution_status": "not_executable_until_phase_4"
+  "execution_status": "approved_repo_only_execution"
 }
