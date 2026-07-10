@@ -3,17 +3,17 @@
   "status": "execution_approved",
   "execution_approved": true,
   "spec_bundle_sha256": "C4AF5F60EF138C17F2745D16092C38D459A5D396995F7330C386787A9A93DD0C",
-  "execution_bundle_sha256": "D603CA82A7AE3E3A8B8BD80BF1114122A535BD3BCD7CF694D89BD58A58CF6C03",
-  "validator_implementation_sha256": "FD680EDD644FB1E61E4B09131E56A17018FBFC60CDF621F1BCCFACE91BBE8AF1",
+  "execution_bundle_sha256": "F0D601E4E7B82F832D465DBCD6792BA7E4BB5087BDED87BE5F34814FC97643A1",
+  "validator_implementation_sha256": "E7D55B218092ED8887F2CE16E4C629954DFE32883DC868D7302D90A43E0827C7",
   "execution_hash_implementation_sha256": "AC7906A0B796C6430251A64DD70ED6FBD291786E0F42DD14FFEA9FE75E3447ED",
   "proven_with": {
     "live_models": false,
     "fake_codex_only": true,
     "cloud_credentials": false,
-    "project_a_harness_assertions": 51
+    "project_a_harness_assertions": 52
   },
   "approved_by": "user",
   "approved_at": "2026-07-10",
   "approval_source": "Codex task: stay in the loop until running, then allow autonomous execution",
-  "reason": "The user authorized bounded recovery after live verification exposed Codex 0.144 Windows sandbox selection, tool-version drift, and Ralphy terminal-failure continuation defects."
+  "reason": "The user authorized bounded recovery; live A-001 validation exposed and justified the empty-collection StrictMode validator repair without changing the preserved task diff."
 }
