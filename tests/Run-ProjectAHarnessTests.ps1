@@ -35,6 +35,7 @@ Assert-True ([string]$executionApproval.execution_hash_implementation_sha256 -eq
 
 $initial=@(New-RepoOnlyInitialCodexArguments -Arguments @('exec','--full-auto','--sandbox=danger-full-access','--json','[TASK:A-001]') -Model 'gpt-5.6-terra');$initialText=$initial -join ' '
 Assert-True ($initialText -match 'workspace-write' -and $initialText -notmatch 'danger-full-access|--full-auto') 'repo-only initial calls enforce workspace-write'
+Assert-True ((@(New-RepoOnlyInitialCodexArguments -Arguments @('exec','prompt text','--model','wrong','--sandbox','danger-full-access','--json') -Model 'gpt-5.6-terra') -join ' ') -notmatch 'wrong|danger-full-access') 'model and sandbox overrides are stripped even when Ralphy places them after the prompt'
 Assert-True ($initialText -match 'network_access=false' -and $initialText -match 'web_search="disabled"' -and $initialText -match 'features.apps=false') 'repo-only initial calls explicitly disable command network, web, and apps'
 Assert-True ($initialText -match 'shell_environment_policy.inherit="core"' -and $initialText -match 'CODEX_HOME') 'model shell receives a filtered core environment without Codex home'
 $resume=@(New-RepoOnlyResumeCodexArguments -Model 'gpt-5.6-sol' -ThreadId 'thread' -Prompt 'repair' -OutputLastMessage $null) -join ' '
