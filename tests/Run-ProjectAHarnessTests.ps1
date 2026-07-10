@@ -22,6 +22,7 @@ function Clear-AdapterEnvironment { Remove-Item Env:HARNESS_ROOT,Env:HARNESS_PRO
 
 $smoke=Read-HarnessProfile -Root $root -ProfileId smoke;$project=Read-HarnessProfile -Root $root -ProfileId project-a
 Assert-True ($smoke.gate_kind -eq 'smoke_exact_fixture' -and $project.gate_kind -eq 'project_a_registry') 'explicit profiles keep smoke and Project A gates separate'
+Assert-True ((Get-Content -Raw (Join-Path $root 'scripts/Invoke-ProjectAAdapter.ps1')) -match 'HARNESS_MANIFEST_PATH' -and (Get-Content -Raw (Join-Path $root 'scripts/Invoke-ProjectAAdapter.ps1')) -match 'No incomplete task exists') 'Project A adapter has a fail-closed manifest fallback when Ralphy omits the task marker'
 $traversalRejected=$false;try{[void](Resolve-PathUnderRoot -Root $root -RelativePath '../escape')}catch{$traversalRejected=$true};Assert-True $traversalRejected 'profile paths reject traversal'
 $executionApproval=Read-JsonFile -Path (Join-Path $root 'project-a/harness/execution-approval.json');$executionBundle=& (Join-Path $root 'scripts/Get-ProjectAExecutionHash.ps1') -Root $root|ConvertFrom-Json
 Assert-True ((
@@ -29,8 +30,8 @@ Assert-True ((
     ([bool]$executionApproval.execution_approved -and $executionApproval.status -eq 'execution_approved')
 )) 'execution approval state is internally consistent'
 Assert-True ([string]$executionApproval.execution_bundle_sha256 -eq [string]$executionBundle.sha256) 'execution approval pins every declared execution member'
-Assert-True ([string]$executionApproval.validator_implementation_sha256 -eq (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $root 'scripts/Invoke-ProjectAValidators.ps1')).Hash) 'execution approval pins validator implementation'
-Assert-True ([string]$executionApproval.execution_hash_implementation_sha256 -eq (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $root 'scripts/Get-ProjectAExecutionHash.ps1')).Hash) 'execution hash implementation is independently pinned'
+Assert-True ([string]$executionApproval.validator_implementation_sha256 -eq [string]$executionBundle.members.'scripts/Invoke-ProjectAValidators.ps1') 'execution approval pins validator implementation'
+Assert-True ([string]$executionApproval.execution_hash_implementation_sha256 -eq [string]$executionBundle.members.'scripts/Get-ProjectAExecutionHash.ps1') 'execution hash implementation is independently pinned'
 
 $initial=@(New-RepoOnlyInitialCodexArguments -Arguments @('exec','--full-auto','--sandbox=danger-full-access','--json','[TASK:A-001]') -Model 'gpt-5.6-terra');$initialText=$initial -join ' '
 Assert-True ($initialText -match 'workspace-write' -and $initialText -notmatch 'danger-full-access|--full-auto') 'repo-only initial calls enforce workspace-write'

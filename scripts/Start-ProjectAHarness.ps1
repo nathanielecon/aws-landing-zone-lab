@@ -14,8 +14,8 @@ $executionApproval = Read-JsonFile -Path (Resolve-PathUnderRoot -Root $root -Rel
 $computedSpec = & (Join-Path $PSScriptRoot 'Get-ProjectASpecHash.ps1') -Root $root | ConvertFrom-Json
 if ([string]$approval.spec_bundle_sha256 -ne [string]$computedSpec.sha256) { throw 'Approved Project A specification hash drifted.' }
 $execution = & (Join-Path $PSScriptRoot 'Get-ProjectAExecutionHash.ps1') -Root $root | ConvertFrom-Json
-if ([string]$executionApproval.execution_hash_implementation_sha256 -ne (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $PSScriptRoot 'Get-ProjectAExecutionHash.ps1')).Hash) { throw 'Execution hash implementation drifted.' }
-if ([string]$executionApproval.validator_implementation_sha256 -ne (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $PSScriptRoot 'Invoke-ProjectAValidators.ps1')).Hash) { throw 'Validator implementation drifted.' }
+if ([string]$executionApproval.execution_hash_implementation_sha256 -ne [string]$execution.members.'scripts/Get-ProjectAExecutionHash.ps1') { throw 'Execution hash implementation drifted.' }
+if ([string]$executionApproval.validator_implementation_sha256 -ne [string]$execution.members.'scripts/Invoke-ProjectAValidators.ps1') { throw 'Validator implementation drifted.' }
 if ([string]$executionApproval.execution_bundle_sha256 -ne [string]$execution.sha256) { throw 'Project A execution bundle hash drifted.' }
 if (-not $DryRun -and -not [bool]$executionApproval.execution_approved) { throw 'Project A execution is not approved. Phase 4 review must complete before any model call.' }
 
@@ -45,7 +45,7 @@ try {
     $localBase=if($env:LOCALAPPDATA){$env:LOCALAPPDATA}else{Join-Path $env:USERPROFILE 'AppData/Local'}
     $logRoot=Join-Path $localBase "RalphyHarness/cloud/$runId"; [IO.Directory]::CreateDirectory($logRoot)|Out-Null
     $env:HARNESS_ROOT=$root; $env:HARNESS_PROFILE_ID='project-a'; $env:HARNESS_REAL_CODEX=$realCodex; $env:HARNESS_RUN_ID=$runId; $env:HARNESS_LOG_DIR=$logRoot
-    $env:HARNESS_BUNDLE_HASH=[string]$execution.sha256; $env:HARNESS_VALIDATOR_HASH=(Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $PSScriptRoot 'Invoke-ProjectAValidators.ps1')).Hash
+    $env:HARNESS_BUNDLE_HASH=[string]$execution.sha256; $env:HARNESS_VALIDATOR_HASH=[string]$execution.members.'scripts/Invoke-ProjectAValidators.ps1'
     $env:HARNESS_MANIFEST_PATH=$manifestPath; $env:PATH="$adapterDir;$env:PATH"
     $arguments=@('--codex','--json',$manifestPath,'--model','gpt-5.6-terra','--max-retries','0','--no-commit','--no-tests','--no-lint','--no-browser')
     if($DryRun){$arguments+=@('--dry-run','--max-iterations','7')}
