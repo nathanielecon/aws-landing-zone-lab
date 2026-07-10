@@ -17,7 +17,17 @@ if ($env:HARNESS_CONTRACT_ONLY -eq '1') {
 }
 
 $stdinText = if ($env:HARNESS_STDIN_OVERRIDE) { [string]$env:HARNESS_STDIN_OVERRIDE } else { [Console]::In.ReadToEnd() }
-$taskId = Get-TaskIdFromArguments -Arguments (@($CodexArguments) + @($stdinText))
+$manifestPath = $env:HARNESS_MANIFEST_PATH
+try {
+    $taskId = Get-TaskIdFromArguments -Arguments (@($CodexArguments) + @($stdinText))
+} catch {
+    if (-not $manifestPath -or -not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { throw }
+    $manifest = Read-JsonFile -Path $manifestPath
+    $candidate = @($manifest.tasks | Where-Object { -not [bool]$_.completed } | Select-Object -First 1)[0]
+    if (-not $candidate) { throw 'No incomplete task exists in the approved Project A runtime manifest.' }
+    $taskId = Get-TaskIdFromArguments -Arguments @([string]$candidate.title)
+    if (-not $stdinText) { $stdinText = "$($candidate.title)`n$($candidate.description)" }
+}
 if ($taskId -notmatch '^A-00[1-7]$') { throw "Task does not belong to Project A: $taskId" }
 $policyPath = Join-Path $root "project-a/harness/tasks/$taskId.json"
 $policy = Read-JsonFile -Path $policyPath

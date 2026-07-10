@@ -4,6 +4,11 @@ param([string]$Root = (Join-Path $PSScriptRoot '..'))
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $Root = [System.IO.Path]::GetFullPath($Root)
+function Get-PortableTextHash([string]$Path) {
+    $text=[Text.UTF8Encoding]::new($false,$true).GetString([IO.File]::ReadAllBytes($Path))
+    $normalized=$text.Replace("`r`n","`n").Replace("`r","`n")
+    return [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($normalized)))
+}
 $spec = & (Join-Path $PSScriptRoot 'Get-ProjectASpecHash.ps1') -Root $Root | ConvertFrom-Json
 $members = @($spec.members.psobject.Properties.Name) + @(
     '.harness/bin/codex.cmd',
@@ -25,7 +30,7 @@ $members = @($spec.members.psobject.Properties.Name) + @(
 $builder=[Text.StringBuilder]::new();$hashes=[ordered]@{}
 foreach($relative in @($members|Sort-Object -Unique)){
     $path=Join-Path $Root $relative;if(-not(Test-Path -LiteralPath $path -PathType Leaf)){throw "Execution bundle member missing: $relative"}
-    $hash=(Get-FileHash -Algorithm SHA256 -LiteralPath $path).Hash;$hashes[$relative]=$hash;[void]$builder.Append("$relative`0$hash`n")
+    $hash=Get-PortableTextHash -Path $path;$hashes[$relative]=$hash;[void]$builder.Append("$relative`0$hash`n")
 }
 $aggregate=[Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($builder.ToString())))
 [pscustomobject]@{schema_version='project-a-execution-bundle-v1';spec_sha256=$spec.sha256;sha256=$aggregate;members=$hashes}|ConvertTo-Json -Depth 5

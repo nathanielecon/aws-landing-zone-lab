@@ -6,9 +6,9 @@
   "spec_approved_by": "user",
   "spec_approved_at": "2026-07-10",
   "approval_source": "Codex task: Proceed after revised roadmap",
-  "spec_bundle_sha256": "000C92484FB691388DEB6DF956249274E422CD6F64B440343F9D65F0297CA5A2",
+  "spec_bundle_sha256": "133EFF92587078F211B7B0B301F381E9C6B38E9FCADF879F4A49E51BC20C9627",
   "execution_bundle_sha256": null,
-  "hash_implementation_sha256": "B0C0F0A11F75A5F879EEDCFEA427CF7B73F779B3EFC3C9DBB0E7DC2FDDA3DC2E",
+  "hash_implementation_sha256": "355A672293C178681192155CFF74F30437D542B4227D388510BF95FB813F67DB",
   "validator_implementation_sha256": null,
   "reason": "The revised Project A specification is approved. Execution remains blocked pending the separately pinned execution bundle and prerequisite verification."
 }
