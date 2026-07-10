@@ -1,0 +1,16 @@
+{
+  "schema_version": "project-a-execution-approval-v1",
+  "status": "phase4_proven_execution_approval_required",
+  "execution_approved": false,
+  "spec_bundle_sha256": "B5D7B947FE62F11C06D3B605503D3E51B2DAF7A5D58BF33BFE4F6DEB9F2BA204",
+  "execution_bundle_sha256": "4C57263E511DAD14A280996AA9E06EEFE83E8C963F45D43E73856E32545FC191",
+  "validator_implementation_sha256": "2C7E5D10200FF56E3C67E5797D605A99C5EC540E7722C31C7BCD5E3E9D81D7C0",
+  "execution_hash_implementation_sha256": "8A3A0864A8C9E003AEB5CF219E397BCAA87FCE64F43F1583E5C54F69D3701E97",
+  "proven_with": {
+    "live_models": false,
+    "fake_codex_only": true,
+    "cloud_credentials": false,
+    "project_a_harness_assertions": 46
+  },
+  "reason": "Phase 4 contracts are proven with fake Codex. A separate explicit user approval is required before the first Project A Terra execution."
+}

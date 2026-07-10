@@ -5,6 +5,11 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'Harness.Common.psm1') -Force
 
+if ($env:HARNESS_PROFILE_ID -eq 'project-a') {
+    & (Join-Path $PSScriptRoot 'Invoke-ProjectAAdapter.ps1') @CodexArguments
+    exit $LASTEXITCODE
+}
+
 if ($PSVersionTable.PSVersion.Major -lt 7) { throw 'The Codex adapter requires PowerShell 7 or later.' }
 $root = $env:HARNESS_ROOT
 $realCodex = $env:HARNESS_REAL_CODEX
