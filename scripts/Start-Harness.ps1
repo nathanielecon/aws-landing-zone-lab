@@ -92,6 +92,7 @@ try {
     $logRoot = Join-Path $localBase "RalphyHarness/cloud/$runId"
     [System.IO.Directory]::CreateDirectory($logRoot) | Out-Null
     $env:HARNESS_ROOT = $root
+    $env:HARNESS_PROFILE_ID = 'smoke'
     $env:HARNESS_REAL_CODEX = $realCodex
     $env:HARNESS_RUN_ID = $runId
     $env:HARNESS_LOG_DIR = $logRoot

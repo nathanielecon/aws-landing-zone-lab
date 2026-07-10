@@ -8,10 +8,24 @@ for ($index = 0; $index -lt $Arguments.Count - 1; $index++) {
 }
 $stdinText = [Console]::In.ReadToEnd()
 $joined = ($Arguments -join "`n") + "`n" + $stdinText
-$taskId = if ($joined -match '\[TASK:(?<id>S-00[12])\]') { $Matches.id } elseif ($joined -match 'S-00[12]') { $Matches[0] } else { throw 'Fake Codex could not identify task.' }
+$taskId = if ($joined -match '\[TASK:(?<id>[SA]-00[1-7])\]') { $Matches.id } elseif ($joined -match '[SA]-00[1-7]') { $Matches[0] } else { throw 'Fake Codex could not identify task.' }
 $root = (Get-Location).Path
 $encoding = [System.Text.UTF8Encoding]::new($false)
-if ($taskId -eq 'S-001') {
+if ($env:HARNESS_FAKE_CALL_COUNT) { Add-Content -LiteralPath (Join-Path $root $env:HARNESS_FAKE_CALL_COUNT) -Value 'call' }
+if ($env:HARNESS_FAKE_OUTPUT) {
+    [Console]::Out.WriteLine("token=$($env:HARNESS_FAKE_OUTPUT)")
+    [Console]::Error.WriteLine("Authorization: Bearer $($env:HARNESS_FAKE_OUTPUT)")
+}
+if ($taskId.StartsWith('A-')) {
+    if ($env:HARNESS_CONTRACT_ONLY -ne '1' -or -not $env:HARNESS_FAKE_ALLOWED_PATH) { throw 'Project A fake execution requires an explicit contract fixture path.' }
+    $path = Join-Path $root $env:HARNESS_FAKE_ALLOWED_PATH
+    [System.IO.Directory]::CreateDirectory((Split-Path -Parent $path)) | Out-Null
+    [System.IO.File]::WriteAllText($path, "PROJECT_A_FAKE_OK`n", $encoding)
+    if ($env:HARNESS_FAKE_ENV_DUMP) {
+        $dump = Get-ChildItem Env: | Sort-Object Name | ForEach-Object { "$($_.Name)=$($_.Value)" }
+        [System.IO.File]::WriteAllLines((Join-Path $root $env:HARNESS_FAKE_ENV_DUMP), $dump, $encoding)
+    }
+} elseif ($taskId -eq 'S-001') {
     $path = Join-Path $root 'smoke/terra.txt'
     [System.IO.Directory]::CreateDirectory((Split-Path -Parent $path)) | Out-Null
     [System.IO.File]::WriteAllText($path, "TERRA_SMOKE_OK`n", $encoding)

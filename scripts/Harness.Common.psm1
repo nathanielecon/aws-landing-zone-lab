@@ -35,7 +35,7 @@ function Get-ChangedPaths {
         @('diff', '--cached', '--name-only', '--relative', 'HEAD'),
         @('ls-files', '--others', '--exclude-standard')
     )) {
-        $output = & git -C $Root @command
+        $output = & git -C $Root -c core.quotepath=false @command
         if ($LASTEXITCODE -ne 0) { throw "git $($command -join ' ') failed" }
         foreach ($path in $output) {
             if ($path) { $paths.Add(($path -replace '\\', '/')) }
@@ -71,7 +71,7 @@ function Get-DiffFingerprint {
     param([Parameter(Mandatory)][string]$Root)
     $builder = [System.Text.StringBuilder]::new()
     [void]$builder.AppendLine((& git -C $Root diff --binary HEAD | Out-String))
-    foreach ($path in (& git -C $Root ls-files --others --exclude-standard | Sort-Object)) {
+    foreach ($path in (& git -C $Root -c core.quotepath=false ls-files --others --exclude-standard | Sort-Object)) {
         $fullPath = Join-Path $Root $path
         [void]$builder.AppendLine("UNTRACKED:$path")
         if (Test-Path -LiteralPath $fullPath -PathType Leaf) {
@@ -87,6 +87,11 @@ function Protect-LogText {
     if ($null -eq $Text) { return '' }
     $safe = $Text -replace '(?i)Bearer\s+[A-Za-z0-9._~+/-]+=*', 'Bearer [REDACTED]'
     $safe = $safe -replace '(?i)(api[_-]?key|authorization|cookie|password|secret|token)(["''\s:=]+)([^,\s"''}]+)', '$1$2[REDACTED]'
+    $safe = $safe -replace '(?i)\b(AKIA|ASIA)[A-Z0-9]{16}\b', '[REDACTED_AWS_ACCESS_KEY]'
+    $safe = $safe -replace '(?i)\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b', '[REDACTED_JWT]'
+    $safe = $safe -replace '(?i)(https?://)([^/@:\s]+):([^/@\s]+)@', '$1[REDACTED]@'
+    $safe = $safe -replace '(?i)Set-Cookie:\s*[^\r\n]+', 'Set-Cookie: [REDACTED]'
+    $safe = $safe -replace '-----BEGIN [A-Z ]*PRIVATE KEY-----', '[REDACTED_PRIVATE_KEY]'
     return $safe
 }
 
@@ -208,6 +213,114 @@ function Sync-RalphyManifestWithTaskState {
     }
     Write-JsonNoBom -Path $ManifestPath -Value $manifest
     return $manifest
+}
+
+function Resolve-PathUnderRoot {
+    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string]$RelativePath)
+    if ([System.IO.Path]::IsPathRooted($RelativePath) -or $RelativePath -match '(^|[\\/])\.\.([\\/]|$)' -or $RelativePath -match ':') { throw "Unsafe repository-relative path: $RelativePath" }
+    $resolvedRoot = [System.IO.Path]::GetFullPath($Root).TrimEnd([char]'\', [char]'/')
+    $resolved = [System.IO.Path]::GetFullPath((Join-Path $resolvedRoot $RelativePath))
+    if (-not $resolved.StartsWith("$resolvedRoot$([System.IO.Path]::DirectorySeparatorChar)", [System.StringComparison]::OrdinalIgnoreCase)) { throw "Path escapes repository root: $RelativePath" }
+    return $resolved
+}
+
+function Read-HarnessProfile {
+    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][ValidateSet('smoke', 'project-a')][string]$ProfileId)
+    $path = Resolve-PathUnderRoot -Root $Root -RelativePath "harness/profiles/$ProfileId.json"
+    $profile = Read-JsonFile -Path $path
+    if ([string]$profile.profile_id -ne $ProfileId) { throw "Profile ID mismatch: $ProfileId" }
+    foreach ($field in @('manifest_template', 'policy_root', 'approval_file', 'tool_versions_file')) { [void](Resolve-PathUnderRoot -Root $Root -RelativePath ([string]$profile.$field)) }
+    if ($profile.PSObject.Properties.Name -contains 'execution_approval_file') { [void](Resolve-PathUnderRoot -Root $Root -RelativePath ([string]$profile.execution_approval_file)) }
+    return $profile
+}
+
+function Get-RepoOnlyCodexConfigArguments {
+    return @(
+        '--ignore-user-config', '--ignore-rules',
+        '-c', 'approval_policy="never"',
+        '-c', 'sandbox_workspace_write.network_access=false',
+        '-c', 'web_search="disabled"',
+        '-c', 'features.apps=false',
+        '-c', 'features.network_proxy=false',
+        '-c', 'allow_login_shell=false',
+        '-c', 'shell_environment_policy.inherit="core"',
+        '-c', 'shell_environment_policy.ignore_default_excludes=false',
+        '-c', 'shell_environment_policy.exclude=["AWS_*","AZURE_*","ARM_*","TF_VAR_*","TF_CLI_ARGS*","GOOGLE_*","GH_*","GITHUB_*","CODEX_HOME","OPENAI_*","ANTHROPIC_*","*TOKEN*","*SECRET*","*KEY*","*PASSWORD*","HTTP_PROXY","HTTPS_PROXY","ALL_PROXY"]'
+    )
+}
+
+function New-RepoOnlyInitialCodexArguments {
+    param([Parameter(Mandatory)][string[]]$Arguments, [Parameter(Mandatory)][string]$Model)
+    $safe = @(New-SafeInitialCodexArguments -Arguments $Arguments -Model $Model)
+    return @('exec') + @(Get-RepoOnlyCodexConfigArguments) + @($safe[1..($safe.Count - 1)])
+}
+
+function New-RepoOnlyResumeCodexArguments {
+    param([Parameter(Mandatory)][string]$Model, [Parameter(Mandatory)][string]$ThreadId, [Parameter(Mandatory)][string]$Prompt, [AllowNull()][string]$OutputLastMessage)
+    $result = @('exec', 'resume') + @(Get-RepoOnlyCodexConfigArguments) + @('-c', 'sandbox_mode="workspace-write"', '--model', $Model, '--json')
+    if ($OutputLastMessage) { $result += @('--output-last-message', $OutputLastMessage) }
+    return @($result) + @($ThreadId, $Prompt)
+}
+
+function Set-RepoOnlyProcessEnvironment {
+    param([Parameter(Mandatory)][System.Diagnostics.ProcessStartInfo]$StartInfo, [Parameter(Mandatory)][string]$IsolationRoot)
+    [System.IO.Directory]::CreateDirectory($IsolationRoot) | Out-Null
+    $patterns = @('AWS_*','AZURE_*','ARM_*','TF_VAR_*','TF_CLI_ARGS*','GOOGLE_*','GH_*','GITHUB_*','OPENAI_API_KEY','ANTHROPIC_API_KEY','*PASSWORD*','*SECRET*','*TOKEN*','HTTP_PROXY','HTTPS_PROXY','ALL_PROXY','NO_PROXY')
+    foreach ($name in @($StartInfo.Environment.Keys)) {
+        if (@($patterns | Where-Object { $name -like $_ }).Count -gt 0) { [void]$StartInfo.Environment.Remove($name) }
+    }
+    $emptyAwsConfig = Join-Path $IsolationRoot 'aws-config'
+    $emptyAwsCredentials = Join-Path $IsolationRoot 'aws-credentials'
+    Write-Utf8NoBom -Path $emptyAwsConfig -Text ''
+    Write-Utf8NoBom -Path $emptyAwsCredentials -Text ''
+    $azureConfig = Join-Path $IsolationRoot 'azure'
+    [System.IO.Directory]::CreateDirectory($azureConfig) | Out-Null
+    $profile = Join-Path $IsolationRoot 'profile'
+    $localAppData = Join-Path $profile 'AppData/Local'
+    [System.IO.Directory]::CreateDirectory($localAppData) | Out-Null
+    $StartInfo.Environment['USERPROFILE'] = $profile
+    $StartInfo.Environment['HOME'] = $profile
+    $StartInfo.Environment['LOCALAPPDATA'] = $localAppData
+    $StartInfo.Environment['APPDATA'] = Join-Path $profile 'AppData/Roaming'
+    $StartInfo.Environment['AWS_CONFIG_FILE'] = $emptyAwsConfig
+    $StartInfo.Environment['AWS_SHARED_CREDENTIALS_FILE'] = $emptyAwsCredentials
+    $StartInfo.Environment['AWS_EC2_METADATA_DISABLED'] = 'true'
+    $StartInfo.Environment['AZURE_CONFIG_DIR'] = $azureConfig
+    $StartInfo.Environment['TF_DATA_DIR'] = Join-Path $IsolationRoot 'terraform-data'
+}
+
+function Get-CanonicalDiffRecord {
+    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string[]]$AllowedPaths, [string[]]$AdapterOwnedPaths = @())
+    $paths = @(Assert-OnlyAllowedChanges -Root $Root -AllowedPaths $AllowedPaths)
+    $adapterChanges = @()
+    if (@($AdapterOwnedPaths).Count -gt 0) { $adapterChanges = @($paths | Where-Object { Test-AllowedPath -Path $_ -AllowedPaths $AdapterOwnedPaths }) }
+    if (@($adapterChanges).Count -gt 0) { throw "Agent changed adapter-owned path: $($adapterChanges -join ', ')" }
+    $caseGroups = @($paths | Group-Object { $_.ToLowerInvariant() } | Where-Object Count -gt 1)
+    if (@($caseGroups).Count -gt 0) { throw 'Case-colliding paths are not allowed.' }
+    $entries = foreach ($relative in $paths) {
+        if ($relative -match '(^|/)(\.git|\.harness)(/|$)' -or $relative -match ':' -or $relative -match '(^|/)\.\.(/|$)') { throw "Unsafe changed path: $relative" }
+        $full = Resolve-PathUnderRoot -Root $Root -RelativePath $relative
+        $raw=@(& git -C $Root diff --raw --no-abbrev HEAD -- $relative)
+        $rawLine=if($raw.Count){[string]$raw[-1]}else{''}
+        $oldMode='000000';$newMode=if(Test-Path -LiteralPath $full){'100644'}else{'000000'};$gitStatus=if(Test-Path -LiteralPath $full){'untracked'}else{'deleted'}
+        if($rawLine -match '^:(?<old>[0-9]{6})\s+(?<new>[0-9]{6})\s+[0-9a-f]+\s+[0-9a-f]+\s+(?<status>[A-Z])'){$oldMode=$Matches.old;$newMode=$Matches.new;$gitStatus=$Matches.status}
+        if($newMode -in @('120000','160000') -or $oldMode -in @('120000','160000')){throw "Symlink/submodule modes are not allowed: $relative"}
+        if (Test-Path -LiteralPath $full) {
+            $item = Get-Item -LiteralPath $full -Force
+            if ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) { throw "Reparse points are not allowed: $relative" }
+            if ($item.PSIsContainer) { throw "Changed directories are not valid task artifacts: $relative" }
+            [ordered]@{ path = $relative; status = 'present'; git_status=$gitStatus; old_mode=$oldMode; new_mode=$newMode; length = $item.Length; content_sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $full).Hash }
+        } else { [ordered]@{ path = $relative; status = 'deleted'; git_status=$gitStatus; old_mode=$oldMode; new_mode=$newMode; length = 0; content_sha256 = 'DELETED' } }
+    }
+    $json = @($entries) | ConvertTo-Json -Compress -Depth 5
+    $digest = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData([System.Text.Encoding]::UTF8.GetBytes($json)))
+    return [pscustomobject]@{ sha256 = $digest; entries = @($entries); json = $json }
+}
+
+function Get-HmacSha256 {
+    param([Parameter(Mandatory)][byte[]]$Key, [Parameter(Mandatory)][string]$Text)
+    $hmac = [System.Security.Cryptography.HMACSHA256]::new($Key)
+    try { return [Convert]::ToHexString($hmac.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($Text))) } finally { $hmac.Dispose() }
 }
 
 Export-ModuleMember -Function *
