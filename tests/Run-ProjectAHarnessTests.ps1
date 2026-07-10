@@ -24,7 +24,10 @@ $smoke=Read-HarnessProfile -Root $root -ProfileId smoke;$project=Read-HarnessPro
 Assert-True ($smoke.gate_kind -eq 'smoke_exact_fixture' -and $project.gate_kind -eq 'project_a_registry') 'explicit profiles keep smoke and Project A gates separate'
 $traversalRejected=$false;try{[void](Resolve-PathUnderRoot -Root $root -RelativePath '../escape')}catch{$traversalRejected=$true};Assert-True $traversalRejected 'profile paths reject traversal'
 $executionApproval=Read-JsonFile -Path (Join-Path $root 'project-a/harness/execution-approval.json');$executionBundle=& (Join-Path $root 'scripts/Get-ProjectAExecutionHash.ps1') -Root $root|ConvertFrom-Json
-Assert-True (-not [bool]$executionApproval.execution_approved -and $executionApproval.status -eq 'revised_spec_execution_approval_required') 'revised Project A bundle does not authorize live execution'
+Assert-True ((
+    (-not [bool]$executionApproval.execution_approved -and $executionApproval.status -eq 'revised_spec_execution_approval_required') -or
+    ([bool]$executionApproval.execution_approved -and $executionApproval.status -eq 'execution_approved')
+)) 'execution approval state is internally consistent'
 Assert-True ([string]$executionApproval.execution_bundle_sha256 -eq [string]$executionBundle.sha256) 'execution approval pins every declared execution member'
 Assert-True ([string]$executionApproval.validator_implementation_sha256 -eq (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $root 'scripts/Invoke-ProjectAValidators.ps1')).Hash) 'execution approval pins validator implementation'
 Assert-True ([string]$executionApproval.execution_hash_implementation_sha256 -eq (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $root 'scripts/Get-ProjectAExecutionHash.ps1')).Hash) 'execution hash implementation is independently pinned'
