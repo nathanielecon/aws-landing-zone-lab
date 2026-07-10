@@ -234,6 +234,7 @@ function Get-RepoOnlyCodexConfigArguments {
     return @(
         '--ignore-user-config', '--ignore-rules',
         '-c', 'approval_policy="never"',
+        '-c', 'windows.sandbox="elevated"',
         '-c', 'sandbox_workspace_write.network_access=false',
         '-c', 'web_search="disabled"',
         '-c', 'features.apps=false',
