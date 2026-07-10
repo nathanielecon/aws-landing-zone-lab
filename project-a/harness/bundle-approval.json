@@ -2,7 +2,7 @@
   "plan_id": "project-a-repo-baseline-v1",
   "status": "candidate_not_approved",
   "approved": false,
-  "spec_bundle_sha256": "A117DCFF35C3CB0EAA5C7192D7C5E7A7068431B8C699CA2E44354B13C6F2F483",
+  "spec_bundle_sha256": "617F3BB674678A779097A6A2C336301F2D98F26BAD6B3E47B3D519AAB9C3C8F3",
   "execution_bundle_sha256": null,
   "hash_implementation_sha256": "BC0E9FC54886D22E7C1A9529B207A9AACFD347BE245B1B2F4E623A3109D3A435",
   "validator_implementation_sha256": null,
