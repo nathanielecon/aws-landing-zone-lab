@@ -115,8 +115,25 @@ function New-SafeInitialCodexArguments {
     $clean = [System.Collections.Generic.List[string]]::new()
     for ($index = 0; $index -lt $Arguments.Count; $index++) {
         $argument = $Arguments[$index]
+        if ($index -gt 0 -and ($argument -eq '--' -or -not $argument.StartsWith('-'))) {
+            for (; $index -lt $Arguments.Count; $index++) { $clean.Add($Arguments[$index]) }
+            break
+        }
         if ($argument -in @('--full-auto', '--dangerously-bypass-approvals-and-sandbox', '--dangerously-bypass-hook-trust')) { continue }
-        if ($argument -in @('--model', '-m', '--sandbox', '-s')) { $index++; continue }
+        if ($argument -match '^(--full-auto|--dangerously-bypass-approvals-and-sandbox|--dangerously-bypass-hook-trust)=') { continue }
+        if ($argument -in @('--model', '-m', '--sandbox', '-s')) {
+            if ($index + 1 -ge $Arguments.Count) { throw "Codex option is missing its value: $argument" }
+            $index++
+            continue
+        }
+        if ($argument -match '^(--model|--sandbox)=') { continue }
+        if ($argument -match '^-(m|s)=?.+') { continue }
+        if ($argument -in @('--add-dir', '-C', '--cd', '-c', '--config', '-p', '--profile')) {
+            throw "Ralphy supplied a disallowed Codex authority option: $argument"
+        }
+        if ($argument -match '^(--add-dir|--cd|--config|--profile)=' -or $argument -match '^-(C|c|p)=?.+') {
+            throw "Ralphy supplied a disallowed Codex authority option: $argument"
+        }
         $clean.Add($argument)
     }
     if ($clean.Count -eq 0 -or $clean[0] -ne 'exec') { throw 'Ralphy did not invoke the expected codex exec contract.' }
@@ -127,6 +144,20 @@ function New-SafeInitialCodexArguments {
     $result.Add('--model')
     $result.Add($Model)
     for ($index = 1; $index -lt $clean.Count; $index++) { $result.Add($clean[$index]) }
+    return $result.ToArray()
+}
+
+function New-SafeResumeCodexArguments {
+    param(
+        [Parameter(Mandatory)][string]$Model,
+        [Parameter(Mandatory)][string]$ThreadId,
+        [Parameter(Mandatory)][string]$Prompt,
+        [AllowNull()][string]$OutputLastMessage
+    )
+    $result = [System.Collections.Generic.List[string]]::new()
+    foreach ($argument in @('exec', 'resume', '-c', 'sandbox_mode="workspace-write"', '--model', $Model, '--json')) { $result.Add($argument) }
+    if ($OutputLastMessage) { foreach ($argument in @('--output-last-message', $OutputLastMessage)) { $result.Add($argument) } }
+    foreach ($argument in @($ThreadId, $Prompt)) { $result.Add($argument) }
     return $result.ToArray()
 }
 

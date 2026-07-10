@@ -5,6 +5,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 Import-Module (Join-Path $root 'scripts/Harness.Common.psm1') -Force
+$ralphyCommand = (Get-Command ralphy.cmd -ErrorAction Stop | Select-Object -First 1).Source
 $passed = 0
 
 function Assert-True([bool]$Condition, [string]$Message) {
@@ -30,8 +31,24 @@ Assert-True ($safe -contains 'workspace-write') 'workspace-write is enforced'
 Assert-True (-not ($safe -contains '--full-auto')) 'full-auto is stripped'
 Assert-True (-not ($safe -contains '--dangerously-bypass-approvals-and-sandbox')) 'dangerous bypass is stripped'
 Assert-True (($safe -join ' ') -match 'gpt-5.6-terra') 'model override is replaced'
+$equalsSafe = @(New-SafeInitialCodexArguments -Arguments @('exec', '--sandbox=danger-full-access', '--model=wrong', '-s=danger-full-access', '-mwrong', '--json', '[TASK:S-001]') -Model 'gpt-5.6-terra')
+Assert-True (-not (($equalsSafe -join ' ') -match 'danger-full-access|model=wrong')) 'equals-form authority and model overrides are stripped'
+$authorityRejected = $false
+try { [void](New-SafeInitialCodexArguments -Arguments @('exec', '--add-dir=C:\', '[TASK:S-001]') -Model 'gpt-5.6-terra') } catch { $authorityRejected = $true }
+Assert-True $authorityRejected 'additional writable directories are rejected'
+$configRejected = $false
+try { [void](New-SafeInitialCodexArguments -Arguments @('exec', '-c', 'sandbox_mode=danger-full-access', '[TASK:S-001]') -Model 'gpt-5.6-terra') } catch { $configRejected = $true }
+Assert-True $configRejected 'configuration overrides are rejected'
+$resumeSafe = @(New-SafeResumeCodexArguments -Model 'gpt-5.6-terra' -ThreadId 'thread-123' -Prompt 'repair' -OutputLastMessage 'last message.txt')
+Assert-True (($resumeSafe -join ' ') -match 'sandbox_mode="workspace-write"' -and -not (($resumeSafe -join ' ') -match 'danger-full-access')) 'resume and repair passes explicitly enforce workspace-write'
 $redacted = Protect-LogText -Text 'Authorization: Bearer abc.def token=secretvalue password: hunter2'
 Assert-True ($redacted -notmatch 'abc\.def|secretvalue|hunter2') 'credential-shaped text is redacted'
+$bridgeArguments = @('-NoLogo', '-NoProfile', '-Command', '[Console]::Out.WriteLine("token=stdoutsecret"); [Console]::Error.WriteLine("Authorization: Bearer stderrsecret"); exit 7')
+$bridgeBase64 = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(($bridgeArguments | ConvertTo-Json -Compress)))
+$bridgeOutput = & (Join-Path $root 'scripts/Invoke-NativeCodex.ps1') -Executable (Get-Command pwsh).Source -ArgumentsBase64 $bridgeBase64 -CommonModulePath (Join-Path $root 'scripts/Harness.Common.psm1') 2>&1 | Out-String
+$bridgeExit = $LASTEXITCODE
+Assert-True ($bridgeOutput -notmatch 'stdoutsecret|stderrsecret') 'native process output is redacted before the adapter can persist or replay it'
+Assert-True ($bridgeExit -eq 7) 'sanitizing process bridge preserves native exit codes'
 $threshold = { param($Attempts = 1, $Consecutive = 1, $Same = 1, $NoDiff = $false, $Elapsed = 1, $ErrorClass = 'TEST_FAILURE') Test-TerraEscalation -ForceApplied $false -Attempts $Attempts -AttemptLimit 3 -ConsecutiveFailures $Consecutive -SameErrorCount $Same -NoDiff $NoDiff -ElapsedMinutes $Elapsed -ElapsedLimitMinutes 25 -ErrorClass $ErrorClass }
 Assert-True (-not (& $threshold)) 'one ordinary failure remains with Terra'
 Assert-True (& $threshold -Attempts 3) 'attempt limit escalates'
@@ -72,7 +89,7 @@ try {
     $env:PATH = "$env:SystemRoot\System32;$fakeBin;$oldPath"
     Push-Location $retryRepo
     try {
-        & 'C:\Users\natha\AppData\Roaming\npm\ralphy.cmd' --codex --max-retries 0 --no-commit --no-tests --no-lint --no-browser '[TASK:T-001] fake failure' 2>&1 | Out-Null
+        & $ralphyCommand --codex --max-retries 0 --no-commit --no-tests --no-lint --no-browser '[TASK:T-001] fake failure' 2>&1 | Out-Null
     } finally { Pop-Location; $env:PATH = $oldPath }
     $calls = if (Test-Path -LiteralPath $countPath) { @(Get-Content -LiteralPath $countPath).Count } else { 0 }
     Assert-True ($calls -eq 1) "Ralphy max-retries=0 invokes Codex once (actual: $calls)"
@@ -98,7 +115,7 @@ try {
     $env:PATH = "$env:SystemRoot\System32;$(Join-Path $root '.harness/bin');$oldPath"
     Push-Location $stdinRepo
     try {
-        $ralphyOutput = & 'C:\Users\natha\AppData\Roaming\npm\ralphy.cmd' --codex --json $manifestPath --model gpt-5.6-terra --max-retries 0 --no-commit --no-tests --no-lint --no-browser 2>&1 | Out-String
+        $ralphyOutput = & $ralphyCommand --codex --json $manifestPath --model gpt-5.6-terra --max-retries 0 --no-commit --no-tests --no-lint --no-browser 2>&1 | Out-String
         $ralphyCode = $LASTEXITCODE
     } finally { Pop-Location; $env:PATH = $oldPath }
     Assert-True ($ralphyCode -eq 0) "real Ralphy selects and reinjects the approved manifest task; output: $ralphyOutput"
@@ -137,6 +154,43 @@ try {
 } finally {
     Remove-Item Env:HARNESS_ROOT,Env:HARNESS_REAL_CODEX,Env:HARNESS_RUN_ID,Env:HARNESS_LOG_DIR,Env:HARNESS_PLAN_HASH,Env:HARNESS_STDIN_OVERRIDE -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $adapterRepo -Recurse -Force
+}
+
+# Reconcile an allowlisted gated commit created immediately before an adapter interruption.
+$reconcileRepo = New-TestRepo -Name 'post-commit reconciliation'
+try {
+    [System.IO.Directory]::CreateDirectory((Join-Path $reconcileRepo 'harness/tasks')) | Out-Null
+    [System.IO.Directory]::CreateDirectory((Join-Path $reconcileRepo '.harness/runtime/state')) | Out-Null
+    Copy-Item -LiteralPath (Join-Path $root 'harness/tasks/S-001.json') -Destination (Join-Path $reconcileRepo 'harness/tasks/S-001.json')
+    & git -C $reconcileRepo add harness/tasks/S-001.json
+    & git -C $reconcileRepo commit -m 'add reconciliation policy' | Out-Null
+    $startingCommit = (& git -C $reconcileRepo rev-parse HEAD).Trim()
+    [System.IO.Directory]::CreateDirectory((Join-Path $reconcileRepo 'smoke')) | Out-Null
+    [System.IO.Directory]::CreateDirectory((Join-Path $reconcileRepo 'evidence')) | Out-Null
+    [System.IO.File]::WriteAllText((Join-Path $reconcileRepo 'smoke/terra.txt'), "TERRA_SMOKE_OK`n", [System.Text.UTF8Encoding]::new($false))
+    [System.IO.File]::WriteAllText((Join-Path $reconcileRepo 'evidence/S-001.json'), "{}`n", [System.Text.UTF8Encoding]::new($false))
+    & git -C $reconcileRepo add smoke/terra.txt evidence/S-001.json
+    & git -C $reconcileRepo commit -m 'test(S-001): complete Terra smoke fixture' | Out-Null
+    Write-JsonNoBom -Path (Join-Path $reconcileRepo '.harness/runtime/state/S-001.json') -Value ([ordered]@{
+        plan_hash = ('C' * 64); task_id = 'S-001'; branch = 'codex/ralphy-harness'; starting_commit = $startingCommit
+        started_at = [DateTimeOffset]::UtcNow.ToString('o'); status = 'running'; phase = 'terra'; terra_attempts = 1; sol_attempts = 0
+        force_applied = $false; commit_sha = $null; completed_at = $null
+    })
+    $env:HARNESS_ROOT = $reconcileRepo
+    $env:HARNESS_REAL_CODEX = Join-Path $root 'tests/fixtures/fake-codex.cmd'
+    $env:HARNESS_RUN_ID = 'reconcile-contract'
+    $env:HARNESS_LOG_DIR = Join-Path $reconcileRepo '.logs'
+    $env:HARNESS_PLAN_HASH = ('C' * 64)
+    $env:HARNESS_STDIN_OVERRIDE = '[TASK:S-001] reconcile only'
+    & (Join-Path $root 'scripts/Invoke-CodexAdapter.ps1') exec --json '[TASK:S-001]' | Out-Null
+    Assert-True ($LASTEXITCODE -eq 0) 'post-commit interruption reconciles without another model pass'
+    $reconciledState = Read-JsonFile -Path (Join-Path $reconcileRepo '.harness/runtime/state/S-001.json')
+    Assert-True ($reconciledState.status -eq 'completed' -and $reconciledState.commit_sha -eq (& git -C $reconcileRepo rev-parse HEAD).Trim()) 'reconciled state records the existing gated commit'
+    $reconciledSummary = Read-JsonFile -Path (Join-Path $reconcileRepo '.logs/S-001/summary.json')
+    Assert-True ([bool]$reconciledSummary.reconciled_after_commit) 'reconciliation is recorded in sanitized summary evidence'
+} finally {
+    Remove-Item Env:HARNESS_ROOT,Env:HARNESS_REAL_CODEX,Env:HARNESS_RUN_ID,Env:HARNESS_LOG_DIR,Env:HARNESS_PLAN_HASH,Env:HARNESS_STDIN_OVERRIDE -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath $reconcileRepo -Recurse -Force
 }
 
 Write-Host "Contract tests passed: $passed assertions"

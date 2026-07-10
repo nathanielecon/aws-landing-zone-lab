@@ -1,0 +1,50 @@
+name: Harness contracts
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CI: '1'
+  HARNESS_CONTRACT_ONLY: '1'
+  CODEX_HOME: ${{ runner.temp }}\codex-home
+
+concurrency:
+  group: harness-contracts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-contracts:
+    name: Windows contract suite
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+
+      - name: Install pinned Ralphy
+        shell: pwsh
+        run: npm install --global ralphy-cli@4.7.2 --ignore-scripts --no-audit --no-fund
+
+      - name: Configure deterministic test Git
+        shell: pwsh
+        run: |
+          git config --global user.name 'Harness CI'
+          git config --global user.email 'harness-ci@invalid.example'
+          git config --global core.autocrlf false
+
+      - name: Run no-token harness contracts
+        shell: pwsh
+        run: pwsh -NoLogo -NoProfile -NonInteractive -File ./tests/Run-ContractTests.ps1
