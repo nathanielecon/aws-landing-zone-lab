@@ -1,7 +1,7 @@
 {
   "schema_version": "project-a-execution-approval-v1",
-  "status": "revised_spec_execution_approval_required",
-  "execution_approved": false,
+  "status": "execution_approved",
+  "execution_approved": true,
   "spec_bundle_sha256": "000C92484FB691388DEB6DF956249274E422CD6F64B440343F9D65F0297CA5A2",
   "execution_bundle_sha256": "A6C00B5E2E0777DDE82011BBC6884801B7D8F60B14400E4EB55D8C21AEAAEBB7",
   "validator_implementation_sha256": "FD680EDD644FB1E61E4B09131E56A17018FBFC60CDF621F1BCCFACE91BBE8AF1",
@@ -12,5 +12,8 @@
     "cloud_credentials": false,
     "project_a_harness_assertions": 46
   },
-  "reason": "Project A scope and validators were revised from Project Additions.txt. The new exact spec and execution bundles require explicit approval before the first Terra execution."
+  "approved_by": "user",
+  "approved_at": "2026-07-10",
+  "approval_source": "Codex task: I approve and requested desktop launch",
+  "reason": "The user approved the exact execution bundle and requested that the live run begin only by double-clicking the Desktop launcher."
 }
