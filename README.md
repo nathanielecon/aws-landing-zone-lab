@@ -21,3 +21,11 @@ are stored under ignored `.harness/runtime`.
 
 The smoke baseline currently pins Codex CLI 0.144.x because GPT-5.6 Sol and
 Terra reject the older 0.133.x CLI.
+
+## Project A preparation
+
+The proven smoke harness is tagged `ralphy-harness-v0.1.0`. The Phase 3
+[Project A candidate plan](project-a/PROJECT_A_PLAN.md) defines seven sequential,
+repo-only tasks and their human gates. It is intentionally marked non-executable
+until Phase 4 generalizes the smoke adapter, scrubs cloud credentials, implements
+the allowlisted validators, and binds explicit approval receipts to exact diffs.

@@ -48,4 +48,6 @@ jobs:
         shell: pwsh
         env:
           CODEX_HOME: ${{ runner.temp }}\codex-home
-        run: pwsh -NoLogo -NoProfile -NonInteractive -File ./tests/Run-ContractTests.ps1
+        run: |
+          pwsh -NoLogo -NoProfile -NonInteractive -File ./tests/Run-ContractTests.ps1
+          pwsh -NoLogo -NoProfile -NonInteractive -File ./tests/Run-ProjectASpecTests.ps1
