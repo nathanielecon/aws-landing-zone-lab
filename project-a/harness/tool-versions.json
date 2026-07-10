@@ -1,0 +1,10 @@
+{
+  "terraform": "1.15.5",
+  "terraform_required_version": "~> 1.15.5",
+  "aws_provider": "6.36.0",
+  "aws_provider_constraint": "~> 6.36.0",
+  "validator_contract": "project-a-gates-v1",
+  "ralphy": "4.7.2",
+  "codex_regex": "^codex-cli 0\\.144\\.",
+  "execution_status": "not_executable_until_phase_4"
+}
