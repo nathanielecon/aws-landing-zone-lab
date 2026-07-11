@@ -3,17 +3,17 @@
   "status": "execution_approved",
   "execution_approved": true,
   "spec_bundle_sha256": "C4AF5F60EF138C17F2745D16092C38D459A5D396995F7330C386787A9A93DD0C",
-  "execution_bundle_sha256": "CEAEAA1A16BD38AEBD88DC9C33D9A0D9D8626F8F5234577BC29325E2B9151569",
-  "validator_implementation_sha256": "768282D5C9B321B5F1AC485B7C8CA0E6C9C666A25F1D6EB6F90D81197FDE5C70",
+  "execution_bundle_sha256": "60FC8AC307F1F2B5AC5C4C20B4E9FA0155597160CE7BDAD764BCFB737F15E982",
+  "validator_implementation_sha256": "19A807388C328EB6CBCD0B4F38E5CA23557E326C1F6E51B4B7BCC7C96483CBEC",
   "execution_hash_implementation_sha256": "AC7906A0B796C6430251A64DD70ED6FBD291786E0F42DD14FFEA9FE75E3447ED",
   "proven_with": {
     "live_models": false,
     "fake_codex_only": true,
     "cloud_credentials": false,
-    "project_a_harness_assertions": 55
+    "project_a_harness_assertions": 56
   },
   "approved_by": "user",
   "approved_at": "2026-07-10",
   "approval_source": "Codex task: stay in the loop until running, then allow autonomous execution",
-  "reason": "The user requested the full loop remain active; live A-003 validation justified running out-of-module Terraform tests from a validator-owned local scratch copy."
+  "reason": "The user requested the full loop remain active; live A-003 validation justified initializing providers and running tests within one validator-owned scratch copy."
 }

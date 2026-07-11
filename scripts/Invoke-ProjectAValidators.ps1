@@ -67,15 +67,17 @@ function Invoke-TerraformBehavioralTests([string]$Id,[string]$ModuleRelative,[st
     $assertions=@($testFiles|Where-Object{(Get-Content -Raw -LiteralPath $_.FullName)-match '(?m)^\s*assert\s*\{'})
     if($assertions.Count -eq 0){throw "VALIDATOR_FAILED: $Id - Terraform tests contain no assert blocks"}
     $moduleRoot=$module.TrimEnd([IO.Path]::DirectorySeparatorChar,[IO.Path]::AltDirectorySeparatorChar)+[IO.Path]::DirectorySeparatorChar
+    $scratch=Join-Path $IsolationRoot "$Id-scratch";$workingModule=Join-Path $scratch 'module'
+    Remove-Item -LiteralPath $scratch -Recurse -Force -ErrorAction SilentlyContinue;[IO.Directory]::CreateDirectory($workingModule)|Out-Null
+    Copy-Item -Path (Join-Path $module '*') -Destination $workingModule -Recurse -Force
     if($tests.StartsWith($moduleRoot,[StringComparison]::OrdinalIgnoreCase)){
-        $workingModule=$module;$testDirectory=[IO.Path]::GetRelativePath($module,$tests).Replace('\','/')
+        $testDirectory=[IO.Path]::GetRelativePath($module,$tests).Replace('\','/')
     }else{
-        $scratch=Join-Path $IsolationRoot "$Id-scratch";$workingModule=Join-Path $scratch 'module';$testTarget=Join-Path $workingModule '.harness-tests'
-        Remove-Item -LiteralPath $scratch -Recurse -Force -ErrorAction SilentlyContinue;[IO.Directory]::CreateDirectory($workingModule)|Out-Null
-        Copy-Item -Path (Join-Path $module '*') -Destination $workingModule -Recurse -Force
+        $testTarget=Join-Path $workingModule '.harness-tests'
         Copy-Item -LiteralPath $tests -Destination $testTarget -Recurse -Force
         $testDirectory='.harness-tests'
     }
+    Invoke-ExternalCheck "$id-init" $terraform @('init','-backend=false','-input=false') $workingModule $TimeoutSeconds "$Id-environment"
     Invoke-ExternalCheck $id $terraform @('test','-no-color',"-test-directory=$testDirectory") $workingModule $TimeoutSeconds "$Id-environment"
 }
 
