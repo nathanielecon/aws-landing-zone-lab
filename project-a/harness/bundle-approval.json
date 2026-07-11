@@ -6,7 +6,7 @@
   "spec_approved_by": "user",
   "spec_approved_at": "2026-07-10",
   "approval_source": "Codex task: formally remove H2-H5 and allow autonomous completion",
-  "spec_bundle_sha256": "46199AEF63FBD9913C9C0A428C413AE16031F53F2374FC76A4D540AD2FE52FCF",
+  "spec_bundle_sha256": "1B883C149EC63391E48E2E943AA554A8CB396E9E4F4FF45CA552CA7CF8691FE6",
   "execution_bundle_sha256": null,
   "hash_implementation_sha256": "355A672293C178681192155CFF74F30437D542B4227D388510BF95FB813F67DB",
   "validator_implementation_sha256": null,
