@@ -49,10 +49,12 @@ choco install terraform --version=1.15.5 -y --no-progress
 
 ## Pause and resume
 
-A risky task exits with code 75 after deterministic validation. This is an
+A-001 and A-002 exit with code 75 after deterministic validation. This is an
 approval pause, not a model failure, and does not increment retry counters.
 Approval followed by `-Resume` revalidates the unchanged diff and commits
-without another model call. An interruption can start a new Ralphy OS process,
+without another model call. Under the approved autonomous revision, A-003
+through A-007 commit after deterministic gates without human receipts. Any
+failure remains terminal. An interruption can start a new Ralphy OS process,
 but state preserves one sequential task stream with no concurrent task owner.
 
 Verbose sanitized logs remain outside the repository under

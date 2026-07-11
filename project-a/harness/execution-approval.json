@@ -2,8 +2,8 @@
   "schema_version": "project-a-execution-approval-v1",
   "status": "execution_approved",
   "execution_approved": true,
-  "spec_bundle_sha256": "C4AF5F60EF138C17F2745D16092C38D459A5D396995F7330C386787A9A93DD0C",
-  "execution_bundle_sha256": "60FC8AC307F1F2B5AC5C4C20B4E9FA0155597160CE7BDAD764BCFB737F15E982",
+  "spec_bundle_sha256": "46199AEF63FBD9913C9C0A428C413AE16031F53F2374FC76A4D540AD2FE52FCF",
+  "execution_bundle_sha256": "38B09AE350763EFA978AE4A9B2A886573BF2183A09A4A481A61BC8C2D460A6A7",
   "validator_implementation_sha256": "19A807388C328EB6CBCD0B4F38E5CA23557E326C1F6E51B4B7BCC7C96483CBEC",
   "execution_hash_implementation_sha256": "AC7906A0B796C6430251A64DD70ED6FBD291786E0F42DD14FFEA9FE75E3447ED",
   "proven_with": {
@@ -14,6 +14,6 @@
   },
   "approved_by": "user",
   "approved_at": "2026-07-10",
-  "approval_source": "Codex task: stay in the loop until running, then allow autonomous execution",
-  "reason": "The user requested the full loop remain active; live A-003 validation justified initializing providers and running tests within one validator-owned scratch copy."
+  "approval_source": "Codex task: formally remove H2-H5 and allow autonomous completion",
+  "reason": "The user approved this exact autonomous repo-only execution revision. Deterministic gates, workspace-write, network denial, allowlists, owned commits, terminal stopping, and monitoring remain mandatory."
 }
