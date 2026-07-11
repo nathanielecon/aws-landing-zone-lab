@@ -5,10 +5,10 @@
   "execution_approved": false,
   "spec_approved_by": "user",
   "spec_approved_at": "2026-07-10",
-  "approval_source": "Codex task: Proceed after revised roadmap",
-  "spec_bundle_sha256": "C4AF5F60EF138C17F2745D16092C38D459A5D396995F7330C386787A9A93DD0C",
+  "approval_source": "Codex task: formally remove H2-H5 and allow autonomous completion",
+  "spec_bundle_sha256": "46199AEF63FBD9913C9C0A428C413AE16031F53F2374FC76A4D540AD2FE52FCF",
   "execution_bundle_sha256": null,
   "hash_implementation_sha256": "355A672293C178681192155CFF74F30437D542B4227D388510BF95FB813F67DB",
   "validator_implementation_sha256": null,
-  "reason": "The revised Project A specification is approved. Execution remains blocked pending the separately pinned execution bundle and prerequisite verification."
+  "reason": "The user approved the autonomous repo-only revision: H0/H1 remain historical foundation gates; A-003 through A-007 require deterministic validation but no human receipt."
 }
