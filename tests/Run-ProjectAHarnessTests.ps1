@@ -44,6 +44,7 @@ Assert-True ((Get-Content -Raw (Join-Path $root '.harness/bin/codex.cmd')) -notm
 Assert-True ((Get-Content -Raw (Join-Path $root 'scripts/Start-ProjectAHarness.ps1')) -match 'toolVersions.codex_regex' -and (Get-Content -Raw (Join-Path $root 'scripts/Start-ProjectAHarness.ps1')) -match 'task.completed=\$false') 'launcher fails closed on tool drift and reconstructs manifest completion from persisted state'
 Assert-True ((Get-Content -Raw (Join-Path $root 'scripts/Invoke-ProjectAValidators.ps1')) -match 'Write-Output -NoEnumerate \$missing') 'semantic validator helper preserves an empty collection under StrictMode'
 Assert-True ((Get-Content -Raw (Join-Path $root 'scripts/Invoke-ProjectAValidators.ps1')) -match '\[string\]\$EnvironmentId = \$Id') 'Terraform init and validate can share one isolated provider data directory'
+Assert-True ((Get-Content -Raw (Join-Path $root 'scripts/Invoke-ProjectAValidators.ps1')) -match '\.harness-tests') 'out-of-module Terraform tests run from a validator-owned local scratch copy'
 $resume=@(New-RepoOnlyResumeCodexArguments -Model 'gpt-5.6-sol' -ThreadId 'thread' -Prompt 'repair' -OutputLastMessage $null) -join ' '
 Assert-True ($resume -match 'sandbox_mode="workspace-write"' -and $resume -match 'network_access=false') 'resume calls preserve filesystem and network boundaries'
 
