@@ -79,23 +79,21 @@ cost/teardown guidance, operator troubleshooting, and claim boundaries.
 
 ## Human gates
 
-For `A-001` through `A-005`, Terra/Sol may produce a validated diff, but the
+For `A-001` and `A-002`, Terra/Sol may produce a validated diff, but the
 adapter must pause after validation and before commit. A human approval receipt
 must bind the bundle hash, task, branch, starting commit, exact diff fingerprint,
 changed paths, and validation digest. Agents cannot create receipts. Any changed
-binding invalidates approval. `A-007` requires the same gate before final commit
-and PR. `A-006` may pass deterministically without a human pause.
+binding invalidates approval. After H1, `A-003` through `A-007` may commit
+autonomously only after every deterministic validator passes; terminal failures
+still stop the loop and preserve the diff.
 
 Human review owns these decisions:
 
 - `H0`: account taxonomy, regions, naming/tags, state ownership and recovery.
 - `H1`: OU/account topology, account-creation semantics, and SCP attachment.
-- `H2`: principals, actions, trust conditions, permission boundaries, and
-  emergency-access design.
-- `H3`: CIDRs, ingress/egress intent, route ownership, and network boundaries.
-- `H4`: retention, KMS administration, log readers, integrity, and recovery.
-- `H5`: evidence completeness, Azure wording, claim boundaries, cost/teardown
-  guidance, troubleshooting quality, narrowing, and merge readiness.
+- H2–H5 are removed for this repo-only autonomous implementation revision.
+  Their former decisions remain enforced by task policies, semantic validators,
+  negative tests, claims boundaries, and terminal fail-closed behavior.
 
 ## Deterministic validation contract
 

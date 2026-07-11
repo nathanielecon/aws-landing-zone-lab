@@ -42,9 +42,10 @@ for ($index = 0; $index -lt 7; $index++) {
 }
 
 $approvalRequired = @($policies | Where-Object { $_.approval.required } | ForEach-Object { $_.id })
-Assert-True (($approvalRequired -join ',') -eq 'A-001,A-002,A-003,A-004,A-005,A-007') 'risk and final tasks require diff-bound human approval'
+Assert-True (($approvalRequired -join ',') -eq 'A-001,A-002') 'only the completed foundation decisions retain diff-bound human approval'
 $approvalGates = @($policies | Where-Object { $_.approval.required } | ForEach-Object { $_.approval.gate_id })
-Assert-True (($approvalGates -join ',') -eq 'H0,H1,H2,H3,H4,H5' -and @($approvalGates | Sort-Object -Unique).Count -eq 6) 'human gate IDs are unique and bound to the intended task order'
+Assert-True (($approvalGates -join ',') -eq 'H0,H1' -and @($approvalGates | Sort-Object -Unique).Count -eq 2) 'retained human gate IDs are unique and bound to foundation tasks'
+Assert-True (@($policies | Where-Object { $_.id -in @('A-003','A-004','A-005','A-006','A-007') -and $_.approval.required }).Count -eq 0) 'A-003 through A-007 are autonomous only after deterministic gates pass'
 foreach ($policy in $policies | Where-Object { $_.approval.required }) {
     Assert-True ([string]$policy.approval.stage -eq 'post_validation_pre_commit' -and [string]$policy.approval.approver -eq 'human') "$($policy.id) approval occurs after validation and before commit"
 }
