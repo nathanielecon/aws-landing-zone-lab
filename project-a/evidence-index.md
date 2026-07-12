@@ -11,6 +11,7 @@ validated. The evidence below records deterministic validation for each task.
 | A-004 | `ce9b979` | `evidence/project-a/A-004.json` | `9E67D5EB27B90ADAD54470AC1AA253354AD48D1C205DC776DB6067253139A342` |
 | A-005 | `0158b9e` | `evidence/project-a/A-005.json` | `F8D9B29C78AC6A33555292E115D874931C03C4A2F35B970D4A28FE2FA638A917` |
 | A-006 | `81b2702` | `evidence/project-a/A-006.json` | `15FF2EB7BF746D688BAFBA6FF48CEBDFAEBD5C89E5A88B483D174C39916C439E` |
+| A-007 | `d8de68f` | `evidence/project-a/A-007.json` | `B84061C7B87F79FE282D62736CD8CF21200179891B4FB3B59EA64513783AF8EF` |
 
 The Azure Government notes are translation-only, not implemented, and not cloud
 validated. Reviewers should use [claims boundary](docs/portfolio/claims-boundary.md)

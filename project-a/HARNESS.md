@@ -1,8 +1,9 @@
 # Project A harness operations
 
-Phase 4 prepares the harness but does not authorize Project A execution.
-`project-a/harness/execution-approval.json` must remain `execution_approved:
-false` until the user explicitly approves the proven execution bundle.
+Phase 4 now includes an explicit execution approval for the current proven
+repo-only bundle. `project-a/harness/execution-approval.json` is currently
+`execution_approved: true` for that exact bundle and must be re-approved if the
+execution bundle or its pinned validator/hash implementations change.
 
 ## Commands
 

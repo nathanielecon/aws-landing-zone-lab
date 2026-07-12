@@ -5,27 +5,39 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'Harness.Common.psm1') -Force
 
-if ($env:HARNESS_ROOT) {
-    $globalStopFlag = Join-Path $env:HARNESS_ROOT '.harness/runtime/stop.flag'
-    if (Test-Path -LiteralPath $globalStopFlag) { throw 'A prior task failed; the terminal sentinel blocks every additional model call until explicit resume.' }
-}
-
 if ($env:HARNESS_PROFILE_ID -eq 'project-a') {
     & (Join-Path $PSScriptRoot 'Invoke-ProjectAAdapter.ps1') @CodexArguments
     exit $LASTEXITCODE
 }
 
 if ($PSVersionTable.PSVersion.Major -lt 7) { throw 'The Codex adapter requires PowerShell 7 or later.' }
-$root = $env:HARNESS_ROOT
+$root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $realCodex = $env:HARNESS_REAL_CODEX
 $runId = $env:HARNESS_RUN_ID
 $logRoot = $env:HARNESS_LOG_DIR
 $planHash = $env:HARNESS_PLAN_HASH
-foreach ($required in @('root', 'realCodex', 'runId', 'logRoot', 'planHash')) {
+foreach ($required in @('realCodex', 'runId', 'logRoot', 'planHash')) {
     if ([string]::IsNullOrWhiteSpace((Get-Variable $required -ValueOnly))) { throw "Missing harness environment value: $required" }
 }
-$root = [System.IO.Path]::GetFullPath($root)
 $realCodex = [System.IO.Path]::GetFullPath($realCodex)
+$fixturePath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../tests/fixtures/fake-codex.cmd'))
+$isFakeFixture = $realCodex.Equals($fixturePath, [System.StringComparison]::OrdinalIgnoreCase)
+if ($isFakeFixture -and -not [string]::IsNullOrWhiteSpace($env:HARNESS_ROOT)) { $root = [System.IO.Path]::GetFullPath($env:HARNESS_ROOT) }
+$expectedManifestPath = $env:HARNESS_MANIFEST_PATH
+if (-not $isFakeFixture) {
+    if ([string]::IsNullOrWhiteSpace($env:HARNESS_ROOT) -or -not $root.Equals([System.IO.Path]::GetFullPath($env:HARNESS_ROOT), [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Harness root transport value does not match the adapter repository.' }
+    $profile = Read-HarnessProfile -Root $root -ProfileId 'smoke'
+    if ($env:HARNESS_PROFILE_ID -ne [string]$profile.profile_id) { throw 'Harness profile transport value is not the approved smoke profile.' }
+    $branch = (& git -C $root branch --show-current).Trim()
+    if ($branch -notmatch [string]$profile.expected_branch_pattern) { throw "Smoke adapter rejects branch: $branch" }
+    $approvalPath = Resolve-PathUnderRoot -Root $root -RelativePath ([string]$profile.approval_file)
+    $planPath = Join-Path $root 'PLAN.md'
+    $approvedPlanHash = [string](Read-JsonFile -Path $approvalPath).plan_sha256
+    $actualPlanHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $planPath).Hash
+    if ($approvedPlanHash -ne $actualPlanHash -or $planHash -ne $actualPlanHash) { throw 'Harness plan hash transport value is not the currently approved plan hash.' }
+    $expectedManifestPath = Join-Path $root '.harness/runtime/PRD.json'
+    if ([string]::IsNullOrWhiteSpace($env:HARNESS_MANIFEST_PATH) -or -not $expectedManifestPath.Equals([System.IO.Path]::GetFullPath($env:HARNESS_MANIFEST_PATH), [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Harness manifest transport value is not the approved runtime manifest location.' }
+}
 $adapterPath = [System.IO.Path]::GetFullPath((Join-Path $root '.harness/bin/codex.cmd'))
 if ($realCodex.Equals($adapterPath, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Real Codex path resolves to the adapter; refusing recursion.' }
 if (-not (Test-Path -LiteralPath $realCodex -PathType Leaf)) { throw "Real Codex executable not found: $realCodex" }
@@ -34,12 +46,16 @@ if ($env:HARNESS_CONTRACT_ONLY -eq '1') {
     if (-not $realCodex.Equals($fixturePath, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw 'Contract-only mode refuses every Codex executable except the committed fake fixture.'
     }
+} elseif (-not $isFakeFixture) {
+    $adapterDirectory = [System.IO.Path]::GetFullPath((Join-Path $root '.harness/bin'))
+    $installedCodex = @(Get-Command codex.cmd -All -ErrorAction Stop | Where-Object { -not ([System.IO.Path]::GetFullPath($_.Source)).StartsWith($adapterDirectory, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)[0]
+    if (-not $installedCodex -or -not $realCodex.Equals([System.IO.Path]::GetFullPath($installedCodex.Source), [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Codex executable transport value does not match the installed non-adapter executable.' }
 }
 
 $stopFlag = Join-Path $root '.harness/runtime/stop.flag'
 if (Test-Path -LiteralPath $stopFlag) { throw 'A prior task failed; the stop sentinel blocks additional model calls until explicit resume.' }
 $stdinText = if ($env:HARNESS_STDIN_OVERRIDE) { [string]$env:HARNESS_STDIN_OVERRIDE } else { [Console]::In.ReadToEnd() }
-$manifestPath = $env:HARNESS_MANIFEST_PATH
+$manifestPath = $expectedManifestPath
 $manifestTask = $null
 try {
     $taskId = Get-TaskIdFromArguments -Arguments (@($CodexArguments) + @($stdinText))
@@ -70,13 +86,33 @@ $policy = Read-JsonFile -Path $policyPath
 if ([string]$policy.id -ne $taskId) { throw "Policy ID does not match task marker: $taskId" }
 $statePath = Join-Path $root ".harness/runtime/state/$taskId.json"
 $takeoverPath = Join-Path $root ".harness/runtime/takeovers/$taskId.md"
+$runtimeExcluded = @(Get-HarnessLifecycleExcludedPaths -Root $root -ProfileId 'smoke')
 $taskLogRoot = Join-Path $logRoot $taskId
 [System.IO.Directory]::CreateDirectory($taskLogRoot) | Out-Null
 
 function Save-State { Write-JsonNoBom -Path $statePath -Value $script:state }
+function Stop-ForTimeout([string]$ErrorClass, [string]$Message) {
+    $state.status = 'blocked'; $state.last_error_class = $ErrorClass; $state.last_failure = $Message
+    Save-State
+    Write-HarnessStopSentinel -Root $root -ErrorClass $ErrorClass -Message $Message
+    Write-JsonNoBom -Path (Join-Path $taskLogRoot 'summary.json') -Value ([ordered]@{ task_id = $taskId; status = 'blocked'; error_class = $ErrorClass; message = $Message })
+}
+function Get-EscalationValue([string]$Name, $DefaultValue) {
+    if ($policy.PSObject.Properties.Name -contains 'escalation' -and $policy.escalation -and $policy.escalation.PSObject.Properties.Name -contains $Name) {
+        return $policy.escalation.$Name
+    }
+    return $DefaultValue
+}
+function Get-StateEvidencePath {
+    if ($script:state -and -not [string]::IsNullOrWhiteSpace([string]$script:state.pending_evidence_path)) {
+        return [string]$script:state.pending_evidence_path
+    }
+    return [string]$policy.expected_evidence
+}
 
 function Invoke-CodexProcess {
     param([Parameter(Mandatory)][string[]]$Arguments, [Parameter(Mandatory)][string]$Label, [AllowEmptyString()][string]$StandardInput = '')
+    if (Test-Path -LiteralPath $stopFlag) { throw 'A prior task failed; the stop sentinel blocks additional model calls until explicit resume.' }
     $stdoutPath = Join-Path $taskLogRoot "$Label.stdout.jsonl"
     $stderrPath = Join-Path $taskLogRoot "$Label.stderr.log"
     $encodedArguments = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(($Arguments | ConvertTo-Json -Compress)))
@@ -90,18 +126,16 @@ function Invoke-CodexProcess {
     foreach ($value in @('-NoLogo', '-NoProfile', '-NonInteractive', '-File', (Join-Path $PSScriptRoot 'Invoke-NativeCodex.ps1'), '-Executable', $realCodex, '-ArgumentsBase64', $encodedArguments, '-CommonModulePath', (Join-Path $PSScriptRoot 'Harness.Common.psm1'))) {
         [void]$startInfo.ArgumentList.Add($value)
     }
+    Set-RepoOnlyProcessEnvironment -StartInfo $startInfo -IsolationRoot (Join-Path $taskLogRoot "isolation/$Label")
     $process = [System.Diagnostics.Process]::new()
     $process.StartInfo = $startInfo
     try {
         [void]$process.Start()
         if ($StandardInput) { $process.StandardInput.Write($StandardInput) }
         $process.StandardInput.Close()
-        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
-        $stderrTask = $process.StandardError.ReadToEndAsync()
-        $process.WaitForExit()
-        $stdout = $stdoutTask.GetAwaiter().GetResult()
-        $stderr = $stderrTask.GetAwaiter().GetResult()
-        $exitCode = $process.ExitCode
+        $result = Invoke-ProcessWithTimeout -Process $process -TimeoutSeconds (Get-PositiveTimeoutSeconds -Policy $policy -Name 'model_timeout_seconds' -DefaultSeconds 900)
+        $stdout = $result.stdout; $stderr = $result.stderr; $exitCode = $result.exit_code
+        if ($result.timed_out) { Stop-ForTimeout -ErrorClass 'MODEL_TIMEOUT' -Message 'MODEL_TIMEOUT: Codex model process exceeded its hard timeout.'; throw 'MODEL_TIMEOUT: Codex model process exceeded its hard timeout.' }
     } finally {
         $process.Dispose()
     }
@@ -116,15 +150,22 @@ function Invoke-DeterministicGate {
     param([Parameter(Mandatory)][ValidateSet('terra', 'sol')][string]$Phase)
     $gateArgs = @('-NoLogo', '-NoProfile', '-File', (Join-Path $PSScriptRoot 'Invoke-TaskGate.ps1'), '-Root', $root, '-PolicyPath', $policyPath, '-Phase', $Phase)
     if ([bool]$state.force_applied) { $gateArgs += '-ForceAlreadyApplied' }
-    $output = & (Get-Command pwsh -ErrorAction Stop).Source @gateArgs
-    $code = $LASTEXITCODE
-    $json = ($output | Select-Object -Last 1) | ConvertFrom-Json
+    $info = [System.Diagnostics.ProcessStartInfo]::new(); $info.FileName = (Get-Command pwsh -ErrorAction Stop).Source; $info.WorkingDirectory = $root; $info.UseShellExecute = $false; $info.RedirectStandardOutput = $true; $info.RedirectStandardError = $true
+    foreach ($argument in $gateArgs) { [void]$info.ArgumentList.Add($argument) }
+    $process = [System.Diagnostics.Process]::new(); $process.StartInfo = $info
+    try {
+        [void]$process.Start()
+        $execution = Invoke-ProcessWithTimeout -Process $process -TimeoutSeconds (Get-PositiveTimeoutSeconds -Policy $policy -Name 'gate_timeout_seconds' -DefaultSeconds 900)
+    } finally { $process.Dispose() }
+    if ($execution.timed_out) { Stop-ForTimeout -ErrorClass 'GATE_TIMEOUT' -Message 'GATE_TIMEOUT: Deterministic gate exceeded its hard timeout.'; throw 'GATE_TIMEOUT: Deterministic gate exceeded its hard timeout.' }
+    $code = $execution.exit_code
+    $json = (($execution.stdout -split "`r?`n" | Where-Object { $_ } | Select-Object -Last 1) | ConvertFrom-Json)
     return [pscustomobject]@{ exit_code = $code; result = $json }
 }
 
 function New-TakeoverText {
     param([Parameter(Mandatory)]$Failure)
-    $changed = @(Get-ChangedPaths -Root $root)
+    $changed = @(Get-ChangedPaths -Root $root -ExcludedPaths $runtimeExcluded)
     return @"
 # Takeover: $taskId
 
@@ -155,7 +196,7 @@ function Test-CommittedTaskContent {
 function Complete-GatedCommit {
     param([Parameter(Mandatory)][string]$Phase, [Parameter(Mandatory)]$GateResult)
     $allowedCode = @($policy.allowed_paths | ForEach-Object { [string]$_ })
-    $changedCode = @(Assert-OnlyAllowedChanges -Root $root -AllowedPaths $allowedCode)
+    $changedCode = @(Assert-OnlyAllowedChanges -Root $root -AllowedPaths $allowedCode -ExcludedPaths $runtimeExcluded)
     if ($changedCode.Count -eq 0) { throw 'No task diff exists to commit.' }
     $evidencePath = [string]$policy.expected_evidence
     $evidence = [ordered]@{
@@ -173,13 +214,20 @@ function Complete-GatedCommit {
         commit_sha = 'SELF'
         commit_lookup = "git log -1 --format=%H -- $evidencePath"
     }
-    Write-JsonNoBom -Path (Join-Path $root $evidencePath) -Value $evidence
+    $fullEvidencePath = Join-Path $root $evidencePath
+    Write-JsonNoBom -Path $fullEvidencePath -Value $evidence
     $allAllowed = @($allowedCode) + @($evidencePath)
-    $allChanged = @(Assert-OnlyAllowedChanges -Root $root -AllowedPaths $allAllowed)
+    $allChanged = @(Assert-OnlyAllowedChanges -Root $root -AllowedPaths $allAllowed -ExcludedPaths $runtimeExcluded)
+    $state.status = 'committing'
+    $state.pending_evidence_path = $evidencePath
+    $state.stage_paths = @($allChanged | Sort-Object -Unique)
+    $state.evidence_sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $fullEvidencePath).Hash
     foreach ($path in $allChanged) {
         & git -C $root add -- $path
         if ($LASTEXITCODE -ne 0) { throw "Failed to stage allowlisted path: $path" }
     }
+    $state.intended_tree = (& git -C $root write-tree).Trim()
+    Save-State
     & git -C $root commit -m ([string]$policy.commit_message)
     if ($LASTEXITCODE -ne 0) { throw 'Gated task commit failed.' }
     $commitSha = (& git -C $root rev-parse HEAD).Trim()
@@ -197,18 +245,24 @@ $outputLastMessage = Get-OutputLastMessagePath -Arguments $CodexArguments
 
 if (Test-Path -LiteralPath $statePath) {
     $state = Read-JsonFile -Path $statePath
-    if ($state.plan_hash -ne $planHash -or $state.branch -ne $branch) { throw 'Persisted task state does not match the approved plan and branch.' }
+    if ($state.plan_hash -ne $planHash -or $state.branch -ne $branch -or [string]$state.task_id -ne $taskId) { throw 'Persisted task state does not match the approved task, plan, or branch.' }
     if ($state.status -eq 'completed') { throw "Task $taskId already completed at $($state.commit_sha); duplicate invocation blocked." }
     if ([string]$state.starting_commit -ne $head) {
         $parent = (& git -C $root rev-parse "$head^" 2>$null).Trim()
         $subject = (& git -C $root log -1 --format=%s).Trim()
-        $commitPaths = @(& git -C $root diff-tree --no-commit-id --name-only -r $head | ForEach-Object { $_ -replace '\\', '/' })
-        $allowedCommitPaths = @($policy.allowed_paths | ForEach-Object { [string]$_ }) + @([string]$policy.expected_evidence)
+        $tree = (& git -C $root rev-parse "$head^{tree}" 2>$null).Trim()
+        $commitPaths = @(& git -C $root diff-tree --no-commit-id --name-only -r $head | ForEach-Object { $_ -replace '\\', '/' } | Sort-Object)
+        $expectedCommitPaths = @($state.stage_paths | Sort-Object)
+        $evidencePath = Get-StateEvidencePath
+        $fullEvidencePath = Join-Path $root $evidencePath
+        $evidenceHash = if (Test-Path -LiteralPath $fullEvidencePath -PathType Leaf) { (Get-FileHash -Algorithm SHA256 -LiteralPath $fullEvidencePath).Hash } else { $null }
         $commitIsOwned = $parent -eq [string]$state.starting_commit -and
+            $state.status -eq 'committing' -and
             $subject -eq [string]$policy.commit_message -and
-            $commitPaths.Count -gt 0 -and
-            @($commitPaths | Where-Object { -not (Test-AllowedPath -Path $_ -AllowedPaths $allowedCommitPaths) }).Count -eq 0 -and
-            @(Get-ChangedPaths -Root $root).Count -eq 0
+            $tree -eq [string]$state.intended_tree -and
+            ($commitPaths -join ',') -eq ($expectedCommitPaths -join ',') -and
+            $evidenceHash -eq [string]$state.evidence_sha256 -and
+            @(Get-ChangedPaths -Root $root -ExcludedPaths $runtimeExcluded).Count -eq 0
         if (-not $commitIsOwned) { throw 'Current HEAD does not match the interrupted task starting commit or its single gated commit.' }
         $reconcilePhase = if ($state.phase -eq 'sol') { 'sol' } else { 'terra' }
         if (-not (Test-CommittedTaskContent -Phase $reconcilePhase)) { throw 'The interrupted task commit no longer passes its deterministic content gate.' }
@@ -220,9 +274,9 @@ if (Test-Path -LiteralPath $statePath) {
         exit 0
     }
     $resumeAllowed = @($policy.allowed_paths | ForEach-Object { [string]$_ }) + @([string]$policy.expected_evidence)
-    [void](Assert-OnlyAllowedChanges -Root $root -AllowedPaths $resumeAllowed)
+    [void](Assert-OnlyAllowedChanges -Root $root -AllowedPaths $resumeAllowed -ExcludedPaths $runtimeExcluded)
 } else {
-    $preexisting = @(Get-ChangedPaths -Root $root)
+    $preexisting = @(Get-ChangedPaths -Root $root -ExcludedPaths $runtimeExcluded)
     if ($preexisting.Count -gt 0) { throw "Fresh task requires a clean tree; found: $($preexisting -join ', ')" }
     $state = [pscustomobject][ordered]@{
         plan_hash = $planHash
@@ -241,6 +295,10 @@ if (Test-Path -LiteralPath $statePath) {
         terra_thread_id = $null
         sol_thread_id = $null
         last_failure = $null
+        stage_paths = @()
+        pending_evidence_path = [string]$policy.expected_evidence
+        evidence_sha256 = $null
+        intended_tree = $null
         commit_sha = $null
         completed_at = $null
     }
@@ -254,7 +312,7 @@ if ($state.status -eq 'blocked') {
     exit 0
 }
 
-$resumeChanges = @(Get-ChangedPaths -Root $root)
+$resumeChanges = @(Get-ChangedPaths -Root $root -ExcludedPaths $runtimeExcluded)
 if ($resumeChanges.Count -gt 0) {
     $resumePhase = if ($state.phase -eq 'sol') { 'sol' } else { 'terra' }
     $resumeGate = Invoke-DeterministicGate -Phase $resumePhase
@@ -266,15 +324,15 @@ if ($resumeChanges.Count -gt 0) {
 
 while ($true) {
     $elapsed = [DateTimeOffset]::UtcNow - [DateTimeOffset]::Parse([string]$state.started_at)
-    $beforeFingerprint = Get-DiffFingerprint -Root $root
+    $beforeFingerprint = Get-DiffFingerprint -Root $root -ExcludedPaths $runtimeExcluded
     if ($state.phase -eq 'terra') {
         $state.terra_attempts = [int]$state.terra_attempts + 1
         $label = "terra-$($state.terra_attempts)"
         if ($state.terra_attempts -eq 1 -and -not $state.terra_thread_id) {
-            $arguments = New-SafeInitialCodexArguments -Arguments $CodexArguments -Model 'gpt-5.6-terra'
+            $arguments = New-RepoOnlyInitialCodexArguments -Arguments $CodexArguments -Model 'gpt-5.6-terra'
         } else {
             $repairPrompt = "Repair task $taskId without committing. Last gate: $($state.last_failure). Change only $($policy.allowed_paths -join ', '), then stop."
-            $arguments = New-SafeResumeCodexArguments -Model 'gpt-5.6-terra' -ThreadId ([string]$state.terra_thread_id) -Prompt $repairPrompt -OutputLastMessage $outputLastMessage
+            $arguments = New-RepoOnlyResumeCodexArguments -Model 'gpt-5.6-terra' -ThreadId ([string]$state.terra_thread_id) -Prompt $repairPrompt -OutputLastMessage $outputLastMessage
         }
         Save-State
         $attemptInput = if ($state.terra_attempts -eq 1 -and -not $state.terra_thread_id) { $stdinText } else { '' }
@@ -296,13 +354,13 @@ while ($true) {
         }
         if ([bool]$gate.passed) { Complete-GatedCommit -Phase 'terra' -GateResult $gate; exit 0 }
         if ($gate.error_class -eq 'SMOKE_FORCE_SOL') { $state.force_applied = $true }
-        $afterFingerprint = Get-DiffFingerprint -Root $root
+        $afterFingerprint = Get-DiffFingerprint -Root $root -ExcludedPaths $runtimeExcluded
         $noDiff = $beforeFingerprint -eq $afterFingerprint
         $state.consecutive_failures = [int]$state.consecutive_failures + 1
         if ($state.last_error_class -eq $gate.error_class) { $state.same_error_count = [int]$state.same_error_count + 1 } else { $state.same_error_count = 1 }
         $state.last_error_class = [string]$gate.error_class
         $state.last_failure = [string]$gate.message
-        $escalate = Test-TerraEscalation -ForceApplied ([bool]$state.force_applied) -Attempts ([int]$state.terra_attempts) -AttemptLimit ([int]$policy.terra_attempt_limit) -ConsecutiveFailures ([int]$state.consecutive_failures) -SameErrorCount ([int]$state.same_error_count) -NoDiff $noDiff -ElapsedMinutes $elapsed.TotalMinutes -ElapsedLimitMinutes ([int]$policy.elapsed_limit_minutes) -ErrorClass ([string]$gate.error_class)
+        $escalate = Test-TerraEscalation -ForceApplied ([bool]$state.force_applied) -Attempts ([int]$state.terra_attempts) -AttemptLimit ([int]$policy.terra_attempt_limit) -ConsecutiveFailures ([int]$state.consecutive_failures) -ConsecutiveFailureLimit ([int](Get-EscalationValue -Name 'consecutive_failures' -DefaultValue 2)) -SameErrorCount ([int]$state.same_error_count) -SameErrorLimit ([int](Get-EscalationValue -Name 'same_error_count' -DefaultValue 2)) -NoDiff $noDiff -EscalateOnNoDiff ([int](Get-EscalationValue -Name 'no_diff_repairs' -DefaultValue 1) -gt 0) -ElapsedMinutes $elapsed.TotalMinutes -ElapsedLimitMinutes ([int]$policy.elapsed_limit_minutes) -EscalateOnScopeEscape ([bool](Get-EscalationValue -Name 'scope_escape' -DefaultValue $true)) -ErrorClass ([string]$gate.error_class)
         if ($escalate) {
             $state.phase = 'sol'
             $takeover = New-TakeoverText -Failure $gate
@@ -316,11 +374,9 @@ while ($true) {
     $label = "sol-$($state.sol_attempts)"
     $takeoverPrompt = Get-Content -Raw -LiteralPath $takeoverPath
     if ($state.sol_attempts -eq 1 -or -not $state.sol_thread_id) {
-        $arguments = @('exec', '--sandbox', 'workspace-write', '--model', 'gpt-5.6-sol', '--json')
-        if ($outputLastMessage) { $arguments += @('--output-last-message', $outputLastMessage) }
-        $arguments += $takeoverPrompt
+        $arguments = New-RepoOnlyInitialCodexArguments -Arguments @('exec', '--json', $takeoverPrompt) -Model 'gpt-5.6-sol'
     } else {
-        $arguments = New-SafeResumeCodexArguments -Model 'gpt-5.6-sol' -ThreadId ([string]$state.sol_thread_id) -Prompt "Repair $taskId. Last gate: $($state.last_failure). Do not commit." -OutputLastMessage $outputLastMessage
+        $arguments = New-RepoOnlyResumeCodexArguments -Model 'gpt-5.6-sol' -ThreadId ([string]$state.sol_thread_id) -Prompt "Repair $taskId. Last gate: $($state.last_failure). Do not commit." -OutputLastMessage $outputLastMessage
     }
     Save-State
     $execution = Invoke-CodexProcess -Arguments $arguments -Label $label

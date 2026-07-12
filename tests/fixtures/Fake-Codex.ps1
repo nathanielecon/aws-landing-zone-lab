@@ -16,6 +16,11 @@ if ($env:HARNESS_FAKE_OUTPUT) {
     [Console]::Out.WriteLine("token=$($env:HARNESS_FAKE_OUTPUT)")
     [Console]::Error.WriteLine("Authorization: Bearer $($env:HARNESS_FAKE_OUTPUT)")
 }
+if ($env:HARNESS_FAKE_BLOCK_SECONDS) {
+    $child = Start-Process -FilePath (Get-Command pwsh).Source -ArgumentList '-NoLogo','-NoProfile','-NonInteractive','-Command','Start-Sleep -Seconds 60' -PassThru
+    if ($env:HARNESS_FAKE_CHILD_PID_PATH) { [System.IO.File]::WriteAllText((Join-Path $root $env:HARNESS_FAKE_CHILD_PID_PATH), [string]$child.Id, $encoding) }
+    Start-Sleep -Seconds ([int]$env:HARNESS_FAKE_BLOCK_SECONDS)
+}
 if ($taskId.StartsWith('A-')) {
     if ($env:HARNESS_CONTRACT_ONLY -ne '1' -or -not $env:HARNESS_FAKE_ALLOWED_PATH) { throw 'Project A fake execution requires an explicit contract fixture path.' }
     $path = Join-Path $root $env:HARNESS_FAKE_ALLOWED_PATH

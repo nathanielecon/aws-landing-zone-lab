@@ -12,12 +12,17 @@ $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'Harness.Common.psm1') -Force
 try {
     $request = Read-JsonFile -Path $RequestPath; $receipt = Read-JsonFile -Path $ReceiptPath; $policy = Read-JsonFile -Path $PolicyPath
+    if ([string]$request.schema_version -ne 'project-a-approval-request-v1') { throw 'Approval request schema mismatch.' }
+    if ([string]$receipt.payload.schema_version -ne 'project-a-approval-v1') { throw 'Approval receipt schema mismatch.' }
+    if ([string]$receipt.payload.decision -ne 'approved') { throw 'Approval receipt decision mismatch.' }
     $protectedKey = [Convert]::FromBase64String((Get-Content -Raw -LiteralPath $KeyPath).Trim())
     $key = [System.Security.Cryptography.ProtectedData]::Unprotect($protectedKey, $null, [System.Security.Cryptography.DataProtectionScope]::CurrentUser)
     $payloadJson = $receipt.payload | ConvertTo-Json -Compress -Depth 10
     $expectedSignature = Get-HmacSha256 -Key $key -Text $payloadJson
     if (-not [System.Security.Cryptography.CryptographicOperations]::FixedTimeEquals([Convert]::FromHexString($expectedSignature), [Convert]::FromHexString([string]$receipt.signature))) { throw 'Approval signature mismatch.' }
-    $diff = Get-CanonicalDiffRecord -Root $Root -AllowedPaths @($policy.allowed_paths) -AdapterOwnedPaths @($policy.adapter_owned_paths)
+    $runtimeExcluded = @(Get-HarnessLifecycleExcludedPaths -Root $Root -ProfileId 'project-a')
+    $allowedExecutablePaths = if ($policy.PSObject.Properties.Name -contains 'allowed_executable_paths') { @($policy.allowed_executable_paths | ForEach-Object { [string]$_ }) } else { @() }
+    $diff = Get-CanonicalDiffRecord -Root $Root -AllowedPaths @($policy.allowed_paths) -AdapterOwnedPaths @($policy.adapter_owned_paths) -AllowedExecutablePaths $allowedExecutablePaths -ExcludedPaths $runtimeExcluded
     $branch = (& git -C $Root branch --show-current).Trim(); $head = (& git -C $Root rev-parse HEAD).Trim()
     foreach ($binding in @('task_id','gate_id','execution_bundle_sha256','validator_implementation_sha256','policy_sha256','branch','starting_commit','head','diff_sha256','validation_digest','request_nonce')) {
         $expected = if ($binding -eq 'diff_sha256') { $diff.sha256 } elseif ($binding -eq 'branch') { $branch } elseif ($binding -eq 'head') { $head } else { [string]$request.$binding }
