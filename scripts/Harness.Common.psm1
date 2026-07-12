@@ -13,10 +13,291 @@ function Write-JsonNoBom {
     Write-Utf8NoBom -Path $Path -Text (($Value | ConvertTo-Json -Depth 30) + "`n")
 }
 
+function Assert-JsonObjectContract {
+    param(
+        [Parameter(Mandatory)]$Value,
+        [Parameter(Mandatory)][string]$Context,
+        [Parameter(Mandatory)][string[]]$RequiredProperties,
+        [string[]]$OptionalProperties = @()
+    )
+    if ($null -eq $Value) { throw "$Context must be a JSON object." }
+    $properties = @($Value.PSObject.Properties.Name | ForEach-Object { [string]$_ })
+    if ($properties.Count -eq 0 -and $RequiredProperties.Count -gt 0) { throw "$Context must be a JSON object." }
+    $allowed = @($RequiredProperties + $OptionalProperties | Sort-Object -Unique)
+    $unknown = @($properties | Where-Object { $_ -notin $allowed })
+    if ($unknown.Count -gt 0) { throw "$Context contains unknown field(s): $($unknown -join ', ')" }
+    $missing = @($RequiredProperties | Where-Object { $_ -notin $properties })
+    if ($missing.Count -gt 0) { throw "$Context is missing required field(s): $($missing -join ', ')" }
+}
+
+function Assert-JsonStringField {
+    param(
+        [Parameter(Mandatory)]$Value,
+        [Parameter(Mandatory)][string]$Context,
+        [Parameter(Mandatory)][string]$Name,
+        [string]$Pattern,
+        [switch]$AllowNull
+    )
+    $present = $Value.PSObject.Properties.Name -contains $Name
+    if (-not $present) { throw "$Context is missing required field: $Name" }
+    $field = $Value.$Name
+    if ($null -eq $field) {
+        if ($AllowNull) { return }
+        throw "$Context field '$Name' must be a string."
+    }
+    if ($field -isnot [string] -or [string]::IsNullOrWhiteSpace([string]$field)) { throw "$Context field '$Name' must be a non-empty string." }
+    if ($Pattern -and ([string]$field -notmatch $Pattern)) { throw "$Context field '$Name' is invalid." }
+}
+
+function Assert-JsonOptionalStringField {
+    param(
+        [Parameter(Mandatory)]$Value,
+        [Parameter(Mandatory)][string]$Context,
+        [Parameter(Mandatory)][string]$Name,
+        [string]$Pattern
+    )
+    if ($Value.PSObject.Properties.Name -notcontains $Name) { throw "$Context is missing required field: $Name" }
+    $field = $Value.$Name
+    if ($null -eq $field) { return }
+    if ($field -isnot [string]) { throw "$Context field '$Name' must be a string." }
+    if ([string]::IsNullOrWhiteSpace([string]$field)) { return }
+    if ($Pattern -and ([string]$field -notmatch $Pattern)) { throw "$Context field '$Name' is invalid." }
+}
+
+function Assert-JsonIso8601TimestampField {
+    param(
+        [Parameter(Mandatory)]$Value,
+        [Parameter(Mandatory)][string]$Context,
+        [Parameter(Mandatory)][string]$Name,
+        [switch]$AllowNull
+    )
+    if ($Value.PSObject.Properties.Name -notcontains $Name) { throw "$Context is missing required field: $Name" }
+    $field = $Value.$Name
+    if ($null -eq $field) {
+        if ($AllowNull) { return }
+        throw "$Context field '$Name' must be an ISO 8601 timestamp string."
+    }
+    $text = switch ($field) {
+        { $_ -is [datetimeoffset] } { $_.ToString('o'); break }
+        { $_ -is [datetime] } { $_.ToString('o'); break }
+        { $_ -is [string] } { [string]$_; break }
+        default { throw "$Context field '$Name' must be an ISO 8601 timestamp string." }
+    }
+    if ([string]::IsNullOrWhiteSpace($text)) { throw "$Context field '$Name' must be an ISO 8601 timestamp string." }
+    if ($text -notmatch '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?(?:Z|[+-]\d{2}:\d{2})$') {
+        throw "$Context field '$Name' is invalid."
+    }
+    $parsed = [datetimeoffset]::MinValue
+    if (-not [datetimeoffset]::TryParse($text, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind, [ref]$parsed)) {
+        throw "$Context field '$Name' is invalid."
+    }
+}
+
+function Assert-JsonBooleanField {
+    param([Parameter(Mandatory)]$Value, [Parameter(Mandatory)][string]$Context, [Parameter(Mandatory)][string]$Name)
+    if ($Value.PSObject.Properties.Name -notcontains $Name) { throw "$Context is missing required field: $Name" }
+    if ($Value.$Name -isnot [bool]) { throw "$Context field '$Name' must be a boolean." }
+}
+
+function Assert-JsonIntegerField {
+    param([Parameter(Mandatory)]$Value, [Parameter(Mandatory)][string]$Context, [Parameter(Mandatory)][string]$Name, [int]$Minimum = [int]::MinValue)
+    if ($Value.PSObject.Properties.Name -notcontains $Name) { throw "$Context is missing required field: $Name" }
+    $field = $Value.$Name
+    if ($field -isnot [sbyte] -and $field -isnot [byte] -and $field -isnot [int16] -and $field -isnot [uint16] -and $field -isnot [int32] -and $field -isnot [uint32] -and $field -isnot [int64]) {
+        throw "$Context field '$Name' must be an integer >= $Minimum."
+    }
+    if ([int64]$field -lt $Minimum) { throw "$Context field '$Name' must be an integer >= $Minimum." }
+}
+
+function Assert-JsonStringArrayField {
+    param(
+        [Parameter(Mandatory)]$Value,
+        [Parameter(Mandatory)][string]$Context,
+        [Parameter(Mandatory)][string]$Name,
+        [switch]$AllowNull
+    )
+    if ($Value.PSObject.Properties.Name -notcontains $Name) { throw "$Context is missing required field: $Name" }
+    $field = $Value.$Name
+    if ($null -eq $field) {
+        if ($AllowNull) { return }
+        throw "$Context field '$Name' must be an array of strings."
+    }
+    $items = @($field)
+    foreach ($item in $items) {
+        if ($item -isnot [string] -or [string]::IsNullOrWhiteSpace([string]$item)) { throw "$Context field '$Name' must contain only non-empty strings." }
+    }
+}
+
+function Assert-ProjectATaskListContract {
+    param([Parameter(Mandatory)]$Tasks, [Parameter(Mandatory)][string]$Context)
+    foreach ($task in @($Tasks)) {
+        Assert-JsonObjectContract -Value $task -Context $Context -RequiredProperties @('title', 'completed') -OptionalProperties @('description')
+        Assert-JsonStringField -Value $task -Context $Context -Name 'title' -Pattern '^\[TASK:A-00[1-7]\]'
+        Assert-JsonBooleanField -Value $task -Context $Context -Name 'completed'
+        if ($task.PSObject.Properties.Name -contains 'description' -and $null -ne $task.description) {
+            if ($task.description -isnot [string] -or [string]::IsNullOrWhiteSpace([string]$task.description)) { throw "$Context field 'description' must be a non-empty string." }
+        }
+    }
+}
+
+function Assert-StrictJsonContractForPath {
+    param([Parameter(Mandatory)][string]$Path, [Parameter(Mandatory)]$Value)
+    $normalized = [System.IO.Path]::GetFullPath($Path) -replace '\\', '/'
+    $hex64 = '^[A-F0-9]{64}$'
+    $hex40 = '^[a-fA-F0-9]{40}$'
+    $date = '^\d{4}-\d{2}-\d{2}$'
+    $dateTime = '^\d{4}-\d{2}-\d{2}T'
+    if ($normalized -like '*/project-a/harness/bundle-approval.json') {
+        Assert-JsonObjectContract -Value $Value -Context 'Project A bundle approval' -RequiredProperties @('plan_id','status','spec_approved','execution_approved','spec_approved_by','spec_approved_at','approval_source','spec_bundle_sha256','execution_bundle_sha256','hash_implementation_sha256','validator_implementation_sha256','reason')
+        Assert-JsonStringField -Value $Value -Context 'Project A bundle approval' -Name 'plan_id'
+        Assert-JsonStringField -Value $Value -Context 'Project A bundle approval' -Name 'status' -Pattern '^(spec_approved_execution_blocked|spec_approved|execution_approved)$'
+        Assert-JsonBooleanField -Value $Value -Context 'Project A bundle approval' -Name 'spec_approved'
+        Assert-JsonBooleanField -Value $Value -Context 'Project A bundle approval' -Name 'execution_approved'
+        Assert-JsonStringField -Value $Value -Context 'Project A bundle approval' -Name 'spec_approved_by'
+        Assert-JsonStringField -Value $Value -Context 'Project A bundle approval' -Name 'spec_approved_at' -Pattern $date
+        Assert-JsonStringField -Value $Value -Context 'Project A bundle approval' -Name 'approval_source'
+        Assert-JsonStringField -Value $Value -Context 'Project A bundle approval' -Name 'spec_bundle_sha256' -Pattern $hex64
+        if ($null -ne $Value.execution_bundle_sha256) { Assert-JsonStringField -Value $Value -Context 'Project A bundle approval' -Name 'execution_bundle_sha256' -Pattern $hex64 } else { [void]0 }
+        Assert-JsonStringField -Value $Value -Context 'Project A bundle approval' -Name 'hash_implementation_sha256' -Pattern $hex64
+        if ($null -ne $Value.validator_implementation_sha256) { Assert-JsonStringField -Value $Value -Context 'Project A bundle approval' -Name 'validator_implementation_sha256' -Pattern $hex64 } else { [void]0 }
+        Assert-JsonStringField -Value $Value -Context 'Project A bundle approval' -Name 'reason'
+        return
+    }
+    if ($normalized -like '*/project-a/harness/execution-approval.json') {
+        Assert-JsonObjectContract -Value $Value -Context 'Project A execution approval' -RequiredProperties @('schema_version','status','execution_approved','spec_bundle_sha256','execution_bundle_sha256','validator_implementation_sha256','execution_hash_implementation_sha256','proven_with','approved_by','approved_at','approval_source','reason')
+        Assert-JsonStringField -Value $Value -Context 'Project A execution approval' -Name 'schema_version' -Pattern '^project-a-execution-approval-v1$'
+        Assert-JsonStringField -Value $Value -Context 'Project A execution approval' -Name 'status' -Pattern '^(revised_spec_execution_approval_required|execution_approved)$'
+        Assert-JsonBooleanField -Value $Value -Context 'Project A execution approval' -Name 'execution_approved'
+        Assert-JsonStringField -Value $Value -Context 'Project A execution approval' -Name 'spec_bundle_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value -Context 'Project A execution approval' -Name 'execution_bundle_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value -Context 'Project A execution approval' -Name 'validator_implementation_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value -Context 'Project A execution approval' -Name 'execution_hash_implementation_sha256' -Pattern $hex64
+        Assert-JsonObjectContract -Value $Value.proven_with -Context 'Project A execution approval.proven_with' -RequiredProperties @('live_models','fake_codex_only','cloud_credentials','project_a_harness_assertions')
+        Assert-JsonBooleanField -Value $Value.proven_with -Context 'Project A execution approval.proven_with' -Name 'live_models'
+        Assert-JsonBooleanField -Value $Value.proven_with -Context 'Project A execution approval.proven_with' -Name 'fake_codex_only'
+        Assert-JsonBooleanField -Value $Value.proven_with -Context 'Project A execution approval.proven_with' -Name 'cloud_credentials'
+        Assert-JsonIntegerField -Value $Value.proven_with -Context 'Project A execution approval.proven_with' -Name 'project_a_harness_assertions' -Minimum 1
+        Assert-JsonStringField -Value $Value -Context 'Project A execution approval' -Name 'approved_by'
+        Assert-JsonStringField -Value $Value -Context 'Project A execution approval' -Name 'approved_at' -Pattern $date
+        Assert-JsonStringField -Value $Value -Context 'Project A execution approval' -Name 'approval_source'
+        Assert-JsonStringField -Value $Value -Context 'Project A execution approval' -Name 'reason'
+        return
+    }
+    if ($normalized -like '*/.harness/runtime/project-a/PRD.json') {
+        Assert-JsonObjectContract -Value $Value -Context 'Project A runtime manifest' -RequiredProperties @('tasks')
+        Assert-ProjectATaskListContract -Tasks $Value.tasks -Context 'Project A runtime manifest.tasks[]'
+        return
+    }
+    if ($normalized -like '*/.harness/runtime/project-a/state/*.json') {
+        Assert-JsonObjectContract -Value $Value -Context 'Project A task state' -RequiredProperties @('profile_id','bundle_hash','validator_sha256','policy_sha256','task_id','branch','starting_commit','started_at','status','phase','terra_attempts','sol_attempts','consecutive_failures','same_error_count','last_error_class','last_failure','terra_thread_id','sol_thread_id','validation_digest','diff_sha256','approval_request','approval_receipt','approval_key','approval_receipt_digest','intended_tree','stage_paths','pending_evidence_path','pending_evidence_text','evidence_sha256','commit_sha','completed_at') -OptionalProperties @('approval_confirmation')
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'profile_id' -Pattern '^project-a$'
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'bundle_hash' -Pattern $hex64
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'validator_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'policy_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'task_id' -Pattern '^A-00[1-7]$'
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'branch'
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'starting_commit' -Pattern $hex40
+        Assert-JsonIso8601TimestampField -Value $Value -Context 'Project A task state' -Name 'started_at'
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'status' -Pattern '^(running|awaiting_approval|preparing_commit|committing|completed|blocked)$'
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'phase' -Pattern '^(terra|sol)$'
+        Assert-JsonIntegerField -Value $Value -Context 'Project A task state' -Name 'terra_attempts' -Minimum 0
+        Assert-JsonIntegerField -Value $Value -Context 'Project A task state' -Name 'sol_attempts' -Minimum 0
+        Assert-JsonIntegerField -Value $Value -Context 'Project A task state' -Name 'consecutive_failures' -Minimum 0
+        Assert-JsonIntegerField -Value $Value -Context 'Project A task state' -Name 'same_error_count' -Minimum 0
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'last_error_class' -AllowNull
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'last_failure' -AllowNull
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'terra_thread_id' -AllowNull
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'sol_thread_id' -AllowNull
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'validation_digest' -AllowNull
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'diff_sha256' -Pattern $hex64 -AllowNull
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'approval_request'
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'approval_receipt'
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'approval_key'
+        if ($Value.PSObject.Properties.Name -contains 'approval_confirmation' -and $null -ne $Value.approval_confirmation) { Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'approval_confirmation' }
+        Assert-JsonOptionalStringField -Value $Value -Context 'Project A task state' -Name 'approval_receipt_digest' -Pattern $hex64
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'intended_tree' -Pattern $hex40 -AllowNull
+        Assert-JsonStringArrayField -Value $Value -Context 'Project A task state' -Name 'stage_paths'
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'pending_evidence_path' -AllowNull
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'pending_evidence_text' -AllowNull
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'evidence_sha256' -Pattern $hex64 -AllowNull
+        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'commit_sha' -Pattern $hex40 -AllowNull
+        Assert-JsonIso8601TimestampField -Value $Value -Context 'Project A task state' -Name 'completed_at' -AllowNull
+        return
+    }
+    if ($normalized -like '*/evidence/project-a/*.json') {
+        Assert-JsonObjectContract -Value $Value -Context 'Project A evidence' -RequiredProperties @('schema_version','profile_id','mode','cloud_validated','aws_implemented','azure_implemented','execution_bundle_sha256','validator_implementation_sha256','policy_sha256','run_id','task_id','phase_passed','terra_attempts','sol_attempts','starting_commit','diff_sha256','changed_entries','validation_digest','approval_required','approval_receipt_digest','completed_at','commit_parent','commit_lookup')
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'schema_version' -Pattern '^project-a-evidence-v1$'
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'profile_id' -Pattern '^project-a$'
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'mode' -Pattern '^repo_only$'
+        Assert-JsonBooleanField -Value $Value -Context 'Project A evidence' -Name 'cloud_validated'
+        Assert-JsonBooleanField -Value $Value -Context 'Project A evidence' -Name 'aws_implemented'
+        Assert-JsonBooleanField -Value $Value -Context 'Project A evidence' -Name 'azure_implemented'
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'execution_bundle_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'validator_implementation_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'policy_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'run_id'
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'task_id' -Pattern '^A-00[1-7]$'
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'phase_passed' -Pattern '^(terra|sol)$'
+        Assert-JsonIntegerField -Value $Value -Context 'Project A evidence' -Name 'terra_attempts' -Minimum 0
+        Assert-JsonIntegerField -Value $Value -Context 'Project A evidence' -Name 'sol_attempts' -Minimum 0
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'starting_commit' -Pattern $hex40
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'diff_sha256' -Pattern $hex64
+        if ($null -eq $Value.changed_entries) { throw 'Project A evidence field ''changed_entries'' must be an array.' }
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'validation_digest'
+        Assert-JsonBooleanField -Value $Value -Context 'Project A evidence' -Name 'approval_required'
+        Assert-JsonOptionalStringField -Value $Value -Context 'Project A evidence' -Name 'approval_receipt_digest' -Pattern $hex64
+        Assert-JsonIso8601TimestampField -Value $Value -Context 'Project A evidence' -Name 'completed_at'
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'commit_parent' -Pattern $hex40
+        Assert-JsonStringField -Value $Value -Context 'Project A evidence' -Name 'commit_lookup'
+        return
+    }
+    if ($normalized -like '*/RalphyHarness/cloud/approvals/project-a/requests/*.json') {
+        Assert-JsonObjectContract -Value $Value -Context 'Project A approval request' -RequiredProperties @('schema_version','task_id','gate_id','execution_bundle_sha256','validator_implementation_sha256','policy_sha256','branch','starting_commit','head','diff_sha256','changed_entries','validation_digest','request_nonce','requested_at','run_id')
+        Assert-JsonStringField -Value $Value -Context 'Project A approval request' -Name 'schema_version' -Pattern '^project-a-approval-request-v1$'
+        Assert-JsonStringField -Value $Value -Context 'Project A approval request' -Name 'task_id' -Pattern '^A-00[1-7]$'
+        Assert-JsonStringField -Value $Value -Context 'Project A approval request' -Name 'gate_id'
+        Assert-JsonStringField -Value $Value -Context 'Project A approval request' -Name 'execution_bundle_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value -Context 'Project A approval request' -Name 'validator_implementation_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value -Context 'Project A approval request' -Name 'policy_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value -Context 'Project A approval request' -Name 'branch'
+        Assert-JsonStringField -Value $Value -Context 'Project A approval request' -Name 'starting_commit' -Pattern $hex40
+        Assert-JsonStringField -Value $Value -Context 'Project A approval request' -Name 'head' -Pattern $hex40
+        Assert-JsonStringField -Value $Value -Context 'Project A approval request' -Name 'diff_sha256' -Pattern $hex64
+        if ($null -eq $Value.changed_entries) { throw 'Project A approval request field ''changed_entries'' must be an array.' }
+        Assert-JsonStringField -Value $Value -Context 'Project A approval request' -Name 'validation_digest'
+        Assert-JsonStringField -Value $Value -Context 'Project A approval request' -Name 'request_nonce' -Pattern '^[a-fA-F0-9]{32}$'
+        Assert-JsonIso8601TimestampField -Value $Value -Context 'Project A approval request' -Name 'requested_at'
+        Assert-JsonStringField -Value $Value -Context 'Project A approval request' -Name 'run_id'
+        return
+    }
+    if ($normalized -like '*/RalphyHarness/cloud/approvals/project-a/receipts/*.json') {
+        Assert-JsonObjectContract -Value $Value -Context 'Project A approval receipt' -RequiredProperties @('payload','signature')
+        Assert-JsonObjectContract -Value $Value.payload -Context 'Project A approval receipt.payload' -RequiredProperties @('schema_version','decision','task_id','gate_id','execution_bundle_sha256','validator_implementation_sha256','policy_sha256','branch','starting_commit','head','diff_sha256','changed_entries','validation_digest','request_nonce','approved_at')
+        Assert-JsonStringField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'schema_version' -Pattern '^project-a-approval-v1$'
+        Assert-JsonStringField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'decision' -Pattern '^approved$'
+        Assert-JsonStringField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'task_id' -Pattern '^A-00[1-7]$'
+        Assert-JsonStringField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'gate_id'
+        Assert-JsonStringField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'execution_bundle_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'validator_implementation_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'policy_sha256' -Pattern $hex64
+        Assert-JsonStringField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'branch'
+        Assert-JsonStringField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'starting_commit' -Pattern $hex40
+        Assert-JsonStringField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'head' -Pattern $hex40
+        Assert-JsonStringField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'diff_sha256' -Pattern $hex64
+        if ($null -eq $Value.payload.changed_entries) { throw 'Project A approval receipt.payload field ''changed_entries'' must be an array.' }
+        Assert-JsonStringField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'validation_digest'
+        Assert-JsonStringField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'request_nonce' -Pattern '^[a-fA-F0-9]{32}$'
+        Assert-JsonIso8601TimestampField -Value $Value.payload -Context 'Project A approval receipt.payload' -Name 'approved_at'
+        Assert-JsonStringField -Value $Value -Context 'Project A approval receipt' -Name 'signature' -AllowNull
+    }
+}
+
 function Read-JsonFile {
     param([Parameter(Mandatory)][string]$Path)
     if (-not (Test-Path -LiteralPath $Path)) { throw "JSON file not found: $Path" }
-    return Get-Content -Raw -LiteralPath $Path | ConvertFrom-Json
+    $value = Get-Content -Raw -LiteralPath $Path | ConvertFrom-Json
+    Assert-StrictJsonContractForPath -Path $Path -Value $value
+    return $value
 }
 
 function Get-TaskIdFromArguments {
@@ -27,21 +308,128 @@ function Get-TaskIdFromArguments {
     throw 'No stable [TASK:X-000] marker was present in the Codex arguments.'
 }
 
-function Get-ChangedPaths {
-    param([Parameter(Mandatory)][string]$Root)
+function Invoke-GitNullPathList {
+    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string[]]$Arguments)
+    $info = [System.Diagnostics.ProcessStartInfo]::new()
+    $info.FileName = 'git'; $info.WorkingDirectory = $Root; $info.UseShellExecute = $false
+    $info.RedirectStandardOutput = $true; $info.RedirectStandardError = $true
+    foreach ($argument in @('-c', 'core.quotepath=false') + $Arguments) { [void]$info.ArgumentList.Add($argument) }
+    $process = [System.Diagnostics.Process]::new(); $process.StartInfo = $info
+    try {
+        [void]$process.Start()
+        $bytes = [System.IO.MemoryStream]::new()
+        $copy = $process.StandardOutput.BaseStream.CopyToAsync($bytes)
+        $stderr = $process.StandardError.ReadToEndAsync()
+        $process.WaitForExit(); [void]$copy.GetAwaiter().GetResult(); $errorText = $stderr.GetAwaiter().GetResult()
+        if ($process.ExitCode -ne 0) { throw "git $($Arguments -join ' ') failed: $errorText" }
+        return @([System.Text.Encoding]::UTF8.GetString($bytes.ToArray()).Split([char]0, [System.StringSplitOptions]::RemoveEmptyEntries) | ForEach-Object { $_ -replace '\\', '/' })
+    } finally { $process.Dispose() }
+}
+
+function Normalize-ExactExcludedPaths {
+    param([string[]]$ExcludedPaths = @())
+    $normalized = [System.Collections.Generic.List[string]]::new()
+    foreach ($rawPath in @($ExcludedPaths)) {
+        if ($null -eq $rawPath) { throw 'ExcludedPaths may contain only exact repository-relative file paths.' }
+        $candidate = ([string]$rawPath).Trim()
+        if ([string]::IsNullOrWhiteSpace($candidate)) { throw 'ExcludedPaths may contain only exact repository-relative file paths.' }
+        $candidate = $candidate -replace '\\', '/'
+        if ([System.IO.Path]::IsPathRooted($candidate) -or $candidate -match '^[A-Za-z]:' -or $candidate.StartsWith('/')) { throw "ExcludedPaths rejects absolute paths: $rawPath" }
+        if ($candidate -in @('.', '..') -or $candidate -match '(^|/)\.\.?(/|$)') { throw "ExcludedPaths rejects traversal segments: $rawPath" }
+        if ($candidate -match '[*?\[\]]') { throw "ExcludedPaths rejects wildcard paths: $rawPath" }
+        if ($candidate.EndsWith('/')) { throw "ExcludedPaths rejects directory-prefix exclusions: $rawPath" }
+        $normalized.Add($candidate)
+    }
+    return @($normalized | Sort-Object -Unique)
+}
+
+function Get-ReadableFileSha256 {
+    param([Parameter(Mandatory)][string]$Path)
+    $stream = [System.IO.File]::Open($Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+    try {
+        return [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($stream))
+    } finally {
+        $stream.Dispose()
+    }
+}
+
+function Get-HarnessLifecycleExcludedPaths {
+    param(
+        [Parameter(Mandatory)][string]$Root,
+        [Parameter(Mandatory)][ValidateSet('smoke', 'project-a')][string]$ProfileId,
+        [switch]$IncludeStopFlag
+    )
+    $profile = Read-HarnessProfile -Root $Root -ProfileId $ProfileId
     $paths = [System.Collections.Generic.List[string]]::new()
-    foreach ($command in @(
-        @('diff', '--name-only', '--relative', 'HEAD'),
-        @('diff', '--cached', '--name-only', '--relative', 'HEAD'),
-        @('ls-files', '--others', '--exclude-standard')
-    )) {
-        $output = & git -C $Root -c core.quotepath=false @command
-        if ($LASTEXITCODE -ne 0) { throw "git $($command -join ' ') failed" }
-        foreach ($path in $output) {
-            if ($path) { $paths.Add(($path -replace '\\', '/')) }
+    $paths.Add('.harness/runtime/harness.lock')
+    if ($IncludeStopFlag) { $paths.Add('.harness/runtime/stop.flag') }
+    if ($ProfileId -eq 'smoke') {
+        $paths.Add('.harness/runtime/PRD.json')
+        foreach ($taskId in @($profile.task_ids | ForEach-Object { [string]$_ })) {
+            $paths.Add(".harness/runtime/state/$taskId.json")
+            $paths.Add(".harness/runtime/takeovers/$taskId.md")
+        }
+    } else {
+        $paths.Add('.harness/runtime/project-a/PRD.json')
+        foreach ($taskId in @($profile.task_ids | ForEach-Object { [string]$_ })) {
+            $paths.Add(".harness/runtime/project-a/state/$taskId.json")
+            $paths.Add(".harness/runtime/project-a/locks/$taskId.lock")
+            $paths.Add(".harness/runtime/project-a/takeovers/$taskId.md")
         }
     }
-    return @($paths | Sort-Object -Unique)
+    return @(Normalize-ExactExcludedPaths -ExcludedPaths $paths.ToArray())
+}
+
+function Get-ChangedPaths {
+    param([Parameter(Mandatory)][string]$Root, [string[]]$ExcludedPaths = @())
+    $paths = [System.Collections.Generic.List[string]]::new()
+    $excluded = @(Normalize-ExactExcludedPaths -ExcludedPaths $ExcludedPaths)
+    foreach ($command in @(
+        @('diff', '--name-only', '-z', '--relative', 'HEAD'),
+        @('diff', '--cached', '--name-only', '-z', '--relative', 'HEAD'),
+        @('ls-files', '--others', '--exclude-standard', '-z'),
+        @('ls-files', '--others', '--ignored', '--exclude-standard', '-z')
+    )) {
+        foreach ($path in @(Invoke-GitNullPathList -Root $Root -Arguments $command)) { $paths.Add($path) }
+    }
+    # Preserve legacy log/message exclusions, but runtime paths must be exact and explicit.
+    return @($paths | Where-Object {
+        $_ -notmatch '^(\.logs/|\.codex-last-message-|last message\.txt$)' -and
+        $_ -notin $excluded
+    } | Sort-Object -Unique)
+}
+
+function Invoke-ProcessWithTimeout {
+    param(
+        [Parameter(Mandatory)][System.Diagnostics.Process]$Process,
+        [Parameter(Mandatory)][int]$TimeoutSeconds
+    )
+    if ($TimeoutSeconds -lt 1) { throw 'Process timeout must be at least one second.' }
+    $stdoutTask = $Process.StandardOutput.ReadToEndAsync()
+    $stderrTask = $Process.StandardError.ReadToEndAsync()
+    $timedOut = -not $Process.WaitForExit($TimeoutSeconds * 1000)
+    if ($timedOut) {
+        # Kill the launcher and every child before accepting a timeout result.
+        $Process.Kill($true)
+        $Process.WaitForExit()
+    }
+    return [pscustomobject]@{
+        timed_out = $timedOut
+        exit_code = if ($timedOut) { 124 } else { $Process.ExitCode }
+        stdout = $stdoutTask.GetAwaiter().GetResult()
+        stderr = $stderrTask.GetAwaiter().GetResult()
+    }
+}
+
+function Get-PositiveTimeoutSeconds {
+    param([Parameter(Mandatory)]$Policy, [Parameter(Mandatory)][string]$Name, [int]$DefaultSeconds)
+    if ($Policy.PSObject.Properties.Name -contains $Name -and [int]$Policy.$Name -gt 0) { return [int]$Policy.$Name }
+    return $DefaultSeconds
+}
+
+function Write-HarnessStopSentinel {
+    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string]$ErrorClass, [Parameter(Mandatory)][string]$Message)
+    Write-JsonNoBom -Path (Join-Path $Root '.harness/runtime/stop.flag') -Value ([ordered]@{ error_class = $ErrorClass; message = $Message; stopped_at = [DateTimeOffset]::UtcNow.ToString('o') })
 }
 
 function Test-AllowedPath {
@@ -60,22 +448,22 @@ function Test-AllowedPath {
 }
 
 function Assert-OnlyAllowedChanges {
-    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string[]]$AllowedPaths)
-    $changed = @(Get-ChangedPaths -Root $Root)
+    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string[]]$AllowedPaths, [string[]]$ExcludedPaths = @())
+    $changed = @(Get-ChangedPaths -Root $Root -ExcludedPaths $ExcludedPaths)
     $outside = @($changed | Where-Object { -not (Test-AllowedPath -Path $_ -AllowedPaths $AllowedPaths) })
     if ($outside.Count -gt 0) { throw "Changed paths outside task scope: $($outside -join ', ')" }
     return $changed
 }
 
 function Get-DiffFingerprint {
-    param([Parameter(Mandatory)][string]$Root)
+    param([Parameter(Mandatory)][string]$Root, [string[]]$ExcludedPaths = @())
     $builder = [System.Text.StringBuilder]::new()
     [void]$builder.AppendLine((& git -C $Root diff --binary HEAD | Out-String))
-    foreach ($path in (& git -C $Root -c core.quotepath=false ls-files --others --exclude-standard | Sort-Object)) {
+    foreach ($path in @(Get-ChangedPaths -Root $Root -ExcludedPaths $ExcludedPaths)) {
         $fullPath = Join-Path $Root $path
-        [void]$builder.AppendLine("UNTRACKED:$path")
+        [void]$builder.AppendLine("PATH:$path")
         if (Test-Path -LiteralPath $fullPath -PathType Leaf) {
-            [void]$builder.AppendLine((Get-FileHash -Algorithm SHA256 -LiteralPath $fullPath).Hash)
+            [void]$builder.AppendLine((Get-ReadableFileSha256 -Path $fullPath))
         }
     }
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($builder.ToString())
@@ -167,7 +555,7 @@ function Open-ExclusiveLock {
     $parent = Split-Path -Parent $Path
     [System.IO.Directory]::CreateDirectory($parent) | Out-Null
     try {
-        return [System.IO.File]::Open($Path, [System.IO.FileMode]::OpenOrCreate, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
+        return [System.IO.File]::Open($Path, [System.IO.FileMode]::OpenOrCreate, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::Read)
     } catch {
         throw "Another harness instance owns the lock: $Path"
     }
@@ -179,36 +567,170 @@ function Test-TerraEscalation {
         [int]$Attempts,
         [int]$AttemptLimit,
         [int]$ConsecutiveFailures,
+        [int]$ConsecutiveFailureLimit = 2,
         [int]$SameErrorCount,
+        [int]$SameErrorLimit = 2,
         [bool]$NoDiff,
+        [bool]$EscalateOnNoDiff = $true,
         [double]$ElapsedMinutes,
         [int]$ElapsedLimitMinutes,
+        [bool]$EscalateOnScopeEscape = $true,
         [AllowNull()][string]$ErrorClass
     )
     return $ForceApplied -or
         $Attempts -ge $AttemptLimit -or
-        $ConsecutiveFailures -ge 2 -or
-        $SameErrorCount -ge 2 -or
-        $NoDiff -or
+        $ConsecutiveFailures -ge $ConsecutiveFailureLimit -or
+        $SameErrorCount -ge $SameErrorLimit -or
+        ($EscalateOnNoDiff -and $NoDiff) -or
         $ElapsedMinutes -ge $ElapsedLimitMinutes -or
-        $ErrorClass -eq 'SCOPE_ESCAPE'
+        ($EscalateOnScopeEscape -and $ErrorClass -eq 'SCOPE_ESCAPE')
 }
 
 function Sync-RalphyManifestWithTaskState {
     param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string]$ManifestPath)
     $manifest = Read-JsonFile -Path $ManifestPath
+    $currentBranch = (& git -C $Root branch --show-current 2>$null | Out-String).Trim()
+    $currentHead = (& git -C $Root rev-parse HEAD 2>$null | Out-String).Trim()
+    $approvedPlanHash = $null
+    $approvalPath = Join-Path $Root 'harness/plan-approval.json'
+    $planPath = Join-Path $Root 'PLAN.md'
+    if ((Test-Path -LiteralPath $approvalPath -PathType Leaf) -and (Test-Path -LiteralPath $planPath -PathType Leaf)) {
+        $approval = Read-JsonFile -Path $approvalPath
+        $actualPlanHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $planPath).Hash
+        if ([string]$approval.plan_sha256 -eq $actualPlanHash) { $approvedPlanHash = [string]$approval.plan_sha256 }
+    }
     foreach ($task in $manifest.tasks) {
         $id = Get-TaskIdFromArguments -Arguments @([string]$task.title)
+        # Project A has a stronger completion contract and is synchronized by
+        # Sync-ProjectAManifestWithTaskState below.
         $statePath = Join-Path $Root ".harness/runtime/state/$id.json"
         $completed = $false
         if (Test-Path -LiteralPath $statePath) {
             $state = Read-JsonFile -Path $statePath
-            $completed = $state.status -eq 'completed'
+            if ($state.status -eq 'completed') {
+                $completed = $true
+                if ($state.PSObject.Properties.Name -contains 'task_id' -and [string]$state.task_id -ne $id) { $completed = $false }
+                if ($completed -and $state.PSObject.Properties.Name -contains 'branch' -and $currentBranch -and [string]$state.branch -ne $currentBranch) { $completed = $false }
+                if ($completed -and $approvedPlanHash -and $state.PSObject.Properties.Name -contains 'plan_hash' -and [string]$state.plan_hash -ne $approvedPlanHash) { $completed = $false }
+                $policyPath = Join-Path $Root "harness/tasks/$id.json"
+                if ($completed -and (Test-Path -LiteralPath $policyPath -PathType Leaf)) {
+                    $policy = Read-JsonFile -Path $policyPath
+                    $commitSha = [string]$state.commit_sha
+                    if ([string]::IsNullOrWhiteSpace($commitSha)) { $completed = $false }
+                    if ($completed -and $currentHead) {
+                        & git -C $Root merge-base --is-ancestor $commitSha $currentHead 2>$null | Out-Null
+                        if ($LASTEXITCODE -ne 0) { $completed = $false }
+                    }
+                    if ($completed) {
+                        $subject = (& git -C $Root log -1 --format=%s $commitSha 2>$null | Out-String).Trim()
+                        if ($subject -ne [string]$policy.commit_message) { $completed = $false }
+                    }
+                    if ($completed) {
+                        $evidencePath = Join-Path $Root ([string]$policy.expected_evidence)
+                        if (-not (Test-Path -LiteralPath $evidencePath -PathType Leaf)) { $completed = $false }
+                    }
+                }
+            }
         }
         $task.completed = $completed
     }
     Write-JsonNoBom -Path $ManifestPath -Value $manifest
     return $manifest
+}
+
+function Test-ProjectACompletedTaskState {
+    param(
+        [Parameter(Mandatory)][string]$Root,
+        [Parameter(Mandatory)]$TaskState,
+        [Parameter(Mandatory)][string]$TaskId,
+        [Parameter(Mandatory)][string]$CurrentHead,
+        [Parameter(Mandatory)][string]$Branch,
+        [Parameter(Mandatory)][string]$BundleHash,
+        [Parameter(Mandatory)][string]$ValidatorHash,
+        [AllowNull()][string]$CommitSha,
+        [switch]$AllowCommitting
+    )
+    $commit = if ($CommitSha) { $CommitSha } else { [string]$TaskState.commit_sha }
+    if ([string]$TaskState.task_id -ne $TaskId -or [string]$TaskState.profile_id -ne 'project-a') { return $false }
+    if ([string]$TaskState.bundle_hash -ne $BundleHash -or [string]$TaskState.validator_sha256 -ne $ValidatorHash -or [string]$TaskState.branch -ne $Branch) { return $false }
+    if ($AllowCommitting) { if ([string]$TaskState.status -notin @('committing','completed')) { return $false } } elseif ([string]$TaskState.status -ne 'completed') { return $false }
+    $policyPath = Join-Path $Root "project-a/harness/tasks/$TaskId.json"
+    if (-not (Test-Path -LiteralPath $policyPath -PathType Leaf)) { return $false }
+    $policy = Read-JsonFile -Path $policyPath
+    if ([string]$TaskState.policy_sha256 -ne (Get-FileHash -Algorithm SHA256 -LiteralPath $policyPath).Hash -or [string]::IsNullOrWhiteSpace($commit)) { return $false }
+    & git -C $Root merge-base --is-ancestor $commit $CurrentHead 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) { return $false }
+    $parent = (& git -C $Root rev-parse "$commit^" 2>$null | Out-String).Trim()
+    $subject = (& git -C $Root log -1 --format=%s $commit 2>$null | Out-String).Trim()
+    if ([string]::IsNullOrWhiteSpace($parent) -or $parent -ne [string]$TaskState.starting_commit -or $subject -ne [string]$policy.commit_message) { return $false }
+    $evidencePath = Join-Path $Root ([string]$policy.expected_evidence)
+    if (-not (Test-Path -LiteralPath $evidencePath -PathType Leaf) -or [string]::IsNullOrWhiteSpace([string]$TaskState.evidence_sha256)) { return $false }
+    if ((Get-FileHash -Algorithm SHA256 -LiteralPath $evidencePath).Hash -ne [string]$TaskState.evidence_sha256) { return $false }
+    try { $evidence = Read-JsonFile -Path $evidencePath } catch { return $false }
+    if ([string]$evidence.task_id -ne $TaskId -or [string]$evidence.commit_parent -ne [string]$TaskState.starting_commit) { return $false }
+    if ([bool]$evidence.approval_required -ne [bool]$policy.approval.required) { return $false }
+    $stateDigest = [string]$TaskState.approval_receipt_digest
+    $evidenceDigest = [string]$evidence.approval_receipt_digest
+    if ([bool]$policy.approval.required) {
+        if ([string]::IsNullOrWhiteSpace($stateDigest) -or $stateDigest -ne $evidenceDigest) { return $false }
+    } elseif (-not [string]::IsNullOrWhiteSpace($stateDigest) -or -not [string]::IsNullOrWhiteSpace($evidenceDigest)) { return $false }
+    return $true
+}
+
+function Sync-ProjectAManifestWithTaskState {
+    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string]$ManifestPath, [Parameter(Mandatory)][string]$Branch, [Parameter(Mandatory)][string]$BundleHash, [Parameter(Mandatory)][string]$ValidatorHash)
+    $manifest = Read-JsonFile -Path $ManifestPath
+    $head = (& git -C $Root rev-parse HEAD 2>$null | Out-String).Trim()
+    foreach ($task in $manifest.tasks) {
+        $id = Get-TaskIdFromArguments -Arguments @([string]$task.title)
+        $statePath = Join-Path $Root ".harness/runtime/project-a/state/$id.json"
+        $task.completed = $false
+        if (Test-Path -LiteralPath $statePath -PathType Leaf) {
+            $task.completed = Test-ProjectACompletedTaskState -Root $Root -TaskState (Read-JsonFile -Path $statePath) -TaskId $id -CurrentHead $head -Branch $Branch -BundleHash $BundleHash -ValidatorHash $ValidatorHash
+        }
+    }
+    Write-JsonNoBom -Path $ManifestPath -Value $manifest
+    return $manifest
+}
+
+function Get-LingeringHarnessProcesses {
+    param(
+        [int]$CurrentProcessId = $PID,
+        [AllowNull()][object[]]$Processes = $null
+    )
+    $results = [System.Collections.Generic.List[object]]::new()
+    $allProcesses = if ($null -ne $Processes) { @($Processes) } else { @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue) }
+    $parentMap = @{}
+    foreach ($process in $allProcesses) {
+        if (-not $process) { continue }
+        $parentMap[[int]$process.ProcessId] = if ($null -ne $process.ParentProcessId) { [int]$process.ParentProcessId } else { 0 }
+    }
+    function Test-DescendsFromCurrentProcess([int]$ProcessId) {
+        $visited = [System.Collections.Generic.HashSet[int]]::new()
+        $cursor = $ProcessId
+        while ($parentMap.ContainsKey($cursor) -and $visited.Add($cursor)) {
+            $cursor = [int]$parentMap[$cursor]
+            if ($cursor -eq $CurrentProcessId) { return $true }
+            if ($cursor -le 0) { break }
+        }
+        return $false
+    }
+    foreach ($process in $allProcesses) {
+        if (-not $process -or $process.ProcessId -eq $CurrentProcessId) { continue }
+        $name = [string]$process.Name
+        $commandLine = [string]$process.CommandLine
+        $descendsFromCurrent = Test-DescendsFromCurrentProcess -ProcessId ([int]$process.ProcessId)
+        $matchesHarnessProcess = $descendsFromCurrent -and ($name -match '^(ralphy|codex|pwsh|powershell)(?:\.cmd|\.exe)?$')
+        $matchesHarnessPwsh = $descendsFromCurrent -and $name -match '^(pwsh|powershell)(?:\.exe)?$' -and $commandLine -match '(Start-Harness|Start-ProjectAHarness|Invoke-ProjectAAdapter|Invoke-ProjectAValidators)\.ps1'
+        if ($matchesHarnessProcess -or $matchesHarnessPwsh) {
+            $results.Add([pscustomobject]@{
+                process_id = [int]$process.ProcessId
+                name = $name
+                command_line = $commandLine
+            })
+        }
+    }
+    return @($results)
 }
 
 function Resolve-PathUnderRoot {
@@ -287,8 +809,8 @@ function Set-RepoOnlyProcessEnvironment {
 }
 
 function Get-CanonicalDiffRecord {
-    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string[]]$AllowedPaths, [string[]]$AdapterOwnedPaths = @())
-    $paths = @(Assert-OnlyAllowedChanges -Root $Root -AllowedPaths $AllowedPaths)
+    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string[]]$AllowedPaths, [string[]]$AdapterOwnedPaths = @(), [string[]]$AllowedExecutablePaths = @(), [string[]]$ExcludedPaths = @())
+    $paths = @(Assert-OnlyAllowedChanges -Root $Root -AllowedPaths $AllowedPaths -ExcludedPaths $ExcludedPaths)
     $adapterChanges = @()
     if (@($AdapterOwnedPaths).Count -gt 0) { $adapterChanges = @($paths | Where-Object { Test-AllowedPath -Path $_ -AllowedPaths $AdapterOwnedPaths }) }
     if (@($adapterChanges).Count -gt 0) { throw "Agent changed adapter-owned path: $($adapterChanges -join ', ')" }
@@ -298,15 +820,17 @@ function Get-CanonicalDiffRecord {
         if ($relative -match '(^|/)(\.git|\.harness)(/|$)' -or $relative -match ':' -or $relative -match '(^|/)\.\.(/|$)') { throw "Unsafe changed path: $relative" }
         $full = Resolve-PathUnderRoot -Root $Root -RelativePath $relative
         $raw=@(& git -C $Root diff --raw --no-abbrev HEAD -- $relative)
+        if (-not $raw.Count) { $raw = @(& git -C $Root diff --cached --raw --no-abbrev HEAD -- $relative) }
         $rawLine=if($raw.Count){[string]$raw[-1]}else{''}
         $oldMode='000000';$newMode=if(Test-Path -LiteralPath $full){'100644'}else{'000000'};$gitStatus=if(Test-Path -LiteralPath $full){'untracked'}else{'deleted'}
         if($rawLine -match '^:(?<old>[0-9]{6})\s+(?<new>[0-9]{6})\s+[0-9a-f]+\s+[0-9a-f]+\s+(?<status>[A-Z])'){$oldMode=$Matches.old;$newMode=$Matches.new;$gitStatus=$Matches.status}
         if($newMode -in @('120000','160000') -or $oldMode -in @('120000','160000')){throw "Symlink/submodule modes are not allowed: $relative"}
+        if (($oldMode -match '^1007' -or $newMode -match '^1007') -and (@($AllowedExecutablePaths).Count -eq 0 -or -not (Test-AllowedPath -Path $relative -AllowedPaths $AllowedExecutablePaths))) { throw "UNAPPROVED_EXECUTABLE_BIT: $relative" }
         if (Test-Path -LiteralPath $full) {
             $item = Get-Item -LiteralPath $full -Force
             if ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) { throw "Reparse points are not allowed: $relative" }
             if ($item.PSIsContainer) { throw "Changed directories are not valid task artifacts: $relative" }
-            [ordered]@{ path = $relative; status = 'present'; git_status=$gitStatus; old_mode=$oldMode; new_mode=$newMode; length = $item.Length; content_sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $full).Hash }
+            [ordered]@{ path = $relative; status = 'present'; git_status=$gitStatus; old_mode=$oldMode; new_mode=$newMode; length = $item.Length; content_sha256 = (Get-ReadableFileSha256 -Path $full) }
         } else { [ordered]@{ path = $relative; status = 'deleted'; git_status=$gitStatus; old_mode=$oldMode; new_mode=$newMode; length = 0; content_sha256 = 'DELETED' } }
     }
     $json = @($entries) | ConvertTo-Json -Compress -Depth 5

@@ -10,17 +10,46 @@ Import-Module (Join-Path $PSScriptRoot 'Harness.Common.psm1') -Force
 $Root = [System.IO.Path]::GetFullPath($Root)
 $localBase = if ($env:LOCALAPPDATA) { $env:LOCALAPPDATA } else { Join-Path $env:USERPROFILE 'AppData/Local' }
 $approvalRoot = Join-Path $localBase 'RalphyHarness/cloud/approvals/project-a'
-$requestPath = Join-Path $approvalRoot "requests/$TaskId.json"
-$receiptPath = Join-Path $approvalRoot "receipts/$TaskId.json"
-$keyPath = Join-Path $approvalRoot "keys/$TaskId.dpapi"
+$statePath = Join-Path $Root ".harness/runtime/project-a/state/$TaskId.json"
+$legacyRequestPath = Join-Path $approvalRoot "requests/$TaskId.json"
+$legacyReceiptPath = Join-Path $approvalRoot "receipts/$TaskId.json"
+$legacyKeyPath = Join-Path $approvalRoot "keys/$TaskId.dpapi"
+$legacyConfirmationPath = Join-Path $approvalRoot "confirmations/$TaskId.txt"
+
+function Resolve-ApprovalArtifactPath([object]$State, [string]$PropertyName, [string]$LegacyPath) {
+    if ($State -and $State.PSObject.Properties.Name -contains $PropertyName) {
+        $candidate = [string]$State.$PropertyName
+        if (-not [string]::IsNullOrWhiteSpace($candidate)) {
+            return $candidate
+        }
+    }
+    return $LegacyPath
+}
+
+$state = if (Test-Path -LiteralPath $statePath -PathType Leaf) { Read-JsonFile -Path $statePath } else { $null }
+if ($state) {
+    if ([string]$state.task_id -ne $TaskId) { throw 'Persisted approval state task mismatch.' }
+    if ([string]$state.status -ne 'awaiting_approval') { throw "Task $TaskId is not awaiting approval." }
+}
+
+$requestPath = Resolve-ApprovalArtifactPath -State $state -PropertyName 'approval_request' -LegacyPath $legacyRequestPath
+$receiptPath = Resolve-ApprovalArtifactPath -State $state -PropertyName 'approval_receipt' -LegacyPath $legacyReceiptPath
+$keyPath = Resolve-ApprovalArtifactPath -State $state -PropertyName 'approval_key' -LegacyPath $legacyKeyPath
+$confirmationPath = Resolve-ApprovalArtifactPath -State $state -PropertyName 'approval_confirmation' -LegacyPath $legacyConfirmationPath
 $request = Read-JsonFile -Path $requestPath
 if ([string]$request.task_id -ne $TaskId) { throw 'Approval request task mismatch.' }
 $policy = Read-JsonFile -Path (Join-Path $Root "project-a/harness/tasks/$TaskId.json")
-$diff = Get-CanonicalDiffRecord -Root $Root -AllowedPaths @($policy.allowed_paths) -AdapterOwnedPaths @($policy.adapter_owned_paths)
+$runtimeExcluded = @(Get-HarnessLifecycleExcludedPaths -Root $Root -ProfileId 'project-a')
+$allowedExecutablePaths = if ($policy.PSObject.Properties.Name -contains 'allowed_executable_paths') { @($policy.allowed_executable_paths | ForEach-Object { [string]$_ }) } else { @() }
+$diff = Get-CanonicalDiffRecord -Root $Root -AllowedPaths @($policy.allowed_paths) -AdapterOwnedPaths @($policy.adapter_owned_paths) -AllowedExecutablePaths $allowedExecutablePaths -ExcludedPaths $runtimeExcluded
 $branch = (& git -C $Root branch --show-current).Trim(); $head = (& git -C $Root rev-parse HEAD).Trim()
 if ($branch -ne [string]$request.branch -or $head -ne [string]$request.head -or $diff.sha256 -ne [string]$request.diff_sha256) { throw 'Approval request no longer matches branch, HEAD, or exact diff.' }
-$confirmation = if ($env:HARNESS_CONTRACT_ONLY -eq '1' -and $env:HARNESS_APPROVE_TASK) {
-    [string]$env:HARNESS_APPROVE_TASK
+$confirmation = if (Test-Path -LiteralPath $confirmationPath -PathType Leaf) {
+    try {
+        (Get-Content -LiteralPath $confirmationPath -Raw).Trim()
+    } finally {
+        Remove-Item -LiteralPath $confirmationPath -Force -ErrorAction SilentlyContinue
+    }
 } else {
     if ([Console]::IsInputRedirected -or [Console]::IsOutputRedirected -or -not [Environment]::UserInteractive) { throw 'Human approval requires an interactive, non-redirected console.' }
     Read-Host "Type APPROVE:$TaskId to approve the exact validated diff"

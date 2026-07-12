@@ -1,14 +1,14 @@
 {
   "plan_id": "project-a-repo-baseline-v1",
-  "status": "spec_approved_execution_blocked",
+  "status": "execution_approved",
   "spec_approved": true,
-  "execution_approved": false,
+  "execution_approved": true,
   "spec_approved_by": "user",
-  "spec_approved_at": "2026-07-10",
-  "approval_source": "Codex task: formally remove H2-H5 and allow autonomous completion",
-  "spec_bundle_sha256": "1B883C149EC63391E48E2E943AA554A8CB396E9E4F4FF45CA552CA7CF8691FE6",
-  "execution_bundle_sha256": null,
+  "spec_approved_at": "2026-07-12",
+  "approval_source": "Cursor chat: Approval granted to finish local orchestration",
+  "spec_bundle_sha256": "6723155F8D76675ADD4D03468EDA1681C2D908BAE93CD512EB1DB53A20DF5053",
+  "execution_bundle_sha256": "B62D8C94855AF6A7C647D6F6411173070A115DF85C239E4A1886BF381DF6F4D2",
   "hash_implementation_sha256": "355A672293C178681192155CFF74F30437D542B4227D388510BF95FB813F67DB",
-  "validator_implementation_sha256": null,
-  "reason": "The user approved the autonomous repo-only revision: H0/H1 remain historical foundation gates; A-003 through A-007 require deterministic validation but no human receipt."
+  "validator_implementation_sha256": "90C3AA49D8A7BB8CD928169E6666723527090A3743D1B7772F18D231EA487F8E",
+  "reason": "The user approved the current repo-only execution bundle after local review completion, harness hardening, and offline validation."
 }

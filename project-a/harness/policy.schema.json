@@ -12,6 +12,7 @@
     "mode": {"const":"repo_only"},
     "depends_on": {"type":"array","items":{"pattern":"^A-00[1-7]$"},"uniqueItems":true},
     "allowed_paths": {"type":"array","items":{"type":"string","minLength":1},"minItems":1,"uniqueItems":true},
+    "allowed_executable_paths": {"type":"array","items":{"type":"string","minLength":1},"uniqueItems":true},
     "adapter_owned_paths": {"type":"array","items":{"pattern":"^evidence/project-a/A-00[1-7]\\.json$"},"minItems":1,"maxItems":1,"uniqueItems":true},
     "forbidden_operations": {"type":"array","items":{"type":"string"},"minItems":6,"uniqueItems":true},
     "validator_mutation_policy": {"const":"no_tracked_writes"},
