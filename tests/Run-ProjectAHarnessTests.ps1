@@ -349,7 +349,9 @@ try{
     [IO.Directory]::CreateDirectory((Join-Path $forbiddenRepo 'project-a/docs'))|Out-Null
     [IO.File]::WriteAllText((Join-Path $forbiddenRepo 'project-a/fixture with space-非.txt'),"safe`n",[Text.UTF8Encoding]::new($false))
     $cleanResult=Invoke-ValidatorFixture -Repo $forbiddenRepo -PolicyPath $forbiddenPath
-    Assert-True ($cleanResult.ExitCode -eq 0) 'default forbidden-operations policy allows clean text artifacts'
+    $cleanChanged=@(Get-ChangedPaths -Root $forbiddenRepo -ExcludedPaths @(Get-HarnessLifecycleExcludedPaths -Root $forbiddenRepo -ProfileId 'project-a')) -join ', '
+    $cleanMessage=if($null -ne $cleanResult.Result){[string]$cleanResult.Result.message}else{'<no validator result>'}
+    Assert-True ($cleanResult.ExitCode -eq 0) "default forbidden-operations policy allows clean text artifacts (exit=$($cleanResult.ExitCode); message=$cleanMessage; changed=$cleanChanged)"
     [IO.File]::WriteAllText((Join-Path $forbiddenRepo 'project-a/docs/runbook.md'),"Use terraform plan only in examples.`n",[Text.UTF8Encoding]::new($false))
     $planResult=Invoke-ValidatorFixture -Repo $forbiddenRepo -PolicyPath $forbiddenPath
     Assert-True ($planResult.ExitCode -ne 0 -and $planResult.Result.message -match 'project-a/docs/runbook\.md \[terraform plan\]') 'forbidden-operations validator scans changed documentation artifacts, not only shell files'
