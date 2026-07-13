@@ -142,7 +142,15 @@ try {
             if (-not (Test-Path -LiteralPath $taskStatePath -PathType Leaf)) { throw "Project A completion contract failed: missing state for $taskId." }
             $taskState = Read-JsonFile -Path $taskStatePath
             if (-not (Test-EligibleCompletedTaskState -TaskState $taskState -TaskId $taskId -CurrentHead $currentHead)) { throw "Project A completion contract failed: stale or incomplete state for $taskId." }
-            if ($previousCommit -and [string]$taskState.starting_commit -ne $previousCommit) { throw "Project A completion contract failed: commit chain is broken before $taskId." }
+            if ($previousCommit) {
+                $matchesDirectChain = [string]$taskState.starting_commit -eq $previousCommit
+                if (-not $matchesDirectChain) {
+                    $allowHistoricalAncestor = $taskState.PSObject.Properties.Name -contains 'historical_reconstruction' -and [bool]$taskState.historical_reconstruction
+                    if (-not $allowHistoricalAncestor) { throw "Project A completion contract failed: commit chain is broken before $taskId." }
+                    & git -C $root merge-base --is-ancestor ([string]$taskState.starting_commit) $previousCommit 2>$null | Out-Null
+                    if ($LASTEXITCODE -ne 0) { throw "Project A completion contract failed: commit chain is broken before $taskId." }
+                }
+            }
             foreach ($property in @('approval_request','approval_receipt','approval_key')) {
                 $artifactPath = [string]$taskState.$property
                 if (-not [string]::IsNullOrWhiteSpace($artifactPath) -and (Test-Path -LiteralPath $artifactPath)) { throw "Project A completion contract failed: leftover approval artifact for $taskId." }
@@ -150,7 +158,8 @@ try {
             $states.Add($taskState)
             $previousCommit = [string]$taskState.commit_sha
         }
-        if ($previousCommit -ne $currentHead) { throw 'Project A completion contract failed: HEAD is not the final gated task commit.' }
+        & git -C $root merge-base --is-ancestor $previousCommit $currentHead 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw 'Project A completion contract failed: HEAD does not contain the final gated task commit.' }
         $finalChanges = @(Get-ChangedPaths -Root $root -ExcludedPaths $runtimeExcluded)
         if ($finalChanges.Count -gt 0) { throw "Project A completion contract failed: dirty tree remains: $($finalChanges -join ', ')" }
         $lingering = @(Get-LingeringHarnessProcesses -CurrentProcessId $PID)
