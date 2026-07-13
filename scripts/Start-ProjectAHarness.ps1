@@ -198,6 +198,11 @@ try {
     $env:HARNESS_MANIFEST_PATH=$manifestPath; $env:PATH="$adapterDir;$env:PATH"
     $arguments=@('--codex','--json',$manifestPath,'--model','gpt-5.6-terra','--max-retries','0','--no-commit','--no-tests','--no-lint','--no-browser')
     if($DryRun){$arguments+=@('--dry-run','--max-iterations','7')}
+    foreach($forbiddenFlag in @('--parallel','--worktree','--worktrees','--sandbox','--branch-per-task')){
+        if(@($arguments|Where-Object{$_ -eq $forbiddenFlag -or $_ -like "$forbiddenFlag=*"}).Count -gt 0){
+            throw "Forbidden Ralphy CLI flag refused: $forbiddenFlag"
+        }
+    }
     & $realRalphy @arguments; $code=$LASTEXITCODE
     if($DryRun){Write-Host "Project A dry run passed. Execution approved: $([bool]$executionApproval.execution_approved). Bundle: $($execution.sha256)";exit $code}
     if($code -ne 0){Write-Host 'Project A paused or failed. Review the current task evidence, approve if requested, then resume:';Write-Host '  .\scripts\Start-ProjectAHarness.ps1 -Resume';exit $code}

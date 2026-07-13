@@ -14,6 +14,9 @@ review.
 Use the [platform diagram](docs/diagrams/platform.svg), the
 [network diagram](docs/diagrams/network.svg), and the
 [evidence index](evidence-index.md) to inspect the full repo-only contract.
+The [Graphify report](graphify-out/GRAPH_REPORT.md) is a structural navigation
+aid only; it is not a substitute for Terraform, policy, security, or human
+validation, and it does not prove cloud behavior.
 This repository proves a documented junior-to-mid level infrastructure design
 exercise; it does not prove production readiness, senior ownership, enterprise
 operations, or cloud validation.

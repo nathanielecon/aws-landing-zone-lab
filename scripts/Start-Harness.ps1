@@ -104,6 +104,11 @@ try {
 
     $ralphyArguments = @('--codex', '--json', $manifestPath, '--model', 'gpt-5.6-terra', '--max-retries', '0', '--no-commit', '--no-tests', '--no-lint', '--no-browser')
     if ($DryRun) { $ralphyArguments += @('--dry-run', '--max-iterations', '2') }
+    foreach ($forbiddenFlag in @('--parallel', '--worktree', '--worktrees', '--sandbox', '--branch-per-task')) {
+        if (@($ralphyArguments | Where-Object { $_ -eq $forbiddenFlag -or $_ -like "$forbiddenFlag=*" }).Count -gt 0) {
+            throw "Forbidden Ralphy CLI flag refused: $forbiddenFlag"
+        }
+    }
     Write-Host "Run ID: $runId"
     Write-Host "Sanitized logs: $logRoot"
     & $realRalphy @ralphyArguments
