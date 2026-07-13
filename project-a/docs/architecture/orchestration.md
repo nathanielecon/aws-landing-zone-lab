@@ -13,8 +13,9 @@ Related architecture docs (preserved):
 
 Frozen rubrics live under [`harness/rubrics/`](../../../harness/rubrics/).
 Break/fix history lives in [`BREAK_FIX_LOG.md`](../../../BREAK_FIX_LOG.md).
-Goal-loop state is external (`cursor-goal`); verification command is
-`gh pr checks 13`.
+Goal-loop state is external (`cursor-goal`). PR `#13` was squash-merged to
+`main` as `1564c6b` on 2026-07-13; historical verification for that delivery
+was `gh pr checks 13`.
 
 ## Context protocol (anti-rot fundamentals)
 
@@ -57,7 +58,7 @@ Durable sources of truth (must stay tracked / maintained):
 | `project-a/docs/architecture/*` | Platform architecture preservation |
 | `project-a/harness/*-approval.json` | Spec/execution hash pins |
 | `cursor-goal` state | Active objective + verification command |
-| PR `#13` / Windows CI | Remote merge-readiness proof |
+| PR `#13` (merged) / Windows CI | Remote merge-readiness proof for the Project A delivery |
 
 Never delete rubrics or architecture docs as “cleanup.”
 
@@ -196,6 +197,50 @@ parallel/worktree/sandbox/branch-per-task flags).
 | Execution approval `proven_with.fake_codex_only` | Bundle was proven without live models/cloud credentials | Live-model robustness |
 | Windows CI workflow | Remote Windows contract/spec/harness assertions on the PR/push SHA | Production operations or cloud validation |
 | Evidence index digests | Adapter-owned task evidence for repo-only commits | That AWS resources exist |
+
+## Delivery closeout — recorded process deviations (2026-07-13)
+
+The Project A delivery on PR `#13` / `main` `1564c6b` met the stated advance
+bar (must-haves + ≥9.5 per slice, Windows CI green, evidence A-001…A-007). The
+following on-the-fly adjustments departed from the ideal multi-judge loop and
+are recorded here so later orchestrators do not overclaim textbook process
+fidelity:
+
+1. **Rubrics restored mid-stream.** `harness/rubrics/` was missing when the
+   final orchestrator turn began. Slice rubrics and this orchestration doc were
+   recreated/frozen from the supervising prompt + repo state, then used for
+   scoring. They were **not** frozen from the first commit of the Project A
+   build branch.
+2. **CI bottleneck before full slice accounting.** Live Windows failures
+   (timestamps, forbidden-ops scan scope, Azure runner env allowlist, missing
+   Terraform causing the completion-isolation fixture to exit before planting
+   `.ralphy-worktrees`) were cleared first under bottleneck mode. Slice judge
+   rounds resumed after remote green rather than running uninterrupted from
+   Slice 1 day one of that turn.
+3. **Often one judge per rejudge.** The contract prefers ≥2 judges (ideally 3)
+   every round. After CI green, several advance rejudges used a **single**
+   cloud judge per slice against the frozen rubric. Multi-judge averages were
+   therefore not always produced on the final pass.
+4. **Cloud workers + local orchestration.** Fixer/judge work was frequently
+   dispatched to cloud subagents while the supervising orchestrator stayed in
+   the Cursor chat, cherry-picked cloud commits onto `codex/project-a-build`,
+   and pushed. Parallel draft branches (for example the divergent terraform
+   fixture branch) were intentionally **not** merged when superseded by the
+   already-green head.
+5. **Evidence snapshot honesty.** A-007’s `changed_entries` `content_sha256`
+   for `project-a/evidence-index.md` drifted after a later harness commit
+   appended the index row; the indexed `validation_digest` remains the
+   authoritative binding. See `project-a/evidence-index.md` and
+   `BREAK_FIX_LOG.md`.
+6. **Confidence boundary.** High confidence applies to the repo-only harness
+   contract and stated claims boundary. The Terraform/architecture surface is
+   an offline baseline, **not** cloud-validated production apply readiness.
+   Items marked needed for 10/10 (deep fault injection, exhaustive negative
+   matrices, fresh-machine one-command CI parity) were explicitly left short.
+
+Final recorded slice advance scores for that closeout: Slice 1 **9.6**, Slice 2
+**9.6**, Slice 3 **9.5**, Slice 4 **9.6**. Technical break→fix cycles remain
+in [`BREAK_FIX_LOG.md`](../../../BREAK_FIX_LOG.md).
 
 ## Operator entry points
 
