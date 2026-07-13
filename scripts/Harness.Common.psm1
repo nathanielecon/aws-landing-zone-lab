@@ -307,7 +307,7 @@ function Assert-StrictJsonContractForPath {
 function Read-JsonFile {
     param([Parameter(Mandatory)][string]$Path)
     if (-not (Test-Path -LiteralPath $Path)) { throw "JSON file not found: $Path" }
-    $value = Get-Content -Raw -LiteralPath $Path | ConvertFrom-Json
+    $value = Get-Content -Raw -LiteralPath $Path | ConvertFrom-Json -DateKind String
     Assert-StrictJsonContractForPath -Path $Path -Value $value
     return $value
 }
