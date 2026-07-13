@@ -189,7 +189,7 @@ function Assert-StrictJsonContractForPath {
         return
     }
     if ($normalized -like '*/.harness/runtime/project-a/state/*.json') {
-        Assert-JsonObjectContract -Value $Value -Context 'Project A task state' -RequiredProperties @('profile_id','bundle_hash','validator_sha256','policy_sha256','task_id','branch','starting_commit','started_at','status','phase','terra_attempts','sol_attempts','consecutive_failures','same_error_count','last_error_class','last_failure','terra_thread_id','sol_thread_id','validation_digest','diff_sha256','approval_receipt_digest','intended_tree','stage_paths','pending_evidence_path','pending_evidence_text','evidence_sha256','commit_sha','completed_at') -OptionalProperties @('approval_request','approval_receipt','approval_key','approval_confirmation')
+        Assert-JsonObjectContract -Value $Value -Context 'Project A task state' -RequiredProperties @('profile_id','bundle_hash','validator_sha256','policy_sha256','task_id','branch','starting_commit','started_at','status','phase','terra_attempts','sol_attempts','consecutive_failures','same_error_count','last_error_class','last_failure','terra_thread_id','sol_thread_id','validation_digest','diff_sha256','approval_receipt_digest','intended_tree','stage_paths','pending_evidence_path','pending_evidence_text','evidence_sha256','commit_sha','completed_at') -OptionalProperties @('approval_request','approval_receipt','approval_key','approval_confirmation','historical_reconstruction')
         Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'profile_id' -Pattern '^project-a$'
         Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'bundle_hash' -Pattern $hex64
         Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'validator_sha256' -Pattern $hex64
@@ -221,6 +221,9 @@ function Assert-StrictJsonContractForPath {
             if ($hasProperty) {
                 Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name $propertyName -AllowNull
             }
+        }
+        if ($Value.PSObject.Properties.Name -contains 'historical_reconstruction' -and $null -ne $Value.historical_reconstruction -and $Value.historical_reconstruction -isnot [bool]) {
+            throw "Project A task state field 'historical_reconstruction' must be a boolean."
         }
         if ($Value.PSObject.Properties.Name -contains 'approval_confirmation' -and $null -ne $Value.approval_confirmation) { Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'approval_confirmation' }
         Assert-JsonOptionalStringField -Value $Value -Context 'Project A task state' -Name 'approval_receipt_digest' -Pattern $hex64
