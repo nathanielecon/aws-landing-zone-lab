@@ -7,8 +7,8 @@
   "spec_approved_at": "2026-07-12",
   "approval_source": "Cursor chat: Approval granted to finish local orchestration",
   "spec_bundle_sha256": "6723155F8D76675ADD4D03468EDA1681C2D908BAE93CD512EB1DB53A20DF5053",
-  "execution_bundle_sha256": "25E2E2E6229138F0E9663888E4D2EDC9197A692C5D84FD3BCC2A04EC859755AA",
+  "execution_bundle_sha256": "6C36139391AE9734FB4ED98B50F9602F3178DABB69011C2CBB59F1BFF1AF05A5",
   "hash_implementation_sha256": "355A672293C178681192155CFF74F30437D542B4227D388510BF95FB813F67DB",
   "validator_implementation_sha256": "52217852CA9318590D40EDB54E20FA31DD10C22DB51C6A8DD8DCD5FCFEE4A267",
-  "reason": "The user approved the current repo-only execution bundle after local review completion, harness hardening, and offline validation."
+  "reason": "Repinned after Slice 1/4 quality fixes: HARNESS_CONTRACT_ONLY documentation, explicit forbidden Ralphy CLI flag refusal, and matching harness assertions. Spec bundle unchanged."
 }

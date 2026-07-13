@@ -22,6 +22,27 @@ prints this recovery command and never elevates silently:
 choco install terraform --version=1.15.5 -y --no-progress
 ```
 
+## Test-only contract shortcut
+
+`HARNESS_CONTRACT_ONLY=1` is a **test/CI shortcut**, not a production launch
+path. Windows CI and offline fake-Codex/Ralphy suites set it so adapters can
+use fixture shims and injected kill points without a live model. Operators
+running `Start-ProjectAHarness.ps1` / `Start-Harness.ps1` for a real sequential
+loop must leave it unset; production authority remains on-disk approval pins,
+policy files, and the fixed launcher argv below.
+
+## Ralphy argv contract
+
+Launchers construct a fixed Ralphy argument list
+(`--codex --json <manifest> --model gpt-5.6-terra --max-retries 0 --no-commit
+--no-tests --no-lint --no-browser`, plus dry-run caps when requested). They
+never accept caller-supplied Ralphy isolation flags. Before invoke, both
+`Start-ProjectAHarness.ps1` and `Start-Harness.ps1` explicitly refuse
+`--parallel`, `--worktree`/`--worktrees`, `--sandbox`, and
+`--branch-per-task` (and `=value` forms). Isolation directories
+`.ralphy-worktrees` / `.ralphy-sandboxes` are also rejected before and after
+execution.
+
 ## Security boundary
 
 - Codex runs with native `workspace-write`, command network access explicitly
