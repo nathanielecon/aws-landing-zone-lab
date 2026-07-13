@@ -2,6 +2,9 @@
 
 ## 2026-07-13
 
+- Break: Slice 2/3 documentation and architecture consistency gates (network extension-point alignment, audit module deep links, bootstrap state-key ownership, H1 blocked-change sample).
+  Fix: Docs/terraform README-only updates on `cursor/slice-2-3-32fe` — declared TGW/NFW/NAT/VPN/DX/RAM as extension points in `network-failure-cases.md`; linked `audit-review.md` / `audit-troubleshooting.md` to `terraform/audit/README.md`; clarified organization CloudTrail / org-trail as interface semantics; thickened bootstrap state-key isolation; added H1 blocked-change sample under Organizations guardrails. No harness hot-path or execution-bundle changes; no approval repin.
+
 - Break: PR `#13` Windows contract suite failed on `runtime task state accepts valid ISO 8601 timestamps with offsets and fractional seconds`.
   Fix: Updated `scripts/Harness.Common.psm1` so `Read-JsonFile` uses `ConvertFrom-Json -DateKind String`, preserving contract timestamps as strings across PowerShell environments; repinned execution approval hashes.
 
