@@ -337,6 +337,27 @@ try{[IO.Directory]::CreateDirectory((Join-Path $projectRuntimeRepo '.harness/run
 $unknownRepo=New-TestRepo 'unknown validator'
 try{Write-TestPolicy $unknownRepo 'A-006' $false;$unknownPath=Join-Path $unknownRepo 'project-a/harness/tasks/A-006.json';Set-PolicyValidators $unknownPath @([pscustomobject]@{id='invented_shell_command';timeout_seconds=30;required=$true});& git -C $unknownRepo add project-a/harness/tasks/A-006.json;& git -C $unknownRepo commit -m policy|Out-Null;[IO.Directory]::CreateDirectory((Join-Path $unknownRepo 'project-a'))|Out-Null;[IO.File]::WriteAllText((Join-Path $unknownRepo 'project-a/fixture with space-非.txt'),"ok`n",[Text.UTF8Encoding]::new($false));$unknownResult=Invoke-ValidatorFixture -Repo $unknownRepo -PolicyPath $unknownPath;Assert-True ($unknownResult.ExitCode -ne 0 -and $unknownResult.Result.error_class -eq 'UNKNOWN_VALIDATOR') 'validator registry fails closed on unknown IDs'}finally{Remove-Item -LiteralPath $unknownRepo -Recurse -Force}
 
+$credentialBoundaryRepo=New-TestRepo 'credential boundary allowlist'
+try{
+    Write-TestPolicy $credentialBoundaryRepo 'A-006' $false
+    $credentialBoundaryPath=Join-Path $credentialBoundaryRepo 'project-a/harness/tasks/A-006.json'
+    & git -C $credentialBoundaryRepo add project-a/harness/tasks/A-006.json
+    & git -C $credentialBoundaryRepo commit -m policy|Out-Null
+    [IO.Directory]::CreateDirectory((Join-Path $credentialBoundaryRepo 'project-a'))|Out-Null
+    [IO.File]::WriteAllText((Join-Path $credentialBoundaryRepo 'project-a/fixture with space-非.txt'),"ok`n",[Text.UTF8Encoding]::new($false))
+    $savedCredentialBoundaryEnv=@{AZURE_DEVOPS_CACHE_DIR=$env:AZURE_DEVOPS_CACHE_DIR;AZURE_EXTENSION_DIR=$env:AZURE_EXTENSION_DIR}
+    try{
+        $env:AZURE_DEVOPS_CACHE_DIR='C:\ci-cache'
+        $env:AZURE_EXTENSION_DIR='C:\ci-extensions'
+        $credentialBoundaryResult=Invoke-ValidatorFixture -Repo $credentialBoundaryRepo -PolicyPath $credentialBoundaryPath
+        Assert-True ($credentialBoundaryResult.ExitCode -eq 0) 'credential boundary allows GitHub runner Azure cache directories'
+    }finally{
+        foreach($item in $savedCredentialBoundaryEnv.GetEnumerator()){
+            if($null -eq $item.Value){Remove-Item "Env:$($item.Key)" -ErrorAction SilentlyContinue}else{Set-Item "Env:$($item.Key)" $item.Value}
+        }
+    }
+}finally{Remove-Item -LiteralPath $credentialBoundaryRepo -Recurse -Force}
+
 $forbiddenRepo=New-TestRepo 'forbidden operations'
 try{
     Write-TestPolicy $forbiddenRepo 'A-006' $false

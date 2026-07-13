@@ -164,7 +164,7 @@ try {
                 Add-Result $id $true 'Changed paths are agent-owned and canonical.' $timer.ElapsedMilliseconds
             }
             'credential_boundary' {
-                $leaked = @(Get-ChildItem Env: | Where-Object { $_.Name -match '^(AWS_|AZURE_|ARM_|TF_VAR_|GH_TOKEN$|GITHUB_TOKEN$|OPENAI_API_KEY$|ANTHROPIC_API_KEY$)' -and $_.Name -notin @('AWS_CONFIG_FILE','AWS_SHARED_CREDENTIALS_FILE','AWS_EC2_METADATA_DISABLED','AZURE_CONFIG_DIR') -and $_.Value })
+                $leaked = @(Get-ChildItem Env: | Where-Object { $_.Name -match '^(AWS_|AZURE_|ARM_|TF_VAR_|GH_TOKEN$|GITHUB_TOKEN$|OPENAI_API_KEY$|ANTHROPIC_API_KEY$)' -and $_.Name -notin @('AWS_CONFIG_FILE','AWS_SHARED_CREDENTIALS_FILE','AWS_EC2_METADATA_DISABLED','AZURE_CONFIG_DIR','AZURE_DEVOPS_CACHE_DIR','AZURE_EXTENSION_DIR') -and $_.Value })
                 $message = if ($leaked) { "Credential variables visible: $($leaked.Name -join ', ')" } else { 'Cloud credential variables are absent.' }
                 Add-Result $id ($leaked.Count -eq 0) $message $timer.ElapsedMilliseconds
             }

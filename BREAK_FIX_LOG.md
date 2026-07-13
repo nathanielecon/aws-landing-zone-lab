@@ -19,3 +19,6 @@
 
 - Break: GitHub MCP was requested as a required resource.
   Fix: Provisioned global Cursor MCP config at `C:\Users\natha\.cursor\mcp.json` pointing at GitHub's hosted MCP endpoint and verified that Cursor now exposes the server as `user-github` with `serverStatus: ready`.
+
+- Break: Fresh CI logs showed the real Windows failure was `credential_boundary`, not `forbidden_operations`; GitHub's Windows runner exposed `AZURE_DEVOPS_CACHE_DIR` and `AZURE_EXTENSION_DIR`, which the validator was treating as cloud credential leaks.
+  Fix: Added those two runner-local cache/extension variables to the `credential_boundary` allowlist in `scripts/Invoke-ProjectAValidators.ps1`, added a regression fixture in `tests/Run-ProjectAHarnessTests.ps1`, and verified the current working tree locally with harness `94 assertions`, spec `167 assertions`, contract `49 assertions`, plus matching execution/validator approval hashes.
