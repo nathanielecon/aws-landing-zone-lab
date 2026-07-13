@@ -29,17 +29,74 @@ function Invoke-ExternalCheck([string]$Id, [string]$FileName, [string[]]$Argumen
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     try {
         [void]$process.Start()
-        $stdoutTask = $process.StandardOutput.ReadToEndAsync(); $stderrTask = $process.StandardError.ReadToEndAsync()
-        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) { $process.Kill($true); throw "Validator timed out after $TimeoutSeconds seconds." }
-        $stdout = Protect-LogText -Text $stdoutTask.GetAwaiter().GetResult(); $stderr = Protect-LogText -Text $stderrTask.GetAwaiter().GetResult()
-        if ($process.ExitCode -ne 0) { throw "Exit $($process.ExitCode): $stdout $stderr" }
+        $execution = Invoke-ProcessWithTimeout -Process $process -TimeoutSeconds $TimeoutSeconds
+        if ($execution.timed_out) { throw "VALIDATOR_TIMEOUT: $Id exceeded its hard timeout of $TimeoutSeconds seconds." }
+        $stdout = Protect-LogText -Text $execution.stdout; $stderr = Protect-LogText -Text $execution.stderr
+        if ($execution.exit_code -ne 0) { throw "Exit $($execution.exit_code): $stdout $stderr" }
         Add-Result -Id $Id -Passed $true -Message 'External check passed.' -DurationMs $timer.ElapsedMilliseconds
     } finally { $timer.Stop(); $process.Dispose() }
 }
 
 function Get-TaskFiles {
-    $paths = if ($Committed) { @($policy.expected_artifacts | ForEach-Object { [string]$_ }) } else { @(Get-ChangedPaths -Root $Root) }
+    $runtimeExcluded = @(Get-HarnessLifecycleExcludedPaths -Root $Root -ProfileId 'project-a')
+    $paths = if ($Committed) { @($policy.expected_artifacts | ForEach-Object { [string]$_ }) } else { @(Get-ChangedPaths -Root $Root -ExcludedPaths $runtimeExcluded) }
     return @($paths | Where-Object { Test-Path -LiteralPath (Join-Path $Root $_) -PathType Leaf })
+}
+
+function Test-TextArtifact([string]$Path) {
+    try {
+        $bytes = [System.IO.File]::ReadAllBytes($Path)
+        if ($bytes.Length -eq 0) { return $true }
+        if ($bytes -contains 0) { return $false }
+        $sampleLength = [Math]::Min($bytes.Length, 4096)
+        $controlBytes = 0
+        for ($index = 0; $index -lt $sampleLength; $index++) {
+            $byte = $bytes[$index]
+            if (($byte -lt 9) -or ($byte -gt 13 -and $byte -lt 32)) { $controlBytes++ }
+        }
+        return ($controlBytes / $sampleLength) -lt 0.05
+    } catch {
+        return $false
+    }
+}
+
+function Get-ForbiddenOperationRules {
+    $rules = [System.Collections.Generic.List[object]]::new()
+    foreach ($entry in @($policy.forbidden_operations)) {
+        if ($null -eq $entry) { continue }
+        if ($entry -is [string]) {
+            $token = [string]$entry
+            $normalized = $token.Trim().ToLowerInvariant()
+            $regex = switch ($normalized) {
+                'aws' { '(?im)(^|[^\w.-])(aws(\.cmd|\.exe)?)(?=[\s`"''(]|$)' }
+                'az' { '(?im)(^|[^\w.-])(az(\.cmd|\.exe)?)(?=[\s`"''(]|$)' }
+                'terraform apply' { '(?im)(^|[^\w.-])(terraform(\.exe)?)(?=[\s`"''(]|$).*?\bapply\b' }
+                'terraform destroy' { '(?im)(^|[^\w.-])(terraform(\.exe)?)(?=[\s`"''(]|$).*?\bdestroy\b' }
+                'terraform import' { '(?im)(^|[^\w.-])(terraform(\.exe)?)(?=[\s`"''(]|$).*?\bimport\b' }
+                'terraform plan' { '(?im)(^|[^\w.-])(terraform(\.exe)?)(?=[\s`"''(]|$).*?\bplan\b' }
+                'credential read' { '(?im)(aws\s+configure|get-credential|Get-Credential|Read-Host\s+.*(secret|token|password)|secret_access_key|client_secret)' }
+                default { [regex]::Escape($token) }
+            }
+            $rules.Add([pscustomobject]@{
+                id = $token
+                pattern = $regex
+                extensions = @()
+                description = $token
+            })
+            continue
+        }
+
+        $propertyNames = @($entry.PSObject.Properties.Name)
+        $patternProperty = if ($propertyNames -contains 'pattern') { 'pattern' } elseif ($propertyNames -contains 'regex') { 'regex' } else { $null }
+        if (-not $patternProperty) { throw "Forbidden operation entry must provide a string token or a pattern/regex field." }
+        $rules.Add([pscustomobject]@{
+            id = if ($propertyNames -contains 'id') { [string]$entry.id } else { [string]$entry.description }
+            pattern = [string]$entry.$patternProperty
+            extensions = @($entry.extensions | ForEach-Object { ([string]$_).ToLowerInvariant() })
+            description = if ($propertyNames -contains 'description') { [string]$entry.description } else { [string]$entry.$patternProperty }
+        })
+    }
+    return @($rules)
 }
 
 function Assert-ExpectedArtifacts {
@@ -82,11 +139,14 @@ function Invoke-TerraformBehavioralTests([string]$Id,[string]$ModuleRelative,[st
 }
 
 try {
+    $beforeFingerprint = $null
     $beforeFingerprint = Get-DiffFingerprint -Root $Root
     $allowed = @($policy.allowed_paths | ForEach-Object { [string]$_ })
     $adapterOwned = @($policy.adapter_owned_paths | ForEach-Object { [string]$_ })
+    $allowedExecutablePaths = if ($policy.PSObject.Properties.Name -contains 'allowed_executable_paths') { @($policy.allowed_executable_paths | ForEach-Object { [string]$_ }) } else { @() }
+    $runtimeExcluded = @(Get-HarnessLifecycleExcludedPaths -Root $Root -ProfileId 'project-a')
     if (-not $Committed) {
-        $changed = @(Get-ChangedPaths -Root $Root)
+        $changed = @(Get-ChangedPaths -Root $Root -ExcludedPaths $runtimeExcluded)
         $agentOwned = @($changed | Where-Object { Test-AllowedPath -Path $_ -AllowedPaths $allowed })
         $outside = @($changed | Where-Object { -not (Test-AllowedPath -Path $_ -AllowedPaths $allowed) })
         if ($outside.Count -gt 0) { throw "SCOPE_ESCAPE: $($outside -join ', ')" }
@@ -100,22 +160,33 @@ try {
         $timer = [System.Diagnostics.Stopwatch]::StartNew()
         switch ($id) {
             'scope' {
-                if (-not $Committed) { [void](Get-CanonicalDiffRecord -Root $Root -AllowedPaths $allowed -AdapterOwnedPaths $adapterOwned) }
+                if (-not $Committed) { [void](Get-CanonicalDiffRecord -Root $Root -AllowedPaths $allowed -AdapterOwnedPaths $adapterOwned -AllowedExecutablePaths $allowedExecutablePaths -ExcludedPaths $runtimeExcluded) }
                 Add-Result $id $true 'Changed paths are agent-owned and canonical.' $timer.ElapsedMilliseconds
             }
             'credential_boundary' {
-                $leaked = @(Get-ChildItem Env: | Where-Object { $_.Name -match '^(AWS_|AZURE_|ARM_|TF_VAR_|GH_TOKEN$|GITHUB_TOKEN$|OPENAI_API_KEY$|ANTHROPIC_API_KEY$)' -and $_.Name -notin @('AWS_CONFIG_FILE','AWS_SHARED_CREDENTIALS_FILE','AWS_EC2_METADATA_DISABLED','AZURE_CONFIG_DIR') -and $_.Value })
+                $leaked = @(Get-ChildItem Env: | Where-Object { $_.Name -match '^(AWS_|AZURE_|ARM_|TF_VAR_|GH_TOKEN$|GITHUB_TOKEN$|OPENAI_API_KEY$|ANTHROPIC_API_KEY$)' -and $_.Name -notin @('AWS_CONFIG_FILE','AWS_SHARED_CREDENTIALS_FILE','AWS_EC2_METADATA_DISABLED','AZURE_CONFIG_DIR','AZURE_DEVOPS_CACHE_DIR','AZURE_EXTENSION_DIR') -and $_.Value })
                 $message = if ($leaked) { "Credential variables visible: $($leaked.Name -join ', ')" } else { 'Cloud credential variables are absent.' }
                 Add-Result $id ($leaked.Count -eq 0) $message $timer.ElapsedMilliseconds
             }
             'forbidden_operations' {
+                $rules = @(Get-ForbiddenOperationRules)
+                if ($rules.Count -eq 0) { throw 'Forbidden operations policy is empty.' }
                 $violations = [System.Collections.Generic.List[string]]::new()
                 foreach ($relative in Get-TaskFiles) {
-                    if ([System.IO.Path]::GetExtension($relative) -notin @('.ps1','.psm1','.cmd','.bat','.sh')) { continue }
-                    $text = Get-Content -Raw -LiteralPath (Join-Path $Root $relative)
-                    if ($text -match '(?im)^\s*(aws|az)(\.cmd|\.exe)?\s' -or $text -match '(?i)terraform(\.exe)?\s+(apply|destroy|import|plan)\b') { $violations.Add($relative) }
+                    if ($relative -match '^(?:\.harness/|harness/|project-a/harness/)') { continue }
+                    $path = Join-Path $Root $relative
+                    if (-not (Test-TextArtifact -Path $path)) { continue }
+                    $extension = [System.IO.Path]::GetExtension($relative).ToLowerInvariant()
+                    $text = Get-Content -Raw -LiteralPath $path
+                    foreach ($rule in $rules) {
+                        if ($rule.extensions.Count -gt 0 -and $extension -notin $rule.extensions) { continue }
+                        if ($text -match $rule.pattern) {
+                            $label = if ($rule.id) { $rule.id } else { $rule.description }
+                            $violations.Add(('{0} [{1}]' -f $relative, $label))
+                        }
+                    }
                 }
-                $message = if ($violations) { "Forbidden command text: $($violations -join ', ')" } else { 'No forbidden live-cloud command text found.' }
+                $message = if ($violations) { "Forbidden operation text: $($violations -join ', ')" } else { 'No policy-defined forbidden operation text found in changed text artifacts.' }
                 Add-Result $id ($violations.Count -eq 0) $message $timer.ElapsedMilliseconds
             }
             'secret_scan' {
@@ -223,7 +294,11 @@ try {
     exit 0
 } catch {
     $message = $_.Exception.Message
-    if((Get-DiffFingerprint -Root $Root) -ne $beforeFingerprint){$message='VALIDATOR_MUTATION: a validator changed repository content'}
+    if ($null -ne $beforeFingerprint) {
+        try {
+            if((Get-DiffFingerprint -Root $Root) -ne $beforeFingerprint){$message='VALIDATOR_MUTATION: a validator changed repository content'}
+        } catch { }
+    }
     $errorClass = if ($message -match '^(?<class>[A-Z_]+):') { $Matches.class } else { 'GATE_EXCEPTION' }
     [pscustomobject]@{ passed = $false; error_class = $errorClass; message = $message; validation_digest = $null; results = @($results) } | ConvertTo-Json -Compress -Depth 10
     exit 1

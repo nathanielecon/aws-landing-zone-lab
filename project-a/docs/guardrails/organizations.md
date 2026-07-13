@@ -18,6 +18,17 @@ new SCP statement. Removing or changing an SCP attachment can change the
 effective permissions of every account below that OU, so it must be performed
 through the same controlled deployment process.
 
+## Blocked change example (H1)
+
+Attaching an SCP to the organization root or to an individual account is outside
+this baseline and must be rejected at H1. The module's `scp_attachments`
+validation accepts only the documented Security, Infrastructure, or Workloads
+OUs; a proposed map that targets root or an account ID fails offline review and
+must not proceed to any separately controlled deployment. Enabling
+`close_on_deletion` on an account resource is likewise a blocked change: H1 must
+keep account-closure semantics false so Terraform cannot request account
+closure.
+
 No SCP is attached to Management by this module. This boundary avoids treating
 an organization guardrail as an access-control grant and keeps billing and
 organization administration under human review.

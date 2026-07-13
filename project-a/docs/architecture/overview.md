@@ -47,3 +47,21 @@ state recovery.
 
 See the [S3 backend decision](../decisions/backend.md), [secrets decision](../decisions/secrets.md),
 and HashiCorp's [S3 backend documentation](https://developer.hashicorp.com/terraform/language/backend/s3).
+
+## Orchestration and slice review
+
+Slice partitions, judge/nixer/fixer dispatch, scoring thresholds, approval hash
+pinning, and the Windows CI gate are recorded in
+[orchestration.md](orchestration.md). Related architecture pages:
+[accounts](accounts.md), [network](network.md), and [logging](logging.md).
+
+## Delivery navigation
+
+Direct links for reviewers (existing content above is unchanged):
+
+- Frozen rubrics: [`harness/rubrics/`](../../../harness/rubrics/)
+- Evidence index: [`project-a/evidence-index.md`](../../evidence-index.md)
+- Platform diagram: [`docs/diagrams/platform.svg`](../diagrams/platform.svg)
+- Network diagram: [`docs/diagrams/network.svg`](../diagrams/network.svg)
+- Graphify navigation aid (not a validation substitute):
+  [`graphify-out/GRAPH_REPORT.md`](../../graphify-out/GRAPH_REPORT.md)

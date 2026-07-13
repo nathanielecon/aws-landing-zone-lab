@@ -2,18 +2,18 @@
   "schema_version": "project-a-execution-approval-v1",
   "status": "execution_approved",
   "execution_approved": true,
-  "spec_bundle_sha256": "1B883C149EC63391E48E2E943AA554A8CB396E9E4F4FF45CA552CA7CF8691FE6",
-  "execution_bundle_sha256": "CD5CCD079EE5695ED6D4AC93FD26C8C5872C7A4B2DA8610703AEF10889BBC4E4",
-  "validator_implementation_sha256": "19A807388C328EB6CBCD0B4F38E5CA23557E326C1F6E51B4B7BCC7C96483CBEC",
+  "spec_bundle_sha256": "6723155F8D76675ADD4D03468EDA1681C2D908BAE93CD512EB1DB53A20DF5053",
+  "execution_bundle_sha256": "6C36139391AE9734FB4ED98B50F9602F3178DABB69011C2CBB59F1BFF1AF05A5",
+  "validator_implementation_sha256": "52217852CA9318590D40EDB54E20FA31DD10C22DB51C6A8DD8DCD5FCFEE4A267",
   "execution_hash_implementation_sha256": "AC7906A0B796C6430251A64DD70ED6FBD291786E0F42DD14FFEA9FE75E3447ED",
   "proven_with": {
     "live_models": false,
     "fake_codex_only": true,
     "cloud_credentials": false,
-    "project_a_harness_assertions": 56
+    "project_a_harness_assertions": 97
   },
   "approved_by": "user",
-  "approved_at": "2026-07-10",
-  "approval_source": "Codex task: formally remove H2-H5 and allow autonomous completion",
-  "reason": "The user approved this exact autonomous repo-only execution revision. Deterministic gates, workspace-write, network denial, allowlists, owned commits, terminal stopping, and monitoring remain mandatory."
+  "approved_at": "2026-07-13",
+  "approval_source": "Cursor cloud Slice 1/4 quality fixer: repin after HARNESS docs + forbidden Ralphy CLI flag refusal + harness assertions",
+  "reason": "Repinned the repo-only execution bundle after documenting HARNESS_CONTRACT_ONLY as test-only, adding explicit launcher refusal of forbidden Ralphy isolation flags, and three matching harness assertions. Deterministic gates, workspace-write, network denial, allowlists, owned commits, terminal stopping, and monitoring remain mandatory."
 }

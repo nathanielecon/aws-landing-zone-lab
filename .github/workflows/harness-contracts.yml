@@ -37,6 +37,12 @@ jobs:
         shell: pwsh
         run: npm install --global ralphy-cli@4.7.2 --ignore-scripts --no-audit --no-fund
 
+      # Start-ProjectAHarness preflight requires Terraform 1.15.5 before Fake-Ralphy can run.
+      # Without it, the completion forbidden-isolation fixture exits 12 and never plants .ralphy-worktrees.
+      - name: Install pinned Terraform
+        shell: pwsh
+        run: choco install terraform --version=1.15.5 -y --no-progress
+
       - name: Configure deterministic test Git
         shell: pwsh
         run: |

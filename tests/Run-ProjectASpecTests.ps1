@@ -51,10 +51,13 @@ foreach ($policy in $policies | Where-Object { $_.approval.required }) {
 }
 
 $approval = Get-Content -Raw -LiteralPath (Join-Path $projectRoot 'harness/bundle-approval.json') | ConvertFrom-Json
-Assert-True (-not [bool]$approval.execution_approved -and (
-    ([bool]$approval.spec_approved -and [string]$approval.status -eq 'spec_approved_execution_blocked') -or
-    (-not [bool]$approval.spec_approved -and [string]$approval.status -eq 'revision_pending_approval')
-)) 'spec approval state is internally consistent and never authorizes execution'
+Assert-True ((
+    ((-not [bool]$approval.execution_approved) -and (
+        ([bool]$approval.spec_approved -and [string]$approval.status -eq 'spec_approved_execution_blocked') -or
+        (-not [bool]$approval.spec_approved -and [string]$approval.status -eq 'revision_pending_approval')
+    )) -or
+    (([bool]$approval.execution_approved) -and [bool]$approval.spec_approved -and [string]$approval.status -eq 'execution_approved')
+)) 'spec approval state is internally consistent before and after execution approval'
 $computedBundle = & (Join-Path $root 'scripts/Get-ProjectASpecHash.ps1') -Root $root | ConvertFrom-Json
 Assert-True ([string]$approval.spec_bundle_sha256 -eq [string]$computedBundle.sha256) 'candidate spec aggregate hash matches every declared bundle member'
 $expectedMembers = @('project-a/PROJECT_A_PLAN.md','project-a/PROJECT_A_ADDITIONS.md','project-a/SOURCES.md','project-a/harness/PRD.template.json','project-a/harness/policy.schema.json','project-a/harness/tool-versions.json','tests/Run-ProjectASpecTests.ps1','scripts/Get-ProjectASpecHash.ps1') + @(1..7 | ForEach-Object { 'project-a/harness/tasks/A-{0:D3}.json' -f $_ })
@@ -62,7 +65,13 @@ $actualMembers = @($computedBundle.members.psobject.Properties.Name | Sort-Objec
 Assert-True (($actualMembers -join ',') -eq (($expectedMembers | Sort-Object) -join ',')) 'aggregate hash contains exactly the declared spec members'
 $hashImplementation = [string]$computedBundle.members.'scripts/Get-ProjectASpecHash.ps1'
 Assert-True ([string]$approval.hash_implementation_sha256 -eq $hashImplementation) 'hash implementation is independently pinned'
-Assert-True ($null -eq $approval.validator_implementation_sha256) 'revised validator implementation remains intentionally unapproved'
+$executionBundle = & (Join-Path $root 'scripts/Get-ProjectAExecutionHash.ps1') -Root $root | ConvertFrom-Json
+if ([bool]$approval.execution_approved) {
+    Assert-True ([string]$approval.execution_bundle_sha256 -eq [string]$executionBundle.sha256) 'execution-approved spec bundle pins the current execution aggregate hash'
+    Assert-True ([string]$approval.validator_implementation_sha256 -eq [string]$executionBundle.members.'scripts/Invoke-ProjectAValidators.ps1') 'execution-approved spec bundle pins the validator implementation'
+} else {
+    Assert-True ($null -eq $approval.execution_bundle_sha256 -and $null -eq $approval.validator_implementation_sha256) 'pre-approval spec bundle leaves execution fields intentionally unapproved'
+}
 
 $additions = Get-Content -Raw -LiteralPath (Join-Path $projectRoot 'PROJECT_A_ADDITIONS.md')
 foreach($signal in @('Backend and state discipline','Policy and validation as code','Network decisions','Secrets discipline','Logging and audit proof','Cost and teardown discipline','Operator troubleshooting','Claim boundaries')) { Assert-True ($additions.Contains($signal)) "gap-closure spec includes $signal" }

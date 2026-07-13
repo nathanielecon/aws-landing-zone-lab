@@ -75,15 +75,17 @@ if ($ResetSmoke) {
 
 $lock = Open-ExclusiveLock -Path $lockPath
 try {
-    $changed = @(Get-ChangedPaths -Root $root)
+    $runtimeExcluded = @(Get-HarnessLifecycleExcludedPaths -Root $root -ProfileId 'smoke')
+    $resumeExcluded = @(Get-HarnessLifecycleExcludedPaths -Root $root -ProfileId 'smoke' -IncludeStopFlag)
+    $changed = @(Get-ChangedPaths -Root $root -ExcludedPaths $(if ($Resume) { $resumeExcluded } else { @() }))
     if (-not $Resume -and $changed.Count -gt 0) { throw "Normal launch requires a clean tree; use -Resume only for owned interrupted changes: $($changed -join ', ')" }
     if (-not (Test-Path -LiteralPath $manifestPath)) {
         [System.IO.Directory]::CreateDirectory($runtimeRoot) | Out-Null
-        Copy-Item -LiteralPath $manifestTemplate -Destination $manifestPath
     } elseif (-not $Resume -and -not $DryRun) {
         $existing = Read-JsonFile -Path $manifestPath
         if (@($existing.tasks | Where-Object { $_.completed }).Count -gt 0) { throw 'A prior smoke run exists. Use -Resume or -ResetSmoke.' }
     }
+    Copy-Item -LiteralPath $manifestTemplate -Destination $manifestPath -Force
     if ($Resume -and (Test-Path -LiteralPath $stopFlag)) { Remove-Item -LiteralPath $stopFlag -Force }
     if (-not $Resume -and (Test-Path -LiteralPath $stopFlag)) { throw 'A prior adapter failure exists. Use -Resume after reviewing its evidence.' }
 
@@ -102,6 +104,11 @@ try {
 
     $ralphyArguments = @('--codex', '--json', $manifestPath, '--model', 'gpt-5.6-terra', '--max-retries', '0', '--no-commit', '--no-tests', '--no-lint', '--no-browser')
     if ($DryRun) { $ralphyArguments += @('--dry-run', '--max-iterations', '2') }
+    foreach ($forbiddenFlag in @('--parallel', '--worktree', '--worktrees', '--sandbox', '--branch-per-task')) {
+        if (@($ralphyArguments | Where-Object { $_ -eq $forbiddenFlag -or $_ -like "$forbiddenFlag=*" }).Count -gt 0) {
+            throw "Forbidden Ralphy CLI flag refused: $forbiddenFlag"
+        }
+    }
     Write-Host "Run ID: $runId"
     Write-Host "Sanitized logs: $logRoot"
     & $realRalphy @ralphyArguments
@@ -119,8 +126,10 @@ try {
     foreach ($forbidden in @('.ralphy-worktrees', '.ralphy-sandboxes')) {
         if (Test-Path -LiteralPath (Join-Path $root $forbidden)) { throw "Forbidden isolation directory was created: $forbidden" }
     }
-    $finalChanges = @(Get-ChangedPaths -Root $root)
+    $finalChanges = @(Get-ChangedPaths -Root $root -ExcludedPaths $runtimeExcluded)
     if ($finalChanges.Count -gt 0) { throw "Smoke run ended with a dirty tree: $($finalChanges -join ', ')" }
+    $lingering = @(Get-LingeringHarnessProcesses -CurrentProcessId $PID)
+    if ($lingering.Count -gt 0) { throw "Smoke run ended with lingering harness processes: $((@($lingering | ForEach-Object { \"$($_.name):$($_.process_id)\" })) -join ', ')" }
     $states = foreach ($id in @('S-001', 'S-002')) { Read-JsonFile -Path (Join-Path $runtimeRoot "state/$id.json") }
     Write-JsonNoBom -Path (Join-Path $logRoot 'run-summary.json') -Value ([ordered]@{ run_id = $runId; plan_hash = $actualPlanHash; status = 'completed'; branch = $branch; ralphy_processes = 1; worktrees = 0; tasks = @($states | Select-Object task_id, terra_attempts, sol_attempts, commit_sha, completed_at) })
     Write-Host 'Local smoke proof passed: one Ralphy loop, Terra first, forced Sol takeover, clean tree.'
