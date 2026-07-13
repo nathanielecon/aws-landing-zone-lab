@@ -189,7 +189,7 @@ function Assert-StrictJsonContractForPath {
         return
     }
     if ($normalized -like '*/.harness/runtime/project-a/state/*.json') {
-        Assert-JsonObjectContract -Value $Value -Context 'Project A task state' -RequiredProperties @('profile_id','bundle_hash','validator_sha256','policy_sha256','task_id','branch','starting_commit','started_at','status','phase','terra_attempts','sol_attempts','consecutive_failures','same_error_count','last_error_class','last_failure','terra_thread_id','sol_thread_id','validation_digest','diff_sha256','approval_request','approval_receipt','approval_key','approval_receipt_digest','intended_tree','stage_paths','pending_evidence_path','pending_evidence_text','evidence_sha256','commit_sha','completed_at') -OptionalProperties @('approval_confirmation')
+        Assert-JsonObjectContract -Value $Value -Context 'Project A task state' -RequiredProperties @('profile_id','bundle_hash','validator_sha256','policy_sha256','task_id','branch','starting_commit','started_at','status','phase','terra_attempts','sol_attempts','consecutive_failures','same_error_count','last_error_class','last_failure','terra_thread_id','sol_thread_id','validation_digest','diff_sha256','approval_receipt_digest','intended_tree','stage_paths','pending_evidence_path','pending_evidence_text','evidence_sha256','commit_sha','completed_at') -OptionalProperties @('approval_request','approval_receipt','approval_key','approval_confirmation')
         Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'profile_id' -Pattern '^project-a$'
         Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'bundle_hash' -Pattern $hex64
         Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'validator_sha256' -Pattern $hex64
@@ -210,9 +210,18 @@ function Assert-StrictJsonContractForPath {
         Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'sol_thread_id' -AllowNull
         Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'validation_digest' -AllowNull
         Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'diff_sha256' -Pattern $hex64 -AllowNull
-        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'approval_request'
-        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'approval_receipt'
-        Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'approval_key'
+        $requiresApprovalArtifacts = [string]$Value.status -in @('awaiting_approval','preparing_commit','committing')
+        foreach ($propertyName in @('approval_request','approval_receipt','approval_key')) {
+            $hasProperty = $Value.PSObject.Properties.Name -contains $propertyName
+            if ($requiresApprovalArtifacts) {
+                if (-not $hasProperty) { throw "Project A task state is missing required field: $propertyName" }
+                Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name $propertyName
+                continue
+            }
+            if ($hasProperty) {
+                Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name $propertyName -AllowNull
+            }
+        }
         if ($Value.PSObject.Properties.Name -contains 'approval_confirmation' -and $null -ne $Value.approval_confirmation) { Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'approval_confirmation' }
         Assert-JsonOptionalStringField -Value $Value -Context 'Project A task state' -Name 'approval_receipt_digest' -Pattern $hex64
         Assert-JsonStringField -Value $Value -Context 'Project A task state' -Name 'intended_tree' -Pattern $hex40 -AllowNull
