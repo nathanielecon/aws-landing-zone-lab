@@ -686,6 +686,70 @@ function Test-ProjectACompletedTaskState {
     return $true
 }
 
+function Get-ReconstructedProjectACompletedState {
+    param(
+        [Parameter(Mandatory)][string]$Root,
+        [Parameter(Mandatory)][string]$TaskId,
+        [Parameter(Mandatory)][string]$Branch,
+        [Parameter(Mandatory)][string]$BundleHash,
+        [Parameter(Mandatory)][string]$ValidatorHash
+    )
+    $policyPath = Join-Path $Root "project-a/harness/tasks/$TaskId.json"
+    if (-not (Test-Path -LiteralPath $policyPath -PathType Leaf)) { return $null }
+    $policy = Read-JsonFile -Path $policyPath
+    $evidenceRelativePath = [string]$policy.expected_evidence
+    if ([string]::IsNullOrWhiteSpace($evidenceRelativePath)) { return $null }
+    $evidencePath = Join-Path $Root $evidenceRelativePath
+    if (-not (Test-Path -LiteralPath $evidencePath -PathType Leaf)) { return $null }
+    try {
+        $evidence = Read-JsonFile -Path $evidencePath
+    } catch {
+        return $null
+    }
+    if ([string]$evidence.task_id -ne $TaskId) { return $null }
+    $commit = (& git -C $Root log -1 --format=%H -- $evidenceRelativePath 2>$null | Out-String).Trim()
+    if ([string]::IsNullOrWhiteSpace($commit)) { return $null }
+    $tree = (& git -C $Root rev-parse "$commit^{tree}" 2>$null | Out-String).Trim()
+    if ([string]::IsNullOrWhiteSpace($tree)) { return $null }
+    $changedPaths = @()
+    if ($null -ne $evidence.changed_entries) {
+        $changedPaths = @($evidence.changed_entries | ForEach-Object { [string]$_.path } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    }
+    return [pscustomobject]@{
+        profile_id = 'project-a'
+        bundle_hash = $BundleHash
+        validator_sha256 = $ValidatorHash
+        policy_sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $policyPath).Hash
+        task_id = $TaskId
+        branch = $Branch
+        starting_commit = [string]$evidence.commit_parent
+        started_at = [string]$evidence.completed_at
+        status = 'completed'
+        phase = [string]$evidence.phase_passed
+        terra_attempts = [int]$evidence.terra_attempts
+        sol_attempts = [int]$evidence.sol_attempts
+        consecutive_failures = 0
+        same_error_count = 0
+        last_error_class = $null
+        last_failure = $null
+        terra_thread_id = $null
+        sol_thread_id = $null
+        validation_digest = [string]$evidence.validation_digest
+        diff_sha256 = [string]$evidence.diff_sha256
+        approval_request = $null
+        approval_receipt = $null
+        approval_key = $null
+        approval_receipt_digest = [string]$evidence.approval_receipt_digest
+        intended_tree = $tree
+        stage_paths = @($changedPaths + @($evidenceRelativePath) | Sort-Object -Unique)
+        pending_evidence_path = $null
+        pending_evidence_text = $null
+        evidence_sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $evidencePath).Hash
+        commit_sha = $commit
+        completed_at = [string]$evidence.completed_at
+    }
+}
+
 function Sync-ProjectAManifestWithTaskState {
     param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string]$ManifestPath, [Parameter(Mandatory)][string]$Branch, [Parameter(Mandatory)][string]$BundleHash, [Parameter(Mandatory)][string]$ValidatorHash)
     $manifest = Read-JsonFile -Path $ManifestPath
@@ -696,6 +760,12 @@ function Sync-ProjectAManifestWithTaskState {
         $task.completed = $false
         if (Test-Path -LiteralPath $statePath -PathType Leaf) {
             $task.completed = Test-ProjectACompletedTaskState -Root $Root -TaskState (Read-JsonFile -Path $statePath) -TaskId $id -CurrentHead $head -Branch $Branch -BundleHash $BundleHash -ValidatorHash $ValidatorHash
+        }
+        if (-not $task.completed) {
+            $reconstructedState = Get-ReconstructedProjectACompletedState -Root $Root -TaskId $id -Branch $Branch -BundleHash $BundleHash -ValidatorHash $ValidatorHash
+            if ($null -ne $reconstructedState) {
+                $task.completed = Test-ProjectACompletedTaskState -Root $Root -TaskState $reconstructedState -TaskId $id -CurrentHead $head -Branch $Branch -BundleHash $BundleHash -ValidatorHash $ValidatorHash
+            }
         }
     }
     Write-JsonNoBom -Path $ManifestPath -Value $manifest
