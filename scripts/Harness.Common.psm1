@@ -707,7 +707,24 @@ function Get-ReconstructedProjectACompletedState {
         return $null
     }
     if ([string]$evidence.task_id -ne $TaskId) { return $null }
-    $commit = (& git -C $Root log -1 --format=%H -- $evidenceRelativePath 2>$null | Out-String).Trim()
+    $commit = $null
+    $evidenceIndexPath = Join-Path $Root 'project-a/evidence-index.md'
+    if (Test-Path -LiteralPath $evidenceIndexPath -PathType Leaf) {
+        $taskPattern = '^\|\s*' + [regex]::Escape($TaskId) + '\s*\|\s*`([0-9a-fA-F]{7,40})`'
+        foreach ($line in Get-Content -LiteralPath $evidenceIndexPath) {
+            $match = [regex]::Match([string]$line, $taskPattern)
+            if ($match.Success) {
+                $candidate = (& git -C $Root rev-parse $match.Groups[1].Value 2>$null | Out-String).Trim()
+                if (-not [string]::IsNullOrWhiteSpace($candidate)) {
+                    $commit = $candidate
+                    break
+                }
+            }
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace([string]$commit)) {
+        $commit = (& git -C $Root log -1 --format=%H -- $evidenceRelativePath 2>$null | Out-String).Trim()
+    }
     if ([string]::IsNullOrWhiteSpace($commit)) { return $null }
     $tree = (& git -C $Root rev-parse "$commit^{tree}" 2>$null | Out-String).Trim()
     if ([string]::IsNullOrWhiteSpace($tree)) { return $null }
