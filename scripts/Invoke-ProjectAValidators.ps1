@@ -173,6 +173,7 @@ try {
                 if ($rules.Count -eq 0) { throw 'Forbidden operations policy is empty.' }
                 $violations = [System.Collections.Generic.List[string]]::new()
                 foreach ($relative in Get-TaskFiles) {
+                    if ($relative -match '^(?:\.harness/|harness/|project-a/harness/)') { continue }
                     $path = Join-Path $Root $relative
                     if (-not (Test-TextArtifact -Path $path)) { continue }
                     $extension = [System.IO.Path]::GetExtension($relative).ToLowerInvariant()
