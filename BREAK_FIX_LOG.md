@@ -2,6 +2,9 @@
 
 ## 2026-07-13
 
+- Closeout: PR `#13` squash-merged to `main` as `1564c6b` after Windows CI green on `5fd7d0b` and slice advances (1: 9.6, 2: 9.6, 3: 9.5, 4: 9.6).
+  Process postmortem: recorded on-the-fly judge-loop deviations in `project-a/docs/architecture/orchestration.md` § “Delivery closeout — recorded process deviations (2026-07-13)” — mid-stream rubric restore, CI-first then slice accounting, frequent single-judge rejudges, cloud-worker cherry-picks, A-007 evidence hash drift honesty, and repo-only confidence boundary. Technical break/fix rows below remain the machine-facing history.
+
 - Break: Slice 3 judge score 9.2 < 9.5 after must-haves passed (missing platform validator-ID / fail-closed docs and weak integration composition assertions).
   Fix: Documented A-003…A-006 representative validator IDs plus `UNKNOWN_VALIDATOR` fail-closed behavior in `policy-validation.md`; strengthened `root_composition.tftest.hcl` with identity/network/audit module-entry and environment locals/outputs contract asserts (offline `fileexists`/content checks) and clarified the composition contract in `tests/integration/README.md`. Docs/tests only; no harness hot-path or execution-bundle repin.
 
