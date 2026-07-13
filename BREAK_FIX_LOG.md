@@ -2,6 +2,9 @@
 
 ## 2026-07-13
 
+- Break: Slice 3 judge score 9.2 < 9.5 after must-haves passed (missing platform validator-ID / fail-closed docs and weak integration composition assertions).
+  Fix: Documented A-003…A-006 representative validator IDs plus `UNKNOWN_VALIDATOR` fail-closed behavior in `policy-validation.md`; strengthened `root_composition.tftest.hcl` with identity/network/audit module-entry and environment locals/outputs contract asserts (offline `fileexists`/content checks) and clarified the composition contract in `tests/integration/README.md`. Docs/tests only; no harness hot-path or execution-bundle repin.
+
 - Break: Slice 2/3 documentation and architecture consistency gates (network extension-point alignment, audit module deep links, bootstrap state-key ownership, H1 blocked-change sample).
   Fix: Docs/terraform README-only updates on `cursor/slice-2-3-32fe` — declared TGW/NFW/NAT/VPN/DX/RAM as extension points in `network-failure-cases.md`; linked `audit-review.md` / `audit-troubleshooting.md` to `terraform/audit/README.md`; clarified organization CloudTrail / org-trail as interface semantics; thickened bootstrap state-key isolation; added H1 blocked-change sample under Organizations guardrails. No harness hot-path or execution-bundle changes; no approval repin.
 
