@@ -717,6 +717,11 @@ function Get-ReconstructedProjectACompletedState {
         return $null
     }
     if ([string]$evidence.task_id -ne $TaskId) { return $null }
+    $completedAt = switch ($evidence.completed_at) {
+        { $_ -is [datetimeoffset] } { $_.ToString('o'); break }
+        { $_ -is [datetime] } { $_.ToString('o'); break }
+        default { [string]$_; break }
+    }
     $commit = $null
     $evidenceIndexPath = Join-Path $Root 'project-a/evidence-index.md'
     if (Test-Path -LiteralPath $evidenceIndexPath -PathType Leaf) {
@@ -750,7 +755,7 @@ function Get-ReconstructedProjectACompletedState {
         task_id = $TaskId
         branch = $Branch
         starting_commit = [string]$evidence.commit_parent
-        started_at = [string]$evidence.completed_at
+        started_at = $completedAt
         status = 'completed'
         phase = [string]$evidence.phase_passed
         terra_attempts = [int]$evidence.terra_attempts
@@ -773,7 +778,7 @@ function Get-ReconstructedProjectACompletedState {
         pending_evidence_text = $null
         evidence_sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $evidencePath).Hash
         commit_sha = $commit
-        completed_at = [string]$evidence.completed_at
+        completed_at = $completedAt
         historical_reconstruction = $true
     }
 }
