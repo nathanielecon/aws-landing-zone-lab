@@ -47,3 +47,10 @@ state recovery.
 
 See the [S3 backend decision](../decisions/backend.md), [secrets decision](../decisions/secrets.md),
 and HashiCorp's [S3 backend documentation](https://developer.hashicorp.com/terraform/language/backend/s3).
+
+## Orchestration and slice review
+
+Slice partitions, judge/nixer/fixer dispatch, scoring thresholds, approval hash
+pinning, and the Windows CI gate are recorded in
+[orchestration.md](orchestration.md). Related architecture pages:
+[accounts](accounts.md), [network](network.md), and [logging](logging.md).

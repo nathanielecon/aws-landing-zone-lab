@@ -134,7 +134,11 @@ function Invoke-ProjectAHarnessFixture([string]$Workspace,[string]$ForbiddenDir)
     [IO.File]::WriteAllText($toolScript,@"
 param([Parameter(ValueFromRemainingArguments = `$true)][string[]]`$Arguments)
 if (@(`$Arguments) -contains '--version') { [Console]::Out.WriteLine('4.7.2'); exit 0 }
-`$workspace=if (`$env:HARNESS_ROOT) { `$env:HARNESS_ROOT } else { (Get-Location).Path }
+if ([string]::IsNullOrWhiteSpace(`$env:HARNESS_ROOT)) {
+    [Console]::Error.WriteLine('Fake-Ralphy requires HARNESS_ROOT; refusing silent CWD fallback.')
+    exit 1
+}
+`$workspace=`$env:HARNESS_ROOT
 `$adapterPath=Join-Path `$workspace 'scripts/Invoke-ProjectAAdapter.ps1'
 `$payload=(
     "`$ErrorActionPreference = 'Stop'",
@@ -165,6 +169,9 @@ if (`$code -eq 0 -and `$env:HARNESS_FAKE_FORBIDDEN_DIR_POSTRUN) {
 exit `$code
 "@,[Text.UTF8Encoding]::new($false))
     [IO.File]::WriteAllText($toolCmd,"@echo off`r`n`"C:\Program Files\PowerShell\7\pwsh.exe`" -NoLogo -NoProfile -File `"%~dp0Fake-Ralphy.ps1`" %*`r`nexit /b %ERRORLEVEL%`r`n",[Text.UTF8Encoding]::new($false))
+    # Contract fixtures must not depend on a host Terraform install. Start-ProjectAHarness
+    # accepts terraform.cmd when terraform.exe is absent; plant a pinned version stub first on PATH.
+    [IO.File]::WriteAllText((Join-Path $toolRoot 'terraform.cmd'),"@echo off`r`nif /I `"%~1`"==`"version`" if /I `"%~2`"==`"-json`" (`r`n  echo {`"terraform_version`":`"1.15.5`",`"platform`":`"windows_amd64`",`"provider_selections`":{},`"terraform_outdated`":false}`r`n  exit /b 0`r`n)`r`necho Unsupported fake terraform invocation& exit /b 1`r`n",[Text.UTF8Encoding]::new($false))
 
     $saved=@{
         PATH=$env:PATH
@@ -413,7 +420,8 @@ try{Write-TestPolicy $forgedManifestRepo 'A-005' $false;& git -C $forgedManifest
 $completionForbiddenRepo=New-ProjectAHarnessFixtureWorkspace 'completion forbidden isolation'
 try{
     $completionForbiddenResult=Invoke-ProjectAHarnessFixture -Workspace $completionForbiddenRepo -ForbiddenDir '.ralphy-worktrees'
-    Assert-True ($completionForbiddenResult.ExitCode -ne 0 -and $completionForbiddenResult.Output -match 'Forbidden isolation directory was created: \.ralphy-worktrees') 'completion reconciliation rechecks forbidden isolation directories created after task execution'
+    $completionForbiddenContext="exit=$($completionForbiddenResult.ExitCode); output=$($completionForbiddenResult.Output)"
+    Assert-True ($completionForbiddenResult.ExitCode -ne 0 -and $completionForbiddenResult.Output -match 'Forbidden isolation directory was created: \.ralphy-worktrees') "completion reconciliation rechecks forbidden isolation directories created after task execution ($completionForbiddenContext)"
 }finally{
     Remove-Item -LiteralPath $completionForbiddenRepo -Recurse -Force -ErrorAction SilentlyContinue
 }

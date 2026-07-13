@@ -22,6 +22,7 @@ if ([string]$executionApproval.execution_bundle_sha256 -ne [string]$execution.sh
 if (-not $DryRun -and -not [bool]$executionApproval.execution_approved) { throw 'Project A execution is not approved. Phase 4 review must complete before any model call.' }
 
 $terraform = Get-Command terraform.exe -ErrorAction SilentlyContinue
+if (-not $terraform) { $terraform = Get-Command terraform.cmd -ErrorAction SilentlyContinue }
 if (-not $terraform) {
     Write-Host 'Terraform 1.15.5 is missing. Recovery from an elevated shell:'
     Write-Host '  choco install terraform --version=1.15.5 -y --no-progress'
