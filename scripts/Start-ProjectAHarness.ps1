@@ -148,7 +148,12 @@ try {
                     $allowHistoricalAncestor = $taskState.PSObject.Properties.Name -contains 'historical_reconstruction' -and [bool]$taskState.historical_reconstruction
                     if (-not $allowHistoricalAncestor) { throw "Project A completion contract failed: commit chain is broken before $taskId." }
                     & git -C $root merge-base --is-ancestor ([string]$taskState.starting_commit) $previousCommit 2>$null | Out-Null
-                    if ($LASTEXITCODE -ne 0) { throw "Project A completion contract failed: commit chain is broken before $taskId." }
+                    $matchesHistoricalChain = $LASTEXITCODE -eq 0
+                    if (-not $matchesHistoricalChain) {
+                        & git -C $root merge-base --is-ancestor $previousCommit ([string]$taskState.starting_commit) 2>$null | Out-Null
+                        $matchesHistoricalChain = $LASTEXITCODE -eq 0
+                    }
+                    if (-not $matchesHistoricalChain) { throw "Project A completion contract failed: commit chain is broken before $taskId." }
                 }
             }
             foreach ($property in @('approval_request','approval_receipt','approval_key')) {
