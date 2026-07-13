@@ -2,6 +2,14 @@
 
 ## 2026-07-13
 
+- Note (Slice 4 evidence consistency, non-destructive): A-007 evidence
+  `changed_entries` for `project-a/evidence-index.md` still pins the pre-row
+  `content_sha256` from commit `d8de68f`. Subsequent harness commit `adf88d8`
+  appended the A-007 index row, so the file hash drifted while the indexed
+  `validation_digest` binding remained authoritative. Documented in
+  `project-a/evidence-index.md`; no live task replay and no forged cloud
+  validation.
+
 - Break: PR `#13` Windows contract suite failed on `runtime task state accepts valid ISO 8601 timestamps with offsets and fractional seconds`.
   Fix: Updated `scripts/Harness.Common.psm1` so `Read-JsonFile` uses `ConvertFrom-Json -DateKind String`, preserving contract timestamps as strings across PowerShell environments; repinned execution approval hashes.
 

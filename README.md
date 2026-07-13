@@ -31,4 +31,9 @@ until Phase 4 generalizes the smoke adapter, scrubs cloud credentials, implement
 the allowlisted validators, and binds explicit approval receipts to exact diffs.
 
 Phase 4 implementation and its remaining execution-approval gate are documented
-in [project-a/HARNESS.md](project-a/HARNESS.md).
+in [project-a/HARNESS.md](project-a/HARNESS.md). Architecture and delivery
+navigation live under
+[project-a/docs/architecture/overview.md](project-a/docs/architecture/overview.md).
+The [Project A Graphify report](project-a/graphify-out/GRAPH_REPORT.md) is a
+repo-only navigation aid and is never a substitute for Terraform, policy,
+security, or human validation.

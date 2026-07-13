@@ -13,6 +13,13 @@ validated. The evidence below records deterministic validation for each task.
 | A-006 | `81b2702` | `evidence/project-a/A-006.json` | `15FF2EB7BF746D688BAFBA6FF48CEBDFAEBD5C89E5A88B483D174C39916C439E` |
 | A-007 | `d8de68f` | `evidence/project-a/A-007.json` | `B84061C7B87F79FE282D62736CD8CF21200179891B4FB3B59EA64513783AF8EF` |
 
+Note on A-007 index drift: `evidence/project-a/A-007.json` recorded
+`project-a/evidence-index.md` `content_sha256` at task commit time (before a
+later harness commit appended the A-007 row to this index). The indexed
+`validation_digest` `B84061C7B87F79FE282D62736CD8CF21200179891B4FB3B59EA64513783AF8EF`
+remains the binding proof; this note does not re-run live tasks or mint new
+cloud validation.
+
 The Azure Government notes are translation-only, not implemented, and not cloud
 validated. Reviewers should use [claims boundary](docs/portfolio/claims-boundary.md)
 before making portfolio or interview statements.

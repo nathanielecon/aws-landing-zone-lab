@@ -180,6 +180,12 @@ CI sets `CI=1` and `HARNESS_CONTRACT_ONLY=1`, installs pinned Ralphy `4.7.2`,
 and must pass before merge-ready / final-delivery claims. Do not declare the
 delivery surface green from local-only progress.
 
+`HARNESS_CONTRACT_ONLY=1` is a **test/CI-only shortcut** (fake Codex/Ralphy
+fixtures, kill-point injection). It is not the operator production path; live
+`Start-ProjectAHarness.ps1` / `Start-Harness.ps1` runs leave it unset and rely
+on pinned approvals plus the fixed sequential Ralphy argv (no
+parallel/worktree/sandbox/branch-per-task flags).
+
 ## Local vs remote: what each proves
 
 | Proof | Proves | Does not prove |
