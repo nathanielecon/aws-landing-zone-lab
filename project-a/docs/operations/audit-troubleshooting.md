@@ -29,4 +29,6 @@ path. Stop and escalate if the proposed repair adds wildcard principals,
 cross-account trust outside the approved boundary, or a plaintext logging path.
 
 This guide is design-time operator guidance only. No live log-service call,
-cloud login, or deployment action is authorized from this repository.
+cloud login, or deployment action is authorized from this repository. For the
+offline template shape and intended defaults, see the
+[audit module template](../../terraform/audit/README.md).
