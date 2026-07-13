@@ -1,0 +1,24 @@
+# Network boundary template
+
+This module is an offline, reviewable template; it has no provider configuration
+and must not be applied from this repository. It defines one VPC, two or more
+private subnets, a private route table with no default route, a default-deny
+workload security group, and VPC Flow Logs sent to a human-approved Log Archive
+S3 destination.
+
+No internet gateway, NAT gateway, Transit Gateway, peering, VPN, Direct Connect,
+RAM share, cross-account route, or centralized egress is implemented. Those are
+separately reviewed extension points. A human must approve CIDRs, availability
+zones, regions, route intent, destinations, and any ingress or egress exception.
+
+Run only offline checks:
+
+```powershell
+terraform fmt -check -recursive
+terraform init -backend=false -input=false -lockfile=readonly
+terraform validate
+terraform test -no-color -test-directory=../../tests/network
+```
+
+See the [network architecture](../../docs/architecture/network.md) and
+[network failure cases](../../docs/operations/network-failure-cases.md).

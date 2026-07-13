@@ -13,7 +13,8 @@ Import-Module (Join-Path $PSScriptRoot 'Harness.Common.psm1') -Force
 try {
     $policy = Read-JsonFile -Path $PolicyPath
     $allowed = @($policy.allowed_paths | ForEach-Object { [string]$_ })
-    $changed = @(Assert-OnlyAllowedChanges -Root $Root -AllowedPaths $allowed)
+    $runtimeExcluded = @(Get-HarnessLifecycleExcludedPaths -Root $Root -ProfileId 'smoke')
+    $changed = @(Assert-OnlyAllowedChanges -Root $Root -AllowedPaths $allowed -ExcludedPaths $runtimeExcluded)
     if ($changed.Count -eq 0) { throw 'NO_MEANINGFUL_DIFF: no allowlisted task change exists' }
 
     $relativePath = [string]$policy.gate.path
