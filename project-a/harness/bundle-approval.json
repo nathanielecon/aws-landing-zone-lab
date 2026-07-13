@@ -7,7 +7,7 @@
   "spec_approved_at": "2026-07-12",
   "approval_source": "Cursor chat: Approval granted to finish local orchestration",
   "spec_bundle_sha256": "6723155F8D76675ADD4D03468EDA1681C2D908BAE93CD512EB1DB53A20DF5053",
-  "execution_bundle_sha256": "567469944C462B997A3ECE7EAF72DA78CF518961182EC9AFEBA232A44B8B0109",
+  "execution_bundle_sha256": "48EB301F047C0F839ACC09E3D8D9FFC5861881DC18E35A6145199BB457D8D8A8",
   "hash_implementation_sha256": "355A672293C178681192155CFF74F30437D542B4227D388510BF95FB813F67DB",
   "validator_implementation_sha256": "90C3AA49D8A7BB8CD928169E6666723527090A3743D1B7772F18D231EA487F8E",
   "reason": "The user approved the current repo-only execution bundle after local review completion, harness hardening, and offline validation."

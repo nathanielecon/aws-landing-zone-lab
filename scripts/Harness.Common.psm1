@@ -671,7 +671,14 @@ function Test-ProjectACompletedTaskState {
     if ($LASTEXITCODE -ne 0) { return $false }
     $parent = (& git -C $Root rev-parse "$commit^" 2>$null | Out-String).Trim()
     $subject = (& git -C $Root log -1 --format=%s $commit 2>$null | Out-String).Trim()
-    if ([string]::IsNullOrWhiteSpace($parent) -or $parent -ne [string]$TaskState.starting_commit -or $subject -ne [string]$policy.commit_message) { return $false }
+    if ([string]::IsNullOrWhiteSpace($parent) -or $subject -ne [string]$policy.commit_message) { return $false }
+    $matchesRecordedParent = $parent -eq [string]$TaskState.starting_commit
+    if (-not $matchesRecordedParent) {
+        $allowHistoricalAncestor = $TaskState.PSObject.Properties.Name -contains 'historical_reconstruction' -and [bool]$TaskState.historical_reconstruction
+        if (-not $allowHistoricalAncestor) { return $false }
+        & git -C $Root merge-base --is-ancestor ([string]$TaskState.starting_commit) $commit 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) { return $false }
+    }
     $evidencePath = Join-Path $Root ([string]$policy.expected_evidence)
     if (-not (Test-Path -LiteralPath $evidencePath -PathType Leaf) -or [string]::IsNullOrWhiteSpace([string]$TaskState.evidence_sha256)) { return $false }
     if ((Get-FileHash -Algorithm SHA256 -LiteralPath $evidencePath).Hash -ne [string]$TaskState.evidence_sha256) { return $false }
@@ -764,6 +771,7 @@ function Get-ReconstructedProjectACompletedState {
         evidence_sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $evidencePath).Hash
         commit_sha = $commit
         completed_at = [string]$evidence.completed_at
+        historical_reconstruction = $true
     }
 }
 
