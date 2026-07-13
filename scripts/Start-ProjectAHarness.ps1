@@ -21,7 +21,7 @@ if ([string]$executionApproval.validator_implementation_sha256 -ne [string]$exec
 if ([string]$executionApproval.execution_bundle_sha256 -ne [string]$execution.sha256) { throw 'Project A execution bundle hash drifted.' }
 if (-not $DryRun -and -not [bool]$executionApproval.execution_approved) { throw 'Project A execution is not approved. Phase 4 review must complete before any model call.' }
 
-$terraform = Get-Command terraform.exe -ErrorAction SilentlyContinue
+$terraform = @(Get-Command terraform.exe, terraform.cmd -ErrorAction SilentlyContinue | Select-Object -First 1)[0]
 if (-not $terraform) {
     Write-Host 'Terraform 1.15.5 is missing. Recovery from an elevated shell:'
     Write-Host '  choco install terraform --version=1.15.5 -y --no-progress'

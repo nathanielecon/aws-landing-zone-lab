@@ -165,9 +165,14 @@ if (`$code -eq 0 -and `$env:HARNESS_FAKE_FORBIDDEN_DIR_POSTRUN) {
 exit `$code
 "@,[Text.UTF8Encoding]::new($false))
     [IO.File]::WriteAllText($toolCmd,"@echo off`r`n`"C:\Program Files\PowerShell\7\pwsh.exe`" -NoLogo -NoProfile -File `"%~dp0Fake-Ralphy.ps1`" %*`r`nexit /b %ERRORLEVEL%`r`n",[Text.UTF8Encoding]::new($false))
+    $fakeTerraformScript=Join-Path $toolRoot 'Fake-Terraform.ps1'
+    $fakeTerraformCmd=Join-Path $toolRoot 'terraform.cmd'
+    [IO.File]::WriteAllText($fakeTerraformScript,"Write-Output '{`"terraform_version`":`"1.15.5`"}'`n",[Text.UTF8Encoding]::new($false))
+    [IO.File]::WriteAllText($fakeTerraformCmd,"@echo off`r`n`"C:\Program Files\PowerShell\7\pwsh.exe`" -NoLogo -NoProfile -File `"%~dp0Fake-Terraform.ps1`" %*`r`n",[Text.UTF8Encoding]::new($false))
 
     $saved=@{
         PATH=$env:PATH
+        HARNESS_ROOT=$env:HARNESS_ROOT
         HARNESS_CONTRACT_ONLY=$env:HARNESS_CONTRACT_ONLY
         HARNESS_FAKE_ALLOWED_PATH=$env:HARNESS_FAKE_ALLOWED_PATH
         HARNESS_FAKE_CALL_COUNT=$env:HARNESS_FAKE_CALL_COUNT
@@ -176,6 +181,7 @@ exit `$code
     }
     try{
         $env:PATH="$toolRoot;$(Join-Path $Workspace 'tests/fixtures');$env:PATH"
+        $env:HARNESS_ROOT=$Workspace
         $env:HARNESS_CONTRACT_ONLY='1'
         $env:HARNESS_FAKE_ALLOWED_PATH='project-a/fixture with space-非.txt'
         $env:HARNESS_FAKE_CALL_COUNT='.logs/calls.txt'
@@ -413,7 +419,7 @@ try{Write-TestPolicy $forgedManifestRepo 'A-005' $false;& git -C $forgedManifest
 $completionForbiddenRepo=New-ProjectAHarnessFixtureWorkspace 'completion forbidden isolation'
 try{
     $completionForbiddenResult=Invoke-ProjectAHarnessFixture -Workspace $completionForbiddenRepo -ForbiddenDir '.ralphy-worktrees'
-    Assert-True ($completionForbiddenResult.ExitCode -ne 0 -and $completionForbiddenResult.Output -match 'Forbidden isolation directory was created: \.ralphy-worktrees') 'completion reconciliation rechecks forbidden isolation directories created after task execution'
+    Assert-True ($completionForbiddenResult.ExitCode -ne 0 -and $completionForbiddenResult.Output -match 'Forbidden isolation directory was created: \.ralphy-worktrees') "completion reconciliation rechecks forbidden isolation directories created after task execution (exit=$($completionForbiddenResult.ExitCode); output=$($completionForbiddenResult.Output))"
 }finally{
     Remove-Item -LiteralPath $completionForbiddenRepo -Recurse -Force -ErrorAction SilentlyContinue
 }

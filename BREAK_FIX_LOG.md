@@ -25,3 +25,6 @@
 
 - Break: PR `#13` Windows contract suite failed on `completion reconciliation rechecks forbidden isolation directories created after task execution` (run `29263112226` / job `86861294954`).
   Fix: Updated the Fake-Ralphy fixture in `tests/Run-ProjectAHarnessTests.ps1` to prefer `$env:HARNESS_ROOT` over `(Get-Location).Path` when planting post-run `.ralphy-worktrees`, so completion reconciliation sees the forbidden isolation directory even when CI process CWD differs from the harness repo; repinned `execution_bundle_sha256` in both approval files to `83CA92A5AA1F081912730323B4D90D87A77D7356C3211742BF9C3D6203FE5E10`.
+
+- Break: CI run `29271355206` still failed on `completion reconciliation rechecks forbidden isolation directories created after task execution` after the HARNESS_ROOT fixture preference.
+  Fix: Root cause was `Start-ProjectAHarness.ps1` requiring `terraform.exe` 1.15.5 before Fake-Ralphy runs; GitHub Windows runners without Terraform exited 12 and never planted `.ralphy-worktrees`. Accepted `terraform.cmd` as well as `terraform.exe`, planted a fixture PATH fake Terraform 1.15.5 shim, forced `HARNESS_ROOT` in the harness fixture, installed pinned Terraform 1.15.5 in `harness-contracts.yml`, enriched the assertion failure context, and repinned `execution_bundle_sha256` to `CDCD337D661A50971F7B2301374ABCFF11E14A004381FDD62B674F2EBB6BBCBC`.
