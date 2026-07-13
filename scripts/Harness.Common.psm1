@@ -790,6 +790,9 @@ function Sync-ProjectAManifestWithTaskState {
             $reconstructedState = Get-ReconstructedProjectACompletedState -Root $Root -TaskId $id -Branch $Branch -BundleHash $BundleHash -ValidatorHash $ValidatorHash
             if ($null -ne $reconstructedState) {
                 $task.completed = Test-ProjectACompletedTaskState -Root $Root -TaskState $reconstructedState -TaskId $id -CurrentHead $head -Branch $Branch -BundleHash $BundleHash -ValidatorHash $ValidatorHash
+                if ($task.completed) {
+                    Write-JsonNoBom -Path $statePath -Value $reconstructedState
+                }
             }
         }
     }
