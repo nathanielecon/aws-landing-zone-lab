@@ -134,7 +134,7 @@ function Invoke-ProjectAHarnessFixture([string]$Workspace,[string]$ForbiddenDir)
     [IO.File]::WriteAllText($toolScript,@"
 param([Parameter(ValueFromRemainingArguments = `$true)][string[]]`$Arguments)
 if (@(`$Arguments) -contains '--version') { [Console]::Out.WriteLine('4.7.2'); exit 0 }
-`$workspace=(Get-Location).Path
+`$workspace=if (`$env:HARNESS_ROOT) { `$env:HARNESS_ROOT } else { (Get-Location).Path }
 `$adapterPath=Join-Path `$workspace 'scripts/Invoke-ProjectAAdapter.ps1'
 `$payload=(
     "`$ErrorActionPreference = 'Stop'",
