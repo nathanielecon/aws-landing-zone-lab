@@ -5,15 +5,21 @@
 | Account | `283077380808` |
 | Region | `us-east-1` |
 | Mode | Collapsed single-account lab |
-| Status | `PENDING_APPLY` — populate after operator/state/lab applies |
+| Status | `PENDING_APPLY` — **READY TO APPLY**; populate after operator/state/lab applies |
 
 ## Prerequisites
 
+- Valid AWS credentials for account `283077380808` in the executing environment
+  (**still required** — live apply has not run; without credentials this lab
+  remains designed / ready-to-apply only)
 - Non-root operator IAM created under `operator/`
 - Remote state bootstrap under `state-bootstrap/`
 - Lab composition under `lab/` (identity + network + audit)
 
 ## Live verification commands (fill after apply)
+
+Do **not** invent CLI output. Run these only after a successful apply with
+credentials present:
 
 ```bash
 export AWS_REGION=us-east-1
@@ -27,7 +33,10 @@ aws ec2 describe-flow-logs --filter Name=resource-id,Values=<vpc-id>
 aws iam get-role --role-name workload-audit-writer
 ```
 
-## What this proves
+## What this will prove (after successful apply)
+
+Until status leaves `PENDING_APPLY`, the items below are **targets**, not
+completed cloud-validated facts:
 
 - Non-root operator posture for lab applies
 - Live identity (OIDC provider + workload role + permission boundary)
@@ -36,6 +45,8 @@ aws iam get-role --role-name workload-audit-writer
 
 ## What this does not prove
 
+- That identity + network + audit are already cloud-validated (status is
+  `PENDING_APPLY`; credentials and live apply are still required)
 - Multi-account Organizations member creation or cross-account assume-role
 - Production / enterprise Landing Zone readiness
 - Azure / Azure Government implementation

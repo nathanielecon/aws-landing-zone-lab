@@ -1,14 +1,17 @@
 # Single-account Landing Zone lab
 
-Collapsed live composition of **identity + private network + audit** in one
-commercial AWS account. This is **not** a multi-account Organizations apply.
+Collapsed composition of **identity + private network + audit** designed for
+one commercial AWS account. Status: **READY TO APPLY** / `PENDING_APPLY` —
+not yet cloud-validated as a completed fact. This is **not** a multi-account
+Organizations apply.
 
 | Field | Value |
 | --- | --- |
 | Mode | Single-account lab (honest claims boundary) |
 | Account | `283077380808` |
 | Region | `us-east-1` |
-| Live modules | `terraform/identity`, `terraform/network`, `terraform/audit` |
+| Status | **READY TO APPLY** / `PENDING_APPLY` (live apply not complete) |
+| Lab modules | `terraform/identity`, `terraform/network`, `terraform/audit` |
 | Design-only | `terraform/organization` (OU/SCP interface; members not created) |
 
 ## Roots (apply order)
@@ -22,7 +25,8 @@ Organization member accounts are **not** applied. See
 
 ## Claims
 
-Supported resume bullet:
+Supported resume bullet (**target / after-exit wording** — not current proof;
+use only after successful live apply and evidence update):
 
 > Designed a multi-account AWS Landing Zone (Orgs/OU/SCP interfaces) and
 > cloud-validated a single-account lab composition of identity, private
@@ -30,7 +34,9 @@ Supported resume bullet:
 > Terraform, evidence, and CI-gated delivery.
 
 Banned: claiming production/enterprise multi-account Landing Zone fully
-cloud-validated across Orgs + network + identity.
+cloud-validated across Orgs + network + identity. Banned: claiming the
+single-account identity+network+audit composition is already cloud-validated
+while evidence remains `PENDING_APPLY`.
 
 Evidence: [`EVIDENCE.md`](EVIDENCE.md). Prior audit-only sandbox:
 [`../aws-proof/EVIDENCE.md`](../aws-proof/EVIDENCE.md).
