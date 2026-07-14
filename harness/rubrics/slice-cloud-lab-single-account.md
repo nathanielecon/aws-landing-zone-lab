@@ -11,8 +11,9 @@ multi-account theater as success is a fail.
 
 ## must-have to pass slice
 
-- Single-account mode is explicit in README, claims-boundary, accounts/overview,
-  and lab evidence; account `283077380808` and region `us-east-1` are documented.
+- Single-account mode is explicit in README, claims-boundary,
+  `docs/architecture/accounts.md`, `docs/architecture/overview.md`, and lab
+  evidence; account `283077380808` and region `us-east-1` are documented.
 - Non-root operator IAM exists (`operator/` applied); evidence shows apply
   identity is not the account root principal for lab operations.
 - Live Terraform lab root composes identity + network + audit in one account
