@@ -7,7 +7,7 @@
   "spec_approved_at": "2026-07-12",
   "approval_source": "Cursor chat: Approval granted to finish local orchestration",
   "spec_bundle_sha256": "6723155F8D76675ADD4D03468EDA1681C2D908BAE93CD512EB1DB53A20DF5053",
-  "execution_bundle_sha256": "AE0E18DD7EE7356FB7F804FCDBA6803D4CB4CEA98711DE685DEAD03C4B9C44DB",
+  "execution_bundle_sha256": "025F12A8D70089A359A008F2511BE2FAED54F890CF0F38838137D1132EC04CA9",
   "hash_implementation_sha256": "355A672293C178681192155CFF74F30437D542B4227D388510BF95FB813F67DB",
   "validator_implementation_sha256": "52217852CA9318590D40EDB54E20FA31DD10C22DB51C6A8DD8DCD5FCFEE4A267",
   "reason": "Repinned after Slice 1 fixer r3: HARNESS.md strict-pin docs + harness persistent-boundary fixtures. Spec bundle unchanged; Invoke-HarnessReleaseValidation / Verify-ProjectABundle remain outside execution-hash members."

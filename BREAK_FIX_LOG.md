@@ -1,5 +1,14 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r5)
+
+- Commit CI wire-up of `Invoke-HarnessReleaseValidation.ps1` + `HARNESS_STRICT_PINS`
+  in `harness-contracts.yml` (was previously only logged).
+- Reject hard links in `Get-CanonicalDiffRecord` (LinkType / nlink / fsutil) with
+  contract fixture; add operator error-class → recovery catalog in `HARNESS.md`.
+- Repinned execution-bundle approval hashes after `Harness.Common.psm1` /
+  `HARNESS.md` edits.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r4)
 
 - Wire Windows CI `harness-contracts.yml` through

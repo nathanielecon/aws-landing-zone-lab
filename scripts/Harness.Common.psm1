@@ -945,6 +945,22 @@ function Get-CanonicalDiffRecord {
             $item = Get-Item -LiteralPath $full -Force
             if ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) { throw "Reparse points are not allowed: $relative" }
             if ($item.PSIsContainer) { throw "Changed directories are not valid task artifacts: $relative" }
+            # Hard links are not reparse points; reject multi-link files explicitly.
+            if ($item.LinkType -eq 'HardLink') { throw "Hard links are not allowed: $relative" }
+            try {
+                if ($IsWindows -or $env:OS -match 'Windows') {
+                    $fsutil = Get-Command fsutil.exe -ErrorAction SilentlyContinue
+                    if ($fsutil) {
+                        $links = @(& $fsutil.Source hardlink list $full 2>$null | Where-Object { $_ -and $_.Trim() })
+                        if (@($links).Count -gt 1) { throw "Hard links are not allowed: $relative" }
+                    }
+                } elseif (Test-Path -LiteralPath '/usr/bin/stat') {
+                    $nlink = [int](& /usr/bin/stat -c '%h' -- $full 2>$null)
+                    if ($nlink -gt 1) { throw "Hard links are not allowed: $relative" }
+                }
+            } catch {
+                if ("$($_.Exception.Message)" -match 'Hard links are not allowed') { throw }
+            }
             [ordered]@{ path = $relative; status = 'present'; git_status=$gitStatus; old_mode=$oldMode; new_mode=$newMode; length = $item.Length; content_sha256 = (Get-ReadableFileSha256 -Path $full) }
         } else { [ordered]@{ path = $relative; status = 'deleted'; git_status=$gitStatus; old_mode=$oldMode; new_mode=$newMode; length = 0; content_sha256 = 'DELETED' } }
     }

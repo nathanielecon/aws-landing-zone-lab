@@ -392,4 +392,39 @@ if (Get-Command Invoke-ProcessWithTimeout -ErrorAction SilentlyContinue) {
     }
 }
 
+# Hard-link rejection: multi-link files fail Get-CanonicalDiffRecord path gates.
+$hardLinkRepo = New-TestRepo -Name 'hardlink-gate'
+try {
+    $target = Join-Path $hardLinkRepo 'smoke/terra.txt'
+    [IO.Directory]::CreateDirectory((Split-Path -Parent $target)) | Out-Null
+    [IO.File]::WriteAllText($target, "TERRA_SMOKE_OK`n", [Text.UTF8Encoding]::new($false))
+    & git -C $hardLinkRepo add smoke/terra.txt
+    & git -C $hardLinkRepo commit -m 'seed' | Out-Null
+    $link = Join-Path $hardLinkRepo 'smoke/terra-link.txt'
+    $linked = $false
+    try {
+        if ($IsWindows -or $env:OS -match 'Windows') {
+            cmd /c "mklink /H `"$link`" `"$target`"" | Out-Null
+            $linked = (Test-Path -LiteralPath $link)
+        } else {
+            & /bin/ln -- "$target" "$link"
+            $linked = (Test-Path -LiteralPath $link)
+        }
+    } catch { $linked = $false }
+    if ($linked) {
+        & git -C $hardLinkRepo add smoke/terra-link.txt 2>$null
+        $rejected = $false
+        try {
+            Get-CanonicalDiffRecord -Root $hardLinkRepo -AllowedPaths @('smoke/terra.txt', 'smoke/terra-link.txt') | Out-Null
+        } catch {
+            $rejected = ("$($_.Exception.Message)" -match 'Hard links are not allowed')
+        }
+        Assert-True $rejected 'hard-link path gate rejects multi-link artifacts'
+    } else {
+        Write-Host 'hard-link fixture skipped (ln/mklink unavailable)'
+    }
+} finally {
+    Remove-Item -LiteralPath $hardLinkRepo -Recurse -Force -ErrorAction SilentlyContinue
+}
+
 Write-Host "Contract tests passed: $passed assertions"

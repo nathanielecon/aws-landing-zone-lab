@@ -39,6 +39,18 @@ prints this recovery command and never elevates silently:
 choco install terraform --version=1.15.5 -y --no-progress
 ```
 
+## Error class → recovery catalog
+
+| Signal / exit | Meaning | Operator recovery |
+| --- | --- | --- |
+| Exit `12` / missing Terraform | Startup tool pin failed | Install Terraform `1.15.5` (command above); re-run launcher |
+| Exit `75` / awaiting approval | Human gate paused the loop | Review diff; `Approve-ProjectATask.ps1 -TaskId <id>`; `-Resume` |
+| `Resume dirty-set binding…` | Working tree no longer matches paused identity | Restore the paused diff or restart the task cleanly (do not force) |
+| `Another harness instance owns the lock` | Exclusive `harness.lock` / task lock held | Wait for the other process, or remove only a stale lock after confirming no live harness |
+| `Verify-ProjectABundle` non-zero | Spec/execution pin drift | Recompute hashes after intentional bundle edits; update approval JSON; never hand-edit digests |
+| `UNAPPROVED_EXECUTABLE_BIT` / reparse / hard link / symlink | Path gate rejected unsafe artifact | Remove the link/bit; keep allowlisted text artifacts only |
+| `Credential variables visible` | Validator credential boundary | Unset cloud credential env vars; CI allowlists only runner-local cache dirs |
+
 ## Test-only contract shortcut
 
 `HARNESS_CONTRACT_ONLY=1` is a **test/CI shortcut**, not a production launch
