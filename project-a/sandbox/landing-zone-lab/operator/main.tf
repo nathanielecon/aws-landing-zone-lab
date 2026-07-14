@@ -102,11 +102,8 @@ resource "aws_iam_role_policy_attachment" "operator" {
   policy_arn = aws_iam_policy.operator.arn
 }
 
-# Access keys are created once for programmatic lab ops. Key material is
-# sensitive state — never commit. Prefer rotating via IAM console after closeout.
-resource "aws_iam_access_key" "operator" {
-  user = aws_iam_user.operator.name
-}
+# No long-lived access keys. Cloud Agents apply via Cursor-injected
+# cursor-cloud-agent profile (CURSOR_AWS_ASSUME_IAM_ROLE_ARN → CursorCloudAgent).
 
 output "operator_user_name" {
   value = aws_iam_user.operator.name
@@ -118,15 +115,6 @@ output "operator_user_arn" {
 
 output "operator_role_arn" {
   value = aws_iam_role.operator.arn
-}
-
-output "operator_access_key_id" {
-  value = aws_iam_access_key.operator.id
-}
-
-output "operator_secret_access_key" {
-  value     = aws_iam_access_key.operator.secret
-  sensitive = true
 }
 
 output "account_id" {
