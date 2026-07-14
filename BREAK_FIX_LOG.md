@@ -1,5 +1,17 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r3)
+
+- Break: Scores still short of 10/10 network negative matrix — egress
+  exceptions lacked a fail-closed mirror of ingress; happy-path SG assert was
+  misnamed `rejects_public_security_group_ingress`; subnet-outside-VPC and
+  overlapping CIDR cases were missing.
+- Fix: Added default-deny `allow_unrestricted_egress` (extension-blocked) with
+  `expect_failures`; renamed happy-path to `enforces_default_deny_security_group`;
+  overlapping subnet validation on `private_subnets`; cross-var
+  `check.private_subnets_inside_vpc` + matching negatives; catalog BC-NET-08/09.
+  Docs/tests/module validations only; no AWS apply; no execution-bundle repin.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r2)
 
 - Break: Scores stuck ~9.0 — misleading audit run

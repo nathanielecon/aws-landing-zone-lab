@@ -15,9 +15,11 @@ the template accepts RFC 1918 VPC CIDRs only.
 
 Private subnets do not assign public IPs. Their route table has no default route,
 so it provides no internet or cross-account path. The workload security group is
-default-deny: no ingress and no egress rules are defined. Any required ingress or
-egress exception needs a source, destination, protocol, port, owner, expiry, and
-human review.
+default-deny: no ingress and no egress rules are defined. Fail-closed inputs
+`allow_unrestricted_ingress` and `allow_unrestricted_egress` default to deny and
+are extension-blocked. Any required ingress or egress exception needs a source,
+destination, protocol, port, owner, expiry, and human review. Private subnet
+CIDRs must sit inside the VPC prefix and must not overlap.
 
 VPC Flow Logs capture `ALL` traffic metadata to a supplied Log Archive S3 ARN.
 This is an interface only; **Log Archive owns the protected storage** (bucket

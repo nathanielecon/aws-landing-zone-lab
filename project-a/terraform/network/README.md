@@ -11,6 +11,13 @@ RAM share, cross-account route, or centralized egress is implemented. Those are
 separately reviewed extension points. A human must approve CIDRs, availability
 zones, regions, route intent, destinations, and any ingress or egress exception.
 
+Fail-closed review inputs `allow_unrestricted_ingress` and
+`allow_unrestricted_egress` default to `false` and must stay false. Setting
+either to `true` fails offline validation; opening SG ingress/egress remains
+**extension-blocked** until a separate human-approved design. Subnet CIDRs must
+stay inside the VPC prefix (`check.private_subnets_inside_vpc`) and must not
+overlap.
+
 Run only offline checks:
 
 ```powershell

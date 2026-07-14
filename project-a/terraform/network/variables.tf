@@ -37,6 +37,25 @@ variable "private_subnets" {
     )
     error_message = "Provide at least two private subnets with valid RFC 1918 CIDRs and non-empty availability zones."
   }
+
+  validation {
+    # Pairwise non-overlap/non-nest using cidrhost (this Terraform pin has no cidrcontains).
+    condition = alltrue([
+      for a in keys(var.private_subnets) : alltrue([
+        for b in keys(var.private_subnets) :
+        a == b || !can(cidrnetmask(var.private_subnets[a].cidr)) || !can(cidrnetmask(var.private_subnets[b].cidr)) || !(
+          (
+            cidrhost(format("%s/%s", cidrhost(var.private_subnets[a].cidr, 0), split("/", var.private_subnets[b].cidr)[1]), 0)
+            == cidrhost(var.private_subnets[b].cidr, 0)
+          ) || (
+            cidrhost(format("%s/%s", cidrhost(var.private_subnets[b].cidr, 0), split("/", var.private_subnets[a].cidr)[1]), 0)
+            == cidrhost(var.private_subnets[a].cidr, 0)
+          )
+        )
+      ])
+    ])
+    error_message = "Private subnet CIDRs must not overlap or nest within each other."
+  }
 }
 
 variable "flow_logs_destination_arn" {
@@ -50,12 +69,23 @@ variable "flow_logs_destination_arn" {
 }
 
 variable "allow_unrestricted_ingress" {
-  description = "Must remain false. Public or unrestricted ingress exceptions on the private workload boundary fail offline validation."
+  description = "Must remain false. Public or unrestricted ingress exceptions on the private workload boundary fail offline validation. Opening ingress is an extension-blocked change."
   type        = bool
   default     = false
 
   validation {
     condition     = var.allow_unrestricted_ingress == false
     error_message = "Unrestricted public ingress exceptions are blocked for the private workload boundary."
+  }
+}
+
+variable "allow_unrestricted_egress" {
+  description = "Must remain false (default deny). Unrestricted egress exceptions on the private workload boundary fail offline validation. Opening egress is an extension-blocked change pending a separate human-approved egress design."
+  type        = bool
+  default     = false
+
+  validation {
+    condition     = var.allow_unrestricted_egress == false
+    error_message = "Unrestricted egress exceptions are blocked for the private workload boundary."
   }
 }
