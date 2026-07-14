@@ -1,5 +1,13 @@
 # Break/Fix Log
 
+## 2026-07-14 (LZ lab slice exit ≥9.5)
+
+- Judge #1 post-apply: **8.7** (doc tense drift). Fixer retensed → Judge #2:
+  **9.5**, must-haves pass, merge_ready. Windows CI + Terraform plan green on
+  PR `#14`. Lesson reinforced: when stuck on AWS control-plane/creds, dispatch
+  a bottleneck agent early and prefer GitHub OIDC CI over Cloud Agent login.
+  Squash-merge PR `#14` to `main` for resume-ready packet.
+
 ## 2026-07-14 (FIXER — judge 8.7 → doc retense for APPLIED)
 
 - Break: Judge score **8.7** — must-haves pass, but accounts/overview/
