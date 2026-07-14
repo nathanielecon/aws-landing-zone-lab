@@ -13,6 +13,7 @@ No AWS credentials required (`init -backend=false`).
 | `project-a/terraform/identity/` | same | Success! The configuration is valid. |
 | `project-a/terraform/network/` | same | Success! The configuration is valid. |
 | `project-a/terraform/audit/` | same | Success! The configuration is valid. |
+| `project-a/terraform/organization/` (interface-only) | same | Success! The configuration is valid. |
 
 Durable CI signal: workflow `.github/workflows/landing-zone-lab.yml` job
 `plan` runs `plan-lab.sh` on PRs touching those paths.

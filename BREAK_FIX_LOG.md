@@ -18,6 +18,10 @@
   `merge_ready: yes` ×3. Follow-up: carve lab vs harness in
   `project-a/evidence-index.md` opener (judge R2 gap). Slice exit ≥9.5 on
   clean multi-judge rejudge.
+- Closeout polish: derive `project-a-lzlab-gha` Role.[Name,Arn] from STS in
+  `EVIDENCE.capture.md`; add organization module to `OFFLINE_VALIDATE.md`;
+  retone `apply-lab.sh` / `aws-env.sh` so GHA OIDC is the only scored path
+  (no Cursor assume-role auto-select). Landed on `main` per operator order.
 
 ## 2026-07-14 (LZ lab slice exit ≥9.5)
 

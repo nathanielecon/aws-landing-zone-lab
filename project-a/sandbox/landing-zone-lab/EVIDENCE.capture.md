@@ -12,9 +12,16 @@
 ## GitHub OIDC CI role
 
 Queried by `capture-evidence.sh` as `project-a-lzlab-gha` only (not
-`GitHubActionsLZLab`). Presence is proven by the caller ARN above:
-`arn:aws:sts::283077380808:assumed-role/project-a-lzlab-gha/gha-lzlab-apply-29366105164`.
-To refresh `Role.[RoleName,Arn]` lines, re-run `./capture-evidence.sh` under
+`GitHubActionsLZLab`). Derived from the STS caller ARN above (same apply run):
+
+```
+[
+    "project-a-lzlab-gha",
+    "arn:aws:iam::283077380808:role/project-a-lzlab-gha"
+]
+```
+
+To refresh live `aws iam get-role` lines, re-run `./capture-evidence.sh` under
 GHA OIDC and commit the new dump.
 
 ## operator user/role
