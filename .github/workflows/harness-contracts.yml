@@ -54,7 +54,6 @@ jobs:
         shell: pwsh
         env:
           CODEX_HOME: ${{ runner.temp }}\codex-home
+          HARNESS_STRICT_PINS: '1'
         run: |
-          pwsh -NoLogo -NoProfile -NonInteractive -File ./tests/Run-ContractTests.ps1
-          pwsh -NoLogo -NoProfile -NonInteractive -File ./tests/Run-ProjectASpecTests.ps1
-          pwsh -NoLogo -NoProfile -NonInteractive -File ./tests/Run-ProjectAHarnessTests.ps1
+          pwsh -NoLogo -NoProfile -NonInteractive -File ./scripts/Invoke-HarnessReleaseValidation.ps1

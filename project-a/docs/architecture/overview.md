@@ -2,18 +2,21 @@
 
 ## Scope and claims
 
-This repository defines a repo-only AWS multi-account platform **design**, plus
-a separately evidenced **single-account Landing Zone lab** in AWS account
-`283077380808` / `us-east-1` that is **APPLIED** / cloud-validated for
-identity, private network, and audit in one account via **GitHub OIDC →
-Terraform CI** (role `project-a-lzlab-gha`, run
+**Foundation (A-001 / multi-account design):** This repository defines a
+**repo-only** AWS multi-account platform design. That foundation surface is
+**not** cloud-validated: AWS multi-account Organizations member creation is
+**not** implemented here, Azure is **not** implemented, and Azure Government
+remains outside the implementation scope. Harness evidence for A-001…A-007
+stays repo-only.
+
+**Separate lab (not Slice 2 foundation proof):** A single-account Landing Zone
+lab under `sandbox/landing-zone-lab/` is **APPLIED** / cloud-validated only for
+collapsed identity + private network + audit in account `283077380808` /
+`us-east-1` via GitHub OIDC CI (role `project-a-lzlab-gha`, run
 [29366105164](https://github.com/nathanielecon/cloud/actions/runs/29366105164)).
-See [`sandbox/landing-zone-lab/EVIDENCE.md`](../../sandbox/landing-zone-lab/EVIDENCE.md).
-Offline `terraform validate` for lab composition + modules is documented in
-[`sandbox/landing-zone-lab/OFFLINE_VALIDATE.md`](../../sandbox/landing-zone-lab/OFFLINE_VALIDATE.md).
-CI continues to exercise the lab via `.github/workflows/landing-zone-lab.yml`.
-Azure Government remains outside the implementation scope. Multi-account
-Organizations member creation is **not** cloud-validated here.
+See [`sandbox/landing-zone-lab/EVIDENCE.md`](../../sandbox/landing-zone-lab/EVIDENCE.md)
+and [`OFFLINE_VALIDATE.md`](../../sandbox/landing-zone-lab/OFFLINE_VALIDATE.md).
+Lab apply does **not** rewrite the multi-account foundation claims above.
 
 ## Account and OU taxonomy
 
@@ -58,8 +61,7 @@ accounts subject to guardrails. Security owns audit policy and access review.
 Only a designated state administrator may change backend policy or perform
 state recovery.
 
-See the [S3 backend decision](../decisions/backend.md), [secrets decision](../decisions/secrets.md),
-and HashiCorp's [S3 backend documentation](https://developer.hashicorp.com/terraform/language/backend/s3).
+See HashiCorp's [S3 backend documentation](https://developer.hashicorp.com/terraform/language/backend/s3).
 
 ## Orchestration and slice review
 
@@ -68,13 +70,29 @@ pinning, and the Windows CI gate are recorded in
 [orchestration.md](orchestration.md). Related architecture pages:
 [accounts](accounts.md), [network](network.md), and [logging](logging.md).
 
+## Related
+
+- [Accounts and OU taxonomy](accounts.md)
+- [S3 backend decision](../decisions/backend.md)
+- [Secrets decision](../decisions/secrets.md)
+- [Organizations guardrails](../guardrails/organizations.md)
+- [Organization taxonomy checklist](../../terraform/organization/TAXONOMY.md)
+
 ## Delivery navigation
 
-Direct links for reviewers (existing content above is unchanged):
+Zero-orphan reviewer path: README → architecture → evidence → review.
 
+- Project README: [`project-a/README.md`](../../README.md)
 - Frozen rubrics: [`harness/rubrics/`](../../../harness/rubrics/)
 - Evidence index: [`project-a/evidence-index.md`](../../evidence-index.md)
+- Claims boundary: [`docs/portfolio/claims-boundary.md`](../portfolio/claims-boundary.md)
+- Pushback and handoff: [`docs/review/pushback-and-handoff.md`](../review/pushback-and-handoff.md)
+- Azure Government readiness (translation-only):
+  [`docs/azure-government/readiness.md`](../azure-government/readiness.md)
 - Platform diagram: [`docs/diagrams/platform.svg`](../diagrams/platform.svg)
 - Network diagram: [`docs/diagrams/network.svg`](../diagrams/network.svg)
 - Graphify navigation aid (not a validation substitute):
   [`graphify-out/GRAPH_REPORT.md`](../../graphify-out/GRAPH_REPORT.md)
+- Fresh-clone CI-parity gate:
+  [`HARNESS.md`](../../HARNESS.md) → `Invoke-HarnessReleaseValidation.ps1` with
+  `HARNESS_STRICT_PINS=1`

@@ -21,7 +21,11 @@
   **not** chase `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` / External ID / `aws login`
   for the lab goal. Do **not** recreate `github-oidc/` / `GitHubActionsLZLab`.
 - Keep harness runs sequential and repo-only unless the user explicitly asks for live cloud validation.
-- Fast validation order when touching harness code:
+- Fast validation order when touching harness code (prefer the one-command
+  CI-parity gate first):
+  0. `pwsh -NoLogo -NoProfile -File scripts/Invoke-HarnessReleaseValidation.ps1`
+     (sets CI + HARNESS_CONTRACT_ONLY; use `HARNESS_STRICT_PINS=1` for pin
+     fail-closed; also runs `Verify-ProjectABundle.ps1`)
   1. `pwsh -NoLogo -NoProfile -File tests/Run-ProjectAHarnessTests.ps1`
   2. `pwsh -NoLogo -NoProfile -File tests/Run-ProjectASpecTests.ps1`
   3. `pwsh -NoLogo -NoProfile -File tests/Run-ContractTests.ps1`

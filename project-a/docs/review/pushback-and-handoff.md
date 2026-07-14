@@ -38,7 +38,8 @@ plus an honest single-account live lab applied through GitHub OIDC CI.
 ## Handoff notes
 
 Point reviewers to the [evidence index](../../evidence-index.md), the
-[platform diagram](../diagrams/platform.svg), and the
-[claims boundary](../portfolio/claims-boundary.md). Stop and escalate if anyone
-asks for unsupported production, senior, enterprise, or multi-account
-cloud-validated claims.
+[platform diagram](../diagrams/platform.svg), the
+[claims boundary](../portfolio/claims-boundary.md), and the
+[Azure Government readiness](../azure-government/readiness.md) note
+(translation-only). Stop and escalate if anyone asks for unsupported
+production, senior, enterprise, or multi-account cloud-validated claims.

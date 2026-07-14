@@ -30,6 +30,237 @@ function Assert-JsonObjectContract {
     if ($missing.Count -gt 0) { throw "$Context is missing required field(s): $($missing -join ', ')" }
 }
 
+function Test-JsonSchema {
+    <#
+      Fail-closed JSON Schema subset: required + additionalProperties:false,
+      per-property const/enum/type/pattern/minItems at top-level and one nested
+      object level, light object-array item checks, and top-level allOf entries
+      that use if/then/else (as in policy.schema.json approval.required →
+      gate_id/receipt_path). Returns $true on match; throws on mismatch.
+    #>
+    param(
+        [Parameter(Mandatory)]$InputObject,
+        [Parameter(Mandatory)][string]$SchemaPath,
+        [string]$Context = 'JSON document'
+    )
+    if (-not (Test-Path -LiteralPath $SchemaPath -PathType Leaf)) { throw "$Context schema file missing: $SchemaPath" }
+    $schema = Get-Content -Raw -LiteralPath $SchemaPath | ConvertFrom-Json
+    if ($null -eq $InputObject) { throw "$Context must be a JSON object." }
+
+    function Test-SchemaIsInteger($Value) {
+        return ($Value -is [sbyte] -or $Value -is [byte] -or $Value -is [int16] -or $Value -is [uint16] -or
+                $Value -is [int32] -or $Value -is [uint32] -or $Value -is [int64] -or $Value -is [uint64] -or
+                ($Value -is [decimal] -and [decimal]$Value -eq [math]::Truncate([decimal]$Value)) -or
+                ($Value -is [double] -and [double]$Value -eq [math]::Truncate([double]$Value)))
+    }
+
+    function Test-SchemaValueType {
+        param($Value, [string]$TypeName, [string]$Path)
+        switch ($TypeName) {
+            'null' { if ($null -ne $Value) { throw "$Path must be null." }; return }
+            'string' {
+                if ($Value -isnot [string]) { throw "$Path must be a string." }
+                return
+            }
+            'integer' {
+                if (-not (Test-SchemaIsInteger $Value)) { throw "$Path must be an integer." }
+                return
+            }
+            'boolean' {
+                if ($Value -isnot [bool]) { throw "$Path must be a boolean." }
+                return
+            }
+            'array' {
+                if ($null -eq $Value) { throw "$Path must be an array." }
+                if ($Value -is [string] -or $Value -is [hashtable] -or $Value -is [System.Management.Automation.PSCustomObject]) {
+                    throw "$Path must be an array."
+                }
+                if ($Value -isnot [System.Collections.IEnumerable]) { throw "$Path must be an array." }
+                return
+            }
+            'object' {
+                if ($null -eq $Value -or $Value -is [string] -or $Value -is [bool] -or (Test-SchemaIsInteger $Value)) {
+                    throw "$Path must be an object."
+                }
+                if ($Value -is [System.Collections.IEnumerable] -and $Value -isnot [System.Collections.IDictionary] -and $Value -isnot [hashtable]) {
+                    # Plain arrays are IEnumerable but not objects.
+                    if ($Value -is [System.Array] -or $Value.GetType().Name -eq 'Object[]') { throw "$Path must be an object." }
+                }
+                if ($null -eq $Value.PSObject -or $null -eq $Value.PSObject.Properties) { throw "$Path must be an object." }
+                return
+            }
+            default { return }
+        }
+    }
+
+    function Assert-SchemaPropertyConstraints {
+        param($Value, $PropSchema, [string]$Path, [int]$ObjectDepth)
+        if ($null -eq $PropSchema) { return }
+        $names = @($PropSchema.PSObject.Properties.Name)
+
+        if ($names -contains 'type') {
+            $typeSpec = $PropSchema.type
+            $allowedTypes = @($typeSpec | ForEach-Object { [string]$_ })
+            $matched = $false
+            foreach ($t in $allowedTypes) {
+                try { Test-SchemaValueType -Value $Value -TypeName $t -Path $Path; $matched = $true; break } catch { }
+            }
+            if (-not $matched) { throw "$Path has invalid type (expected $($allowedTypes -join '|'))." }
+        }
+
+        if ($names -contains 'const') {
+            $expected = $PropSchema.const
+            if ($null -eq $expected) {
+                if ($null -ne $Value) { throw "$Path must equal const null." }
+            } elseif ($null -eq $Value) {
+                throw "$Path must equal const '$expected'."
+            } elseif ($expected -is [bool] -or $Value -is [bool]) {
+                if (-not (($Value -is [bool]) -and ($expected -is [bool]) -and ($Value -eq $expected))) {
+                    throw "$Path must equal const $expected."
+                }
+            } elseif ((Test-SchemaIsInteger $expected) -and (Test-SchemaIsInteger $Value)) {
+                if ([int64]$Value -ne [int64]$expected) { throw "$Path must equal const $expected." }
+            } else {
+                if ([string]$Value -cne [string]$expected) { throw "$Path must equal const '$expected'." }
+            }
+        }
+
+        if ($names -contains 'enum') {
+            $enumValues = @($PropSchema.enum)
+            $found = $false
+            foreach ($candidate in $enumValues) {
+                if ($null -eq $candidate -and $null -eq $Value) { $found = $true; break }
+                if ($null -eq $candidate -or $null -eq $Value) { continue }
+                if (($candidate -is [bool] -or $Value -is [bool]) -and ($candidate -is [bool]) -and ($Value -is [bool]) -and ($candidate -eq $Value)) { $found = $true; break }
+                if ((Test-SchemaIsInteger $candidate) -and (Test-SchemaIsInteger $Value) -and ([int64]$candidate -eq [int64]$Value)) { $found = $true; break }
+                if ([string]$candidate -ceq [string]$Value) { $found = $true; break }
+            }
+            if (-not $found) { throw "$Path value is not in enum." }
+        }
+
+        if ($names -contains 'pattern' -and $null -ne $Value) {
+            if ($Value -isnot [string]) { throw "$Path must be a string to match pattern." }
+            if ([string]$Value -notmatch [string]$PropSchema.pattern) { throw "$Path does not match required pattern." }
+        }
+
+        $isArrayValue = $false
+        if ($null -ne $Value -and $Value -isnot [string] -and $Value -isnot [hashtable] -and $Value -isnot [System.Management.Automation.PSCustomObject]) {
+            if ($Value -is [System.Collections.IEnumerable] -and $Value -isnot [System.Collections.IDictionary]) {
+                $isArrayValue = $true
+            }
+        }
+
+        if ($isArrayValue) {
+            $items = @($Value)
+            if ($names -contains 'minItems') {
+                $minItems = [int]$PropSchema.minItems
+                if ($items.Count -lt $minItems) { throw "$Path must have at least $minItems item(s)." }
+            }
+            if ($names -contains 'items' -and $null -ne $PropSchema.items) {
+                $itemSchema = $PropSchema.items
+                $itemNames = @($itemSchema.PSObject.Properties.Name)
+                $itemIsObject = ($itemNames -contains 'type' -and (
+                    (@($itemSchema.type | ForEach-Object { [string]$_ }) -contains 'object')
+                )) -or ($itemNames -contains 'properties') -or ($itemNames -contains 'required') -or (
+                    $itemNames -contains 'additionalProperties'
+                )
+                $index = 0
+                foreach ($item in $items) {
+                    $itemPath = "$Path[$index]"
+                    if ($itemIsObject) {
+                        Assert-SchemaObjectNode -Node $item -NodeSchema $itemSchema -Path $itemPath -ObjectDepth $ObjectDepth
+                    } else {
+                        Assert-SchemaPropertyConstraints -Value $item -PropSchema $itemSchema -Path $itemPath -ObjectDepth $ObjectDepth
+                    }
+                    $index++
+                }
+            }
+            return
+        }
+
+        $isObjectValue = $false
+        if ($null -ne $Value -and $Value -isnot [string] -and $Value -isnot [bool] -and -not (Test-SchemaIsInteger $Value) -and -not $isArrayValue) {
+            if ($null -ne $Value.PSObject -and $null -ne $Value.PSObject.Properties) { $isObjectValue = $true }
+        }
+        if ($isObjectValue -and $ObjectDepth -lt 1) {
+            $hasObjectShape = ($names -contains 'properties') -or ($names -contains 'required') -or ($names -contains 'additionalProperties')
+            if ($hasObjectShape) {
+                Assert-SchemaObjectNode -Node $Value -NodeSchema $PropSchema -Path $Path -ObjectDepth ($ObjectDepth + 1)
+            }
+        }
+    }
+
+    function Assert-SchemaObjectNode {
+        param($Node, $NodeSchema, [string]$Path, [int]$ObjectDepth)
+        if ($null -eq $Node) { throw "$Path must be a JSON object." }
+        $required = @()
+        if ($NodeSchema.PSObject.Properties.Name -contains 'required') {
+            $required = @($NodeSchema.required | ForEach-Object { [string]$_ })
+        }
+        $declared = @()
+        if ($NodeSchema.PSObject.Properties.Name -contains 'properties' -and $NodeSchema.properties) {
+            $declared = @($NodeSchema.properties.PSObject.Properties.Name | ForEach-Object { [string]$_ })
+        }
+        $additionalOk = $true
+        if ($NodeSchema.PSObject.Properties.Name -contains 'additionalProperties') {
+            $additionalOk = [bool]$NodeSchema.additionalProperties
+        }
+        if (-not $additionalOk) {
+            $optional = @($declared | Where-Object { $_ -notin $required })
+            Assert-JsonObjectContract -Value $Node -Context $Path -RequiredProperties $required -OptionalProperties $optional
+        } else {
+            $nodeProps = @($Node.PSObject.Properties.Name | ForEach-Object { [string]$_ })
+            $missing = @($required | Where-Object { $_ -notin $nodeProps })
+            if ($missing.Count -gt 0) { throw "$Path is missing required field(s): $($missing -join ', ')" }
+        }
+
+        if ($NodeSchema.PSObject.Properties.Name -contains 'properties' -and $NodeSchema.properties) {
+            foreach ($propName in @($NodeSchema.properties.PSObject.Properties.Name)) {
+                if ($Node.PSObject.Properties.Name -notcontains $propName) { continue }
+                $propSchema = $NodeSchema.properties.$propName
+                Assert-SchemaPropertyConstraints -Value $Node.$propName -PropSchema $propSchema -Path "$Path.$propName" -ObjectDepth $ObjectDepth
+            }
+        }
+    }
+
+    function Test-SchemaFragment {
+        param($Node, $NodeSchema, [string]$Path, [int]$ObjectDepth)
+        try {
+            Assert-SchemaObjectNode -Node $Node -NodeSchema $NodeSchema -Path $Path -ObjectDepth $ObjectDepth
+            return $true
+        } catch {
+            return $false
+        }
+    }
+
+    Assert-SchemaObjectNode -Node $InputObject -NodeSchema $schema -Path $Context -ObjectDepth 0
+
+    if ($schema.PSObject.Properties.Name -contains 'allOf' -and $null -ne $schema.allOf) {
+        $allOfIndex = 0
+        foreach ($entry in @($schema.allOf)) {
+            $entryPath = "$Context.allOf[$allOfIndex]"
+            $entryNames = @($entry.PSObject.Properties.Name)
+            if ($entryNames -contains 'if') {
+                $ifMatches = Test-SchemaFragment -Node $InputObject -NodeSchema $entry.if -Path "$entryPath.if" -ObjectDepth 0
+                if ($ifMatches) {
+                    if ($entryNames -contains 'then' -and $null -ne $entry.then) {
+                        Assert-SchemaObjectNode -Node $InputObject -NodeSchema $entry.then -Path "$entryPath.then" -ObjectDepth 0
+                    }
+                } else {
+                    if ($entryNames -contains 'else' -and $null -ne $entry.else) {
+                        Assert-SchemaObjectNode -Node $InputObject -NodeSchema $entry.else -Path "$entryPath.else" -ObjectDepth 0
+                    }
+                }
+            } else {
+                Assert-SchemaObjectNode -Node $InputObject -NodeSchema $entry -Path $entryPath -ObjectDepth 0
+            }
+            $allOfIndex++
+        }
+    }
+
+    return $true
+}
+
 function Assert-JsonStringField {
     param(
         [Parameter(Mandatory)]$Value,
@@ -567,7 +798,7 @@ function Open-ExclusiveLock {
     $parent = Split-Path -Parent $Path
     [System.IO.Directory]::CreateDirectory($parent) | Out-Null
     try {
-        return [System.IO.File]::Open($Path, [System.IO.FileMode]::OpenOrCreate, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::Read)
+        return [System.IO.File]::Open($Path, [System.IO.FileMode]::OpenOrCreate, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
     } catch {
         throw "Another harness instance owns the lock: $Path"
     }
@@ -945,6 +1176,22 @@ function Get-CanonicalDiffRecord {
             $item = Get-Item -LiteralPath $full -Force
             if ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) { throw "Reparse points are not allowed: $relative" }
             if ($item.PSIsContainer) { throw "Changed directories are not valid task artifacts: $relative" }
+            # Hard links are not reparse points; reject multi-link files explicitly.
+            if ($item.LinkType -eq 'HardLink') { throw "Hard links are not allowed: $relative" }
+            try {
+                if ($IsWindows -or $env:OS -match 'Windows') {
+                    $fsutil = Get-Command fsutil.exe -ErrorAction SilentlyContinue
+                    if ($fsutil) {
+                        $links = @(& $fsutil.Source hardlink list $full 2>$null | Where-Object { $_ -and $_.Trim() })
+                        if (@($links).Count -gt 1) { throw "Hard links are not allowed: $relative" }
+                    }
+                } elseif (Test-Path -LiteralPath '/usr/bin/stat') {
+                    $nlink = [int](& /usr/bin/stat -c '%h' -- $full 2>$null)
+                    if ($nlink -gt 1) { throw "Hard links are not allowed: $relative" }
+                }
+            } catch {
+                if ("$($_.Exception.Message)" -match 'Hard links are not allowed') { throw }
+            }
             [ordered]@{ path = $relative; status = 'present'; git_status=$gitStatus; old_mode=$oldMode; new_mode=$newMode; length = $item.Length; content_sha256 = (Get-ReadableFileSha256 -Path $full) }
         } else { [ordered]@{ path = $relative; status = 'deleted'; git_status=$gitStatus; old_mode=$oldMode; new_mode=$newMode; length = 0; content_sha256 = 'DELETED' } }
     }

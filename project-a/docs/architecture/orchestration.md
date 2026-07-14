@@ -160,11 +160,44 @@ Harness-internal model dispatch (unchanged):
 ## Thresholds
 
 - Slice advance requires **average ≥ 9.5/10** and **all must-have items pass**.
+  That comparison is **orchestrator-only** — never paste the numeric advance
+  rule into judge/nixer/fixer prompts (see anti-leak prompt contract below).
 - Items marked needed for 9/10+ and 10/10 inform scoring depth; they do not
   waive must-haves.
 - Nice-to-have items never block slice exit.
 - Local assertion counts and green local runs do not override a failing remote
   Windows CI gate for delivery claims.
+
+## Anti-leak prompt contract (council workers)
+
+Worker prompts (setter / judge / nixer / fixer) must be **fresh short
+contracts** only. Do **not** paste the orchestrator transcript, prior judge
+scores, or advance-threshold language into workers.
+
+### Required judge return shape
+
+Judges score **0–10** against the frozen rubric’s must-have / 9+ / 10
+sections and return exactly:
+
+- `score` (number 0–10)
+- `must_haves_pass` (boolean)
+- `failed_must_haves` (list; empty if none)
+- `gaps` (top improvements, even when passing)
+
+### Banned in judge / nixer / fixer prompts
+
+Do not include any of:
+
+- `9.5`, `≥9.5`, `>=9.5`, `needed_for_9.5`, `needed_for_9.5_plus`
+- `advance`, `advance bar`, `exit bar`, `slice exit`, `merge_ready` as a
+  threshold instruction
+- Prior chat scores or “last round scored X”
+- Parent orchestrator transcript
+
+Orchestrator alone averages judge scores and applies the Thresholds rule.
+Bottleneck mode may loop a same-judge repair cycle and then require a **new**
+independent judge; still ask only for `score` + must-haves — do **not** name
+the bottleneck target number in the prompt.
 
 ## Approval and hash pinning
 
@@ -260,13 +293,40 @@ fidelity:
    contract and stated claims boundary. The Terraform/architecture surface is
    an offline baseline, **not** cloud-validated production apply readiness.
    Items marked needed for 10/10 (deep fault injection, exhaustive negative
-   matrices, fresh-machine one-command CI parity) were explicitly left short.
+   matrices) were explicitly left short on that closeout. A later clean
+   rejudge added `scripts/Invoke-HarnessReleaseValidation.ps1` +
+   `HARNESS_STRICT_PINS=1` as the fresh-machine / CI-parity one-command path
+   (see `project-a/HARNESS.md` and `.github/workflows/harness-contracts.yml`).
 
 Final recorded slice advance scores for that closeout: Slice 1 **9.6**, Slice 2
 **9.6**, Slice 3 **9.5**, Slice 4 **9.6**. Technical break→fix cycles remain
 in [`BREAK_FIX_LOG.md`](../../../BREAK_FIX_LOG.md).
 
+**Process-audit note (2026-07-14):** Those closeout scores (and the earlier
+cloud-lab rejudge on PR `#16`) are **contaminated** where judge prompts
+received advance-threshold leakage. Clean no-leak multi-judge scores are
+recorded in the table below after the dedicated clean rejudge pass.
+
+## Clean no-leak rejudge scores (2026-07-14)
+
+| Slice | Rubric | Clean scores | Average | Must-haves | Notes |
+| --- | --- | --- | --- | --- | --- |
+| 1 | `slice-1-harness-core.md` | 9.8 / 9.5 / 9.5 | **9.6** | PASS | Clean no-leak Grok round (post fixer r1–r9) |
+| 2 | `slice-2-project-a-foundation.md` | 9.6 / 9.5 / 9.5 | **9.53** | PASS | Clean no-leak Grok round |
+| 3 | `slice-3-project-a-platform.md` | 9.8 / 10 / 10 | **9.93** | PASS | Clean no-leak Grok round |
+| 4 | `slice-4-final-delivery.md` | 9.6 / 9.5 / 9.5 | **9.53** | PASS | Clean no-leak Grok round |
+| Cloud lab | `slice-cloud-lab-single-account.md` | 9.5 / 9.5 / 9.5 | **9.5** | PASS | Clean no-leak Grok round; TEARDOWN.md |
+
 ## Operator entry points
+
+Fresh-clone Windows one-command proof matching CI:
+
+```powershell
+$env:HARNESS_STRICT_PINS = '1'
+pwsh -NoLogo -NoProfile -File ./scripts/Invoke-HarnessReleaseValidation.ps1
+```
+
+Harness loop:
 
 ```powershell
 ./scripts/Start-Harness.ps1
