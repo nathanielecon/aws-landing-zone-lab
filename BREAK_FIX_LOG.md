@@ -1,5 +1,17 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-1 fixer)
+
+- Added `scripts/Invoke-HarnessReleaseValidation.ps1` (tool-version checks +
+  `CI=1` / `HARNESS_CONTRACT_ONLY=1` + contract/spec/harness suites).
+- Documented one-command release validation + pin verify in
+  `project-a/HARNESS.md` (execution-bundle member; approval pins repinned).
+- Added `scripts/Verify-ProjectABundle.ps1` (recompute vs bundle/execution
+  approval pins; optional approval-path overrides for fail-closed tests).
+- Thin contract tests: one-byte digest mutation + flipped pin fails closed;
+  `Invoke-ProcessWithTimeout` kills child sleep. New scripts intentionally
+  omitted from execution-hash members.
+
 ## 2026-07-14 (PROCESS MISHAP — advance-threshold leak into judge prompts)
 
 - Break: Orchestrator included advance-threshold language (`9.5`, `≥9.5`,

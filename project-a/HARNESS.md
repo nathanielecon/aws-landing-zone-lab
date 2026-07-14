@@ -14,6 +14,21 @@ execution bundle or its pinned validator/hash implementations change.
 ./scripts/Start-ProjectAHarness.ps1 -Resume
 ```
 
+## One-command release validation
+
+Contract + Project A suite gate (sets `CI=1` and `HARNESS_CONTRACT_ONLY=1`,
+prints tool-version checks, then runs contract/spec/harness tests):
+
+```powershell
+pwsh -NoLogo -NoProfile -File ./scripts/Invoke-HarnessReleaseValidation.ps1
+```
+
+Pin check only (recomputes spec/execution hashes vs approval JSON):
+
+```powershell
+pwsh -NoLogo -NoProfile -File ./scripts/Verify-ProjectABundle.ps1
+```
+
 The double-click entry point is `launcher/Launch Project A Harness.cmd`.
 Terraform 1.15.5 is required for live execution. If it is missing, the launcher
 prints this recovery command and never elevates silently:

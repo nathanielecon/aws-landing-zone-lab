@@ -305,4 +305,52 @@ try {
     Assert-True ($beforeUnknown -ne $afterUnknown) 'unknown smoke runtime mutations change the diff fingerprint'
 } finally { Remove-Item -LiteralPath $smokeRuntimeRepo -Recurse -Force }
 
+# Property/mutation: one-byte digest change + flipped approval pin fails closed via Verify-ProjectABundle.
+$pinMutationDir = Join-Path ([IO.Path]::GetTempPath()) "project-a-pin-mutation-$([Guid]::NewGuid().ToString('N'))"
+try {
+    [IO.Directory]::CreateDirectory($pinMutationDir) | Out-Null
+    $probeFile = Join-Path $pinMutationDir 'probe.txt'
+    [IO.File]::WriteAllText($probeFile, "baseline`n", [Text.UTF8Encoding]::new($false))
+    $hashBefore = (Get-FileHash -Algorithm SHA256 -LiteralPath $probeFile).Hash
+    [IO.File]::AppendAllText($probeFile, 'x')
+    $hashAfter = (Get-FileHash -Algorithm SHA256 -LiteralPath $probeFile).Hash
+    Assert-True ($hashBefore -ne $hashAfter) 'digest changes when content mutates one byte'
+
+    $copiedBundle = Join-Path $pinMutationDir 'bundle-approval.json'
+    $copiedExec = Join-Path $pinMutationDir 'execution-approval.json'
+    Copy-Item -LiteralPath (Join-Path $root 'project-a/harness/bundle-approval.json') -Destination $copiedBundle
+    Copy-Item -LiteralPath (Join-Path $root 'project-a/harness/execution-approval.json') -Destination $copiedExec
+    $mutated = Get-Content -Raw -LiteralPath $copiedBundle | ConvertFrom-Json
+    $hex = [char[]]([string]$mutated.spec_bundle_sha256)
+    $hex[0] = if ($hex[0] -eq 'A') { 'B' } else { 'A' }
+    $mutated.spec_bundle_sha256 = -join $hex
+    [IO.File]::WriteAllText($copiedBundle, (($mutated | ConvertTo-Json -Depth 5) + "`n"), [Text.UTF8Encoding]::new($false))
+    & pwsh -NoLogo -NoProfile -File (Join-Path $root 'scripts/Verify-ProjectABundle.ps1') -Root $root -BundleApprovalPath $copiedBundle -ExecutionApprovalPath $copiedExec | Out-Null
+    Assert-True ($LASTEXITCODE -ne 0) 'Verify-ProjectABundle fails closed when one approval hex digit is flipped'
+} finally {
+    Remove-Item -LiteralPath $pinMutationDir -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# Adversarial timeout: child sleep is killed by Invoke-ProcessWithTimeout.
+if (Get-Command Invoke-ProcessWithTimeout -ErrorAction SilentlyContinue) {
+    $info = [Diagnostics.ProcessStartInfo]::new()
+    $info.FileName = (Get-Command pwsh -ErrorAction Stop).Source
+    $info.UseShellExecute = $false
+    $info.RedirectStandardOutput = $true
+    $info.RedirectStandardError = $true
+    foreach ($argument in @('-NoLogo', '-NoProfile', '-Command', 'Start-Sleep -Seconds 30')) {
+        [void]$info.ArgumentList.Add($argument)
+    }
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $info
+    try {
+        [void]$process.Start()
+        $timeoutResult = Invoke-ProcessWithTimeout -Process $process -TimeoutSeconds 1
+        Assert-True ($timeoutResult.timed_out -eq $true -and $timeoutResult.exit_code -eq 124) 'Invoke-ProcessWithTimeout kills a long-running child sleep'
+    } finally {
+        if (-not $process.HasExited) { try { $process.Kill($true) } catch {} }
+        $process.Dispose()
+    }
+}
+
 Write-Host "Contract tests passed: $passed assertions"
