@@ -32,7 +32,8 @@ on `flow_logs_destination_arn`), audit (`archive_bucket_arn` +
 `flow_logs_prefix`), and environment `audit_prefix` locals. It also asserts
 **string equality** of the shared offline bucket name token across identity /
 network / audit fixtures (`example-log-archive`) and lab wiring to
-`module.audit.archive_bucket_*`.
+`module.audit.archive_bucket_*`, and locks nonproduction/production composition
+fields to that shared token plus `is_organization_trail = false`.
 
 ## Minimal executable check
 

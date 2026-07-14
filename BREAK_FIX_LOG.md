@@ -1,5 +1,18 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r10)
+
+- Break: Production env composition stayed thin while nonproduction already
+  wired identity/network/audit module inputs; audit troubleshooting lacked
+  BC-AUD-05 / org-trail enable stop conditions; integration assert did not lock
+  env composition shared Log Archive token or `is_organization_trail = false`.
+- Fix: Mirrored nonproduction’s deepened identity/network/audit module-input
+  composition into `environments/production` (non-secret placeholders, shared
+  `example-log-archive` token, `is_organization_trail = false`); mapped
+  BC-AUD-05 into `audit-troubleshooting.md` stop conditions; extended
+  `log_archive_arn_prefix_contract_alignment` to lock both env compositions.
+  No AWS; no execution-bundle repin.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r9)
 
 - Break: Audit org-trail stayed prose-only (no typed `is_organization_trail`);

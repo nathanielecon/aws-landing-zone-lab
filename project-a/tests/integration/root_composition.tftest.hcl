@@ -95,6 +95,18 @@ run "log_archive_arn_prefix_contract_alignment" {
       # Environments: distinct audit_prefix values stay aligned with env composition.
       can(regex("(?s)audit_prefix\\s*=\\s*\"nonproduction/audit\"", file("${path.root}/environments/nonproduction/main.tf"))) &&
       can(regex("(?s)audit_prefix\\s*=\\s*\"production/audit\"", file("${path.root}/environments/production/main.tf"))) &&
+      # Nonproduction composition: shared Log Archive token + org-trail fail-closed.
+      can(regex("(?s)log_archive_bucket_name\\s*=\\s*\"example-log-archive\"", file("${path.root}/environments/nonproduction/main.tf"))) &&
+      can(regex("(?s)audit_bucket_name\\s*=\\s*local\\.log_archive_bucket_name", file("${path.root}/environments/nonproduction/main.tf"))) &&
+      can(regex("(?s)flow_logs_destination_arn\\s*=\\s*\"arn:aws:s3:::\\$\\{local\\.log_archive_bucket_name\\}/vpc-flow-logs\"", file("${path.root}/environments/nonproduction/main.tf"))) &&
+      can(regex("(?s)archive_bucket_name\\s*=\\s*local\\.log_archive_bucket_name", file("${path.root}/environments/nonproduction/main.tf"))) &&
+      can(regex("(?s)is_organization_trail\\s*=\\s*false", file("${path.root}/environments/nonproduction/main.tf"))) &&
+      # Production composition mirrors the same shared-token / org-trail-false contract.
+      can(regex("(?s)log_archive_bucket_name\\s*=\\s*\"example-log-archive\"", file("${path.root}/environments/production/main.tf"))) &&
+      can(regex("(?s)audit_bucket_name\\s*=\\s*local\\.log_archive_bucket_name", file("${path.root}/environments/production/main.tf"))) &&
+      can(regex("(?s)flow_logs_destination_arn\\s*=\\s*\"arn:aws:s3:::\\$\\{local\\.log_archive_bucket_name\\}/vpc-flow-logs\"", file("${path.root}/environments/production/main.tf"))) &&
+      can(regex("(?s)archive_bucket_name\\s*=\\s*local\\.log_archive_bucket_name", file("${path.root}/environments/production/main.tf"))) &&
+      can(regex("(?s)is_organization_trail\\s*=\\s*false", file("${path.root}/environments/production/main.tf"))) &&
       # String equality: identity / network / audit offline fixtures share one bucket name token.
       regex("(?m)^\\s*audit_bucket_name\\s*=\\s*\"([^\"]+)\"", file("${path.root}/tests/iam/identity.tftest.hcl")) == regex("(?m)^\\s*archive_bucket_name\\s*=\\s*\"([^\"]+)\"", file("${path.root}/tests/audit/audit.tftest.hcl")) &&
       regex("(?m)^\\s*flow_logs_destination_arn\\s*=\\s*\"arn:aws:s3:::([^\"]+)\"", file("${path.root}/tests/network/network.tftest.hcl")) == regex("(?m)^\\s*archive_bucket_name\\s*=\\s*\"([^\"]+)\"", file("${path.root}/tests/audit/audit.tftest.hcl")) &&
@@ -102,6 +114,6 @@ run "log_archive_arn_prefix_contract_alignment" {
       can(regex("(?s)audit_bucket_name\\s*=\\s*module\\.audit\\.archive_bucket_name", file("${path.root}/sandbox/landing-zone-lab/lab/main.tf"))) &&
       can(regex("(?s)flow_logs_destination_arn\\s*=\\s*\"\\$\\{module\\.audit\\.archive_bucket_arn\\}/", file("${path.root}/sandbox/landing-zone-lab/lab/main.tf")))
     )
-    error_message = "Shared Log Archive bucket token must be string-equal across identity audit_bucket_name, network flow_logs_destination_arn, and audit archive_bucket_name/ARN (fixtures + lab wiring)."
+    error_message = "Shared Log Archive bucket token must be string-equal across identity audit_bucket_name, network flow_logs_destination_arn, and audit archive_bucket_name/ARN (fixtures + lab wiring); env compositions keep example-log-archive + is_organization_trail=false."
   }
 }

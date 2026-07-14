@@ -10,9 +10,12 @@ Related: [blocked-change catalog](blocked-change-catalog.md),
 First check the approved bucket name, trail prefix, and KMS alias against the
 change record. Then confirm the trail is intended to be multi-region and that
 log-file validation remains enabled. Stop and escalate if the proposed fix would
-disable integrity validation (**BC-AUD-03**), shorten retention, or redirect
-delivery to an unapproved bucket. Offline, `enable_log_file_validation = false`
-fails closed via `rejects_disabled_log_file_validation`.
+disable integrity validation (**BC-AUD-03**), enable an organization trail
+(**BC-AUD-05**, `is_organization_trail = true` — org-trail stays interface-only),
+shorten retention, or redirect delivery to an unapproved bucket. Offline,
+`enable_log_file_validation = false` fails closed via
+`rejects_disabled_log_file_validation`; `is_organization_trail = true` fails
+closed via `rejects_organization_trail_enabled`.
 
 ## AWS Config snapshots are missing
 
@@ -40,7 +43,8 @@ This guide is design-time operator guidance only. No live log-service call,
 cloud login, or deployment action is authorized from this repository. Public
 archive ACL or missing-CMK attempts are fail-closed offline (**BC-AUD-02**);
 disabling log-file validation or archive versioning is likewise fail-closed
-(**BC-AUD-03** / **BC-AUD-04**). See the
+(**BC-AUD-03** / **BC-AUD-04**); enabling an organization trail is fail-closed
+(**BC-AUD-05**). See the
 [blocked-change catalog](blocked-change-catalog.md). For flow-log emission and
 private-boundary triage before archive delivery, see
 [network failure cases](network-failure-cases.md).
