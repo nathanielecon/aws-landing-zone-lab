@@ -1,9 +1,37 @@
 # Break/Fix Log
 
+## 2026-07-14 (PROCESS MISHAP — advance-threshold leak into judge prompts)
+
+- Break: Orchestrator included advance-threshold language (`9.5`, `≥9.5`,
+  “advance bar”, `merge_ready` framing tied to exit) in judge prompts for the
+  earlier cloud-lab rejudge on this turn. Historical per-slice 9.5+ scores
+  from contaminated prompts are **not** process-audit clean.
+- Fix: Adopt hard anti-leak prompt contract in
+  `project-a/docs/architecture/orchestration.md` (banned phrases; required
+  return shape). Judges score the frozen rubric only; **orchestrator alone**
+  compares averages / must-haves to the advance rule. Re-run clean Grok
+  multi-judge rounds for slices 1–4 + cloud lab with fresh agents (no
+  `resume`, no parent transcript, no threshold tokens in worker prompts).
+
+## 2026-07-14 (PROCESS MISHAP — human-wait instead of early bottleneck / OIDC)
+
+- Break: Orchestrator waited on human/`aws login` / Cursor assume-role
+  injection when Cloud Agent pods returned `NoCredentials`, delaying the
+  single-account lab instead of dispatching an early bottleneck agent and
+  pivoting to the GitHub OIDC CI control plane.
+- Fix (already on `main` via PR `#14` / AGENTS.md): Lab apply is
+  **GitHub OIDC → `project-a-lzlab-gha`** (`ci-bootstrap/`, workflow
+  `landing-zone-lab.yml`). Do not chase `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` for
+  this lab. `NoCredentials` in Cloud Agent pods is expected. Recorded so
+  later orchestrators do not repeat the human-wait pattern.
+
 ## 2026-07-14 (CLEAN REJUDGE — no transcript leak)
 
 - Orchestrator turn loaded durable artifacts only; spawned 3 independent Grok
   4.5 judges with fresh short contracts (no implementing transcript).
+- **Contaminated for process-audit:** Round 1/2 scores below used prompts that
+  leaked advance-threshold language; superseded by the clean no-leak rejudge
+  plan on this branch.
 - Round 1 scores: **9.3 / 9.2 / 9.2** (avg **9.23**). Must-haves PASS.
   Gaps: orchestration blanket `cloud_validated: false` vs lab APPLIED;
   frozen rubric still preferred dead role `GitHubActionsLZLab`;
@@ -16,12 +44,11 @@
   modules; retone `operator/README.md`.
 - Round 2 scores: **9.5 / 9.5 / 9.5** (avg **9.5**). Must-haves PASS.
   `merge_ready: yes` ×3. Follow-up: carve lab vs harness in
-  `project-a/evidence-index.md` opener (judge R2 gap). Slice exit ≥9.5 on
-  clean multi-judge rejudge.
+  `project-a/evidence-index.md` opener (judge R2 gap).
 - Closeout polish: derive `project-a-lzlab-gha` Role.[Name,Arn] from STS in
   `EVIDENCE.capture.md`; add organization module to `OFFLINE_VALIDATE.md`;
   retone `apply-lab.sh` / `aws-env.sh` so GHA OIDC is the only scored path
-  (no Cursor assume-role auto-select). Landed on `main` per operator order.
+  (no Cursor assume-role auto-select). Landed on `main` via PR `#16`.
 
 ## 2026-07-14 (LZ lab slice exit ≥9.5)
 
