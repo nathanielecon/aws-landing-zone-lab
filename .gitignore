@@ -4,3 +4,9 @@
 *.log
 *.jsonl
 .codex-last-message-*
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/.terraform.lock.hcl
+project-a/sandbox/**/terraform.tfvars
+project-a/sandbox/**/*.auto.tfvars
