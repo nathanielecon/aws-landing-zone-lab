@@ -1,5 +1,12 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r4)
+
+- Wire Windows CI `harness-contracts.yml` through
+  `scripts/Invoke-HarnessReleaseValidation.ps1` with `HARNESS_STRICT_PINS=1`
+  so fresh-machine release validation + `Verify-ProjectABundle` run on every
+  PR/push (same path as local one-command gate).
+
 ## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r3)
 
 - Property/mutation expansion in `tests/Run-ContractTests.ps1`: N=5 one-byte
