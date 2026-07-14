@@ -7,6 +7,11 @@ $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 Import-Module (Join-Path $root 'scripts/Harness.Common.psm1') -Force
 $ralphyCommand = (Get-Command ralphy.cmd -ErrorAction Stop | Select-Object -First 1).Source
 $passed = 0
+$fakeCodexPath = if ($IsWindows -or $env:OS -match 'Windows') {
+    Join-Path $root 'tests/fixtures/fake-codex.cmd'
+} else {
+    Join-Path $root 'tests/fixtures/codex'
+}
 
 function Assert-True([bool]$Condition, [string]$Message) {
     if (-not $Condition) { throw "ASSERTION FAILED: $Message" }
@@ -108,8 +113,16 @@ try {
     $countPath = Join-Path $retryRepo 'count.txt'
     $cmd = "@echo off`r`necho call>>`"$countPath`"`r`nexit /b 9`r`n"
     [System.IO.File]::WriteAllText((Join-Path $fakeBin 'codex.cmd'), $cmd, [System.Text.ASCIIEncoding]::new())
+    # Non-Windows hosts resolve `codex` on PATH rather than `codex.cmd`.
+    $countPathSh = ($countPath -replace '\\', '/')
+    $codexSh = Join-Path $fakeBin 'codex'
+    [System.IO.File]::WriteAllText($codexSh, "#!/bin/sh`necho call>>`"$countPathSh`"`nexit 9`n", [System.Text.UTF8Encoding]::new($false))
+    if (-not ($IsWindows -or $env:OS -match 'Windows')) { & chmod +x -- $codexSh }
     $oldPath = $env:PATH
-    $env:PATH = "$env:SystemRoot\System32;$fakeBin;$oldPath"
+    $pathPrefix = @()
+    if (-not [string]::IsNullOrWhiteSpace($env:SystemRoot)) { $pathPrefix += (Join-Path $env:SystemRoot 'System32') }
+    $pathPrefix += $fakeBin
+    $env:PATH = (($pathPrefix + @($oldPath)) -join [IO.Path]::PathSeparator)
     Push-Location $retryRepo
     try {
         & $ralphyCommand --codex --max-retries 0 --no-commit --no-tests --no-lint --no-browser '[TASK:T-001] fake failure' 2>&1 | Out-Null
@@ -130,17 +143,41 @@ try {
     & git -C $stdinRepo commit -m 'add stdin policy' | Out-Null
     $oldPath = $env:PATH
     $env:HARNESS_ROOT = $stdinRepo
-    $env:HARNESS_REAL_CODEX = Join-Path $root 'tests/fixtures/fake-codex.cmd'
+    Remove-Item Env:HARNESS_PROFILE_ID -ErrorAction SilentlyContinue
+    $env:HARNESS_REAL_CODEX = $fakeCodexPath
     $env:HARNESS_RUN_ID = 'stdin-contract'
     $env:HARNESS_LOG_DIR = Join-Path $stdinRepo '.logs'
     $env:HARNESS_PLAN_HASH = ('B' * 64)
     $env:HARNESS_MANIFEST_PATH = $manifestPath
-    $env:PATH = "$env:SystemRoot\System32;$(Join-Path $root '.harness/bin');$oldPath"
+    $adapterBin = Join-Path $root '.harness/bin'
+    $unixAdapterDir = $null
+    if (-not ($IsWindows -or $env:OS -match 'Windows')) {
+        # Ralphy resolves `codex` (not codex.cmd) on Unix hosts; plant a temp adapter shim.
+        $unixAdapterDir = Join-Path ([IO.Path]::GetTempPath()) ("ralphy-adapter-bin-" + [Guid]::NewGuid().ToString('N'))
+        [IO.Directory]::CreateDirectory($unixAdapterDir) | Out-Null
+        $unixAdapter = Join-Path $unixAdapterDir 'codex'
+        $adapterPs1 = (Join-Path $root 'scripts/Invoke-CodexAdapter.ps1') -replace '\\', '/'
+        $body = @"
+#!/bin/sh
+exec pwsh -NoLogo -NoProfile -File '$adapterPs1' "`$@"
+"@
+        [IO.File]::WriteAllText($unixAdapter, ($body -replace "`r`n", "`n"), [Text.UTF8Encoding]::new($false))
+        & chmod +x -- $unixAdapter
+        $adapterBin = $unixAdapterDir
+    }
+    $pathPrefix = @()
+    if (-not [string]::IsNullOrWhiteSpace($env:SystemRoot)) { $pathPrefix += (Join-Path $env:SystemRoot 'System32') }
+    $pathPrefix += $adapterBin
+    $env:PATH = (($pathPrefix + @($oldPath)) -join [IO.Path]::PathSeparator)
     Push-Location $stdinRepo
     try {
         $ralphyOutput = & $ralphyCommand --codex --json $manifestPath --model gpt-5.6-terra --max-retries 0 --no-commit --no-tests --no-lint --no-browser 2>&1 | Out-String
         $ralphyCode = $LASTEXITCODE
-    } finally { Pop-Location; $env:PATH = $oldPath }
+    } finally {
+        Pop-Location
+        $env:PATH = $oldPath
+        if ($unixAdapterDir) { Remove-Item -LiteralPath $unixAdapterDir -Recurse -Force -ErrorAction SilentlyContinue }
+    }
     Assert-True ($ralphyCode -eq 0) "real Ralphy selects and reinjects the approved manifest task; output: $ralphyOutput"
     $stdinState = Read-JsonFile -Path (Join-Path $stdinRepo '.harness/runtime/state/S-001.json')
     Assert-True ($stdinState.status -eq 'completed') 'stdin-routed task passes adapter and commits'
@@ -158,7 +195,7 @@ try {
     & git -C $adapterRepo commit -m 'add adapter policy' | Out-Null
     $logRoot = Join-Path $adapterRepo '.logs'
     $env:HARNESS_ROOT = $adapterRepo
-    $env:HARNESS_REAL_CODEX = Join-Path $root 'tests/fixtures/fake-codex.cmd'
+    $env:HARNESS_REAL_CODEX = $fakeCodexPath
     $env:HARNESS_RUN_ID = 'contract-test'
     $env:HARNESS_LOG_DIR = $logRoot
     $env:HARNESS_PLAN_HASH = ('A' * 64)
@@ -209,7 +246,7 @@ try {
         intended_tree = $treeSha; commit_sha = $null; completed_at = $null
     })
     $env:HARNESS_ROOT = $reconcileRepo
-    $env:HARNESS_REAL_CODEX = Join-Path $root 'tests/fixtures/fake-codex.cmd'
+    $env:HARNESS_REAL_CODEX = $fakeCodexPath
     $env:HARNESS_RUN_ID = 'reconcile-contract'
     $env:HARNESS_LOG_DIR = Join-Path $reconcileRepo '.logs'
     $env:HARNESS_PLAN_HASH = ('C' * 64)
@@ -244,7 +281,7 @@ try {
         evidence_sha256 = ('0' * 64); intended_tree = ('0' * 40); commit_sha = $null; completed_at = $null
     })
     $env:HARNESS_ROOT = $forgedSmokeRepo
-    $env:HARNESS_REAL_CODEX = Join-Path $root 'tests/fixtures/fake-codex.cmd'
+    $env:HARNESS_REAL_CODEX = $fakeCodexPath
     $env:HARNESS_RUN_ID = 'forged-smoke'
     $env:HARNESS_LOG_DIR = Join-Path $forgedSmokeRepo '.logs'
     $env:HARNESS_PLAN_HASH = ('D' * 64)
@@ -301,8 +338,204 @@ try {
     $beforeUnknown = Get-DiffFingerprint -Root $smokeRuntimeRepo -ExcludedPaths $smokeExcluded
     [IO.File]::WriteAllText((Join-Path $smokeRuntimeRepo '.harness/runtime/rogue.txt'), "rogue`n", [Text.UTF8Encoding]::new($false))
     $afterUnknown = Get-DiffFingerprint -Root $smokeRuntimeRepo -ExcludedPaths $smokeExcluded
-    Assert-True (@(Get-ChangedPaths -Root $smokeRuntimeRepo -ExcludedPaths $smokeExcluded) -contains '.harness/runtime/rogue.txt') 'unknown smoke runtime artifacts stay in changed-path inventory'
+    # ExcludedPaths algebra: unknown .harness/runtime/rogue.txt stays in inventory when not excluded;
+    # when explicitly listed in ExcludedPaths it disappears.
+    Assert-True (@(Get-ChangedPaths -Root $smokeRuntimeRepo -ExcludedPaths $smokeExcluded) -contains '.harness/runtime/rogue.txt') 'ExcludedPaths algebra: unknown .harness/runtime/rogue.txt stays in inventory when not excluded'
+    Assert-True (-not (@(Get-ChangedPaths -Root $smokeRuntimeRepo -ExcludedPaths @($smokeExcluded + @('.harness/runtime/rogue.txt'))) -contains '.harness/runtime/rogue.txt')) 'ExcludedPaths algebra: explicitly listed .harness/runtime/rogue.txt disappears from inventory'
     Assert-True ($beforeUnknown -ne $afterUnknown) 'unknown smoke runtime mutations change the diff fingerprint'
 } finally { Remove-Item -LiteralPath $smokeRuntimeRepo -Recurse -Force }
+
+# Property/mutation: N=25 one-byte fixture mutations change SHA256; identical rewrite is idempotent.
+$propMutationDir = Join-Path ([IO.Path]::GetTempPath()) "project-a-prop-mutation-$([Guid]::NewGuid().ToString('N'))"
+try {
+    [IO.Directory]::CreateDirectory($propMutationDir) | Out-Null
+    $fixture = Join-Path $propMutationDir 'fixture.txt'
+    $baseline = ("property-fixture-baseline-" + ('x' * 40) + "`n")
+    [IO.File]::WriteAllText($fixture, $baseline, [Text.UTF8Encoding]::new($false))
+    $baselineHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash
+    [IO.File]::WriteAllText($fixture, $baseline, [Text.UTF8Encoding]::new($false))
+    Assert-True ((Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash -eq $baselineHash) 'repeating identical fixture content keeps SHA256 idempotent'
+    $seen = [System.Collections.Generic.HashSet[string]]::new()
+    [void]$seen.Add($baselineHash)
+    for ($i = 0; $i -lt 25; $i++) {
+        $mutatedContent = $baseline.Substring(0, $i) + [char](65 + ($i % 26)) + $baseline.Substring($i + 1)
+        [IO.File]::WriteAllText($fixture, $mutatedContent, [Text.UTF8Encoding]::new($false))
+        $mutHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash
+        Assert-True ($mutHash -ne $baselineHash) "one-byte fixture mutation $i changes SHA256"
+        Assert-True ($seen.Add($mutHash)) "one-byte fixture mutation $i produces a distinct SHA256"
+        [IO.File]::WriteAllText($fixture, $baseline, [Text.UTF8Encoding]::new($false))
+        Assert-True ((Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash -eq $baselineHash) "rewriting baseline after mutation $i restores idempotent SHA256"
+    }
+
+    # Mutate execution_bundle_sha256 one hex digit → Verify-ProjectABundle fails closed.
+    $copiedBundle = Join-Path $propMutationDir 'bundle-approval.json'
+    $copiedExec = Join-Path $propMutationDir 'execution-approval.json'
+    Copy-Item -LiteralPath (Join-Path $root 'project-a/harness/bundle-approval.json') -Destination $copiedBundle
+    Copy-Item -LiteralPath (Join-Path $root 'project-a/harness/execution-approval.json') -Destination $copiedExec
+    $mutatedExec = Get-Content -Raw -LiteralPath $copiedExec | ConvertFrom-Json
+    $execHex = [char[]]([string]$mutatedExec.execution_bundle_sha256)
+    $execHex[0] = if ($execHex[0] -eq 'A') { 'B' } else { 'A' }
+    $mutatedExec.execution_bundle_sha256 = -join $execHex
+    [IO.File]::WriteAllText($copiedExec, (($mutatedExec | ConvertTo-Json -Depth 8) + "`n"), [Text.UTF8Encoding]::new($false))
+    & pwsh -NoLogo -NoProfile -File (Join-Path $root 'scripts/Verify-ProjectABundle.ps1') -Root $root -BundleApprovalPath $copiedBundle -ExecutionApprovalPath $copiedExec | Out-Null
+    Assert-True ($LASTEXITCODE -ne 0) 'Verify-ProjectABundle fails closed when execution_bundle_sha256 hex digit is mutated'
+
+    # Also keep bundle-approval pin flip coverage.
+    Copy-Item -LiteralPath (Join-Path $root 'project-a/harness/bundle-approval.json') -Destination $copiedBundle -Force
+    Copy-Item -LiteralPath (Join-Path $root 'project-a/harness/execution-approval.json') -Destination $copiedExec -Force
+    $mutatedBundle = Get-Content -Raw -LiteralPath $copiedBundle | ConvertFrom-Json
+    $bundleHex = [char[]]([string]$mutatedBundle.spec_bundle_sha256)
+    $bundleHex[0] = if ($bundleHex[0] -eq 'A') { 'B' } else { 'A' }
+    $mutatedBundle.spec_bundle_sha256 = -join $bundleHex
+    [IO.File]::WriteAllText($copiedBundle, (($mutatedBundle | ConvertTo-Json -Depth 5) + "`n"), [Text.UTF8Encoding]::new($false))
+    & pwsh -NoLogo -NoProfile -File (Join-Path $root 'scripts/Verify-ProjectABundle.ps1') -Root $root -BundleApprovalPath $copiedBundle -ExecutionApprovalPath $copiedExec | Out-Null
+    Assert-True ($LASTEXITCODE -ne 0) 'Verify-ProjectABundle fails closed when one approval hex digit is flipped'
+
+    # Policy JSON field mutation: Test-JsonSchema / Test-Json fail closed on undeclared fields.
+    $schemaPath = Join-Path $root 'project-a/harness/policy.schema.json'
+    $policySrc = Join-Path $root 'project-a/harness/tasks/A-006.json'
+    $policyCopy = Join-Path $propMutationDir 'mutated-policy.json'
+    Copy-Item -LiteralPath $policySrc -Destination $policyCopy
+    $policyObj = Get-Content -Raw -LiteralPath $policyCopy | ConvertFrom-Json
+    $policyObj | Add-Member -NotePropertyName 'undeclared_mutation_probe' -NotePropertyValue $true -Force
+    $mutatedPolicyJson = ($policyObj | ConvertTo-Json -Depth 10) + "`n"
+    [IO.File]::WriteAllText($policyCopy, $mutatedPolicyJson, [Text.UTF8Encoding]::new($false))
+    $schemaHelperRejected = $false
+    try { [void](Test-JsonSchema -InputObject $policyObj -SchemaPath $schemaPath -Context 'mutated policy') } catch { $schemaHelperRejected = $true }
+    Assert-True $schemaHelperRejected 'Test-JsonSchema rejects undeclared mutated policy field'
+    if (Get-Command Test-Json -ErrorAction SilentlyContinue) {
+        Assert-True (-not (Test-Json -LiteralPath $policyCopy -SchemaFile $schemaPath -ErrorAction SilentlyContinue)) 'Test-Json schema rejects undeclared mutated policy field'
+    }
+    $validPolicy = Get-Content -Raw -LiteralPath $policySrc | ConvertFrom-Json
+    Assert-True (Test-JsonSchema -InputObject $validPolicy -SchemaPath $schemaPath -Context 'A-006 policy') 'Test-JsonSchema accepts published A-006 policy'
+
+    $badVersion = Get-Content -Raw -LiteralPath $policySrc | ConvertFrom-Json
+    $badVersion.schema_version = 'project-a-task-policy-v0'
+    $constRejected = $false
+    try { [void](Test-JsonSchema -InputObject $badVersion -SchemaPath $schemaPath -Context 'bad schema_version') } catch { $constRejected = $true }
+    Assert-True $constRejected 'Test-JsonSchema rejects wrong schema_version const'
+
+    $badId = Get-Content -Raw -LiteralPath $policySrc | ConvertFrom-Json
+    $badId.id = 'A-999'
+    $patternRejected = $false
+    try { [void](Test-JsonSchema -InputObject $badId -SchemaPath $schemaPath -Context 'bad id') } catch { $patternRejected = $true }
+    Assert-True $patternRejected 'Test-JsonSchema rejects bad id pattern'
+
+    $badValidators = Get-Content -Raw -LiteralPath $policySrc | ConvertFrom-Json
+    $firstValidator = @($badValidators.validators)[0]
+    $firstValidator.PSObject.Properties.Remove('timeout_seconds')
+    $itemRequiredRejected = $false
+    try { [void](Test-JsonSchema -InputObject $badValidators -SchemaPath $schemaPath -Context 'validators missing timeout') } catch { $itemRequiredRejected = $true }
+    Assert-True $itemRequiredRejected 'Test-JsonSchema rejects validators item missing timeout_seconds'
+
+    # allOf if/then/else: approval.required=true requires gate_id H[0-5]; false requires nulls.
+    $approvalRequiredSrc = Join-Path $root 'project-a/harness/tasks/A-001.json'
+    $requiredNullGate = Get-Content -Raw -LiteralPath $approvalRequiredSrc | ConvertFrom-Json
+    $requiredNullGate.approval.gate_id = $null
+    $requiredNullRejected = $false
+    try { [void](Test-JsonSchema -InputObject $requiredNullGate -SchemaPath $schemaPath -Context 'approval.required true null gate_id') } catch { $requiredNullRejected = $true }
+    Assert-True $requiredNullRejected 'Test-JsonSchema rejects approval.required=true with null gate_id'
+
+    $requiredFalseStringGate = Get-Content -Raw -LiteralPath $policySrc | ConvertFrom-Json
+    $requiredFalseStringGate.approval.gate_id = 'H0'
+    $falseStringRejected = $false
+    try { [void](Test-JsonSchema -InputObject $requiredFalseStringGate -SchemaPath $schemaPath -Context 'approval.required false string gate_id') } catch { $falseStringRejected = $true }
+    Assert-True $falseStringRejected 'Test-JsonSchema rejects approval.required=false with string gate_id'
+} finally {
+    Remove-Item -LiteralPath $propMutationDir -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# Adversarial timeout: child sleep is killed by Invoke-ProcessWithTimeout.
+if (Get-Command Invoke-ProcessWithTimeout -ErrorAction SilentlyContinue) {
+    $info = [Diagnostics.ProcessStartInfo]::new()
+    $info.FileName = (Get-Command pwsh -ErrorAction Stop).Source
+    $info.UseShellExecute = $false
+    $info.RedirectStandardOutput = $true
+    $info.RedirectStandardError = $true
+    foreach ($argument in @('-NoLogo', '-NoProfile', '-Command', 'Start-Sleep -Seconds 30')) {
+        [void]$info.ArgumentList.Add($argument)
+    }
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $info
+    try {
+        [void]$process.Start()
+        $timeoutResult = Invoke-ProcessWithTimeout -Process $process -TimeoutSeconds 1
+        Assert-True ($timeoutResult.timed_out -eq $true -and $timeoutResult.exit_code -eq 124) 'Invoke-ProcessWithTimeout kills a long-running child sleep'
+    } finally {
+        if (-not $process.HasExited) { try { $process.Kill($true) } catch {} }
+        $process.Dispose()
+    }
+}
+
+# Hard-link rejection: multi-link files fail Get-CanonicalDiffRecord path gates.
+$hardLinkRepo = New-TestRepo -Name 'hardlink-gate'
+try {
+    $target = Join-Path $hardLinkRepo 'smoke/terra.txt'
+    [IO.Directory]::CreateDirectory((Split-Path -Parent $target)) | Out-Null
+    [IO.File]::WriteAllText($target, "TERRA_SMOKE_OK`n", [Text.UTF8Encoding]::new($false))
+    & git -C $hardLinkRepo add smoke/terra.txt
+    & git -C $hardLinkRepo commit -m 'seed' | Out-Null
+    $link = Join-Path $hardLinkRepo 'smoke/terra-link.txt'
+    $linked = $false
+    try {
+        if ($IsWindows -or $env:OS -match 'Windows') {
+            cmd /c "mklink /H `"$link`" `"$target`"" | Out-Null
+            $linked = (Test-Path -LiteralPath $link)
+        } else {
+            & /bin/ln -- "$target" "$link"
+            $linked = (Test-Path -LiteralPath $link)
+        }
+    } catch { $linked = $false }
+    if ($linked) {
+        & git -C $hardLinkRepo add smoke/terra-link.txt 2>$null
+        $rejected = $false
+        try {
+            Get-CanonicalDiffRecord -Root $hardLinkRepo -AllowedPaths @('smoke/terra.txt', 'smoke/terra-link.txt') | Out-Null
+        } catch {
+            $rejected = ("$($_.Exception.Message)" -match 'Hard links are not allowed')
+        }
+        Assert-True $rejected 'hard-link path gate rejects multi-link artifacts'
+    } else {
+        Write-Host 'hard-link fixture skipped (ln/mklink unavailable)'
+    }
+} finally {
+    Remove-Item -LiteralPath $hardLinkRepo -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# Symlink/reparse adversarial fixture: symlink under allowlisted path fails Get-CanonicalDiffRecord.
+$symlinkRepo = New-TestRepo -Name 'symlink-gate'
+try {
+    $target = Join-Path $symlinkRepo 'smoke/terra.txt'
+    [IO.Directory]::CreateDirectory((Split-Path -Parent $target)) | Out-Null
+    [IO.File]::WriteAllText($target, "TERRA_SMOKE_OK`n", [Text.UTF8Encoding]::new($false))
+    & git -C $symlinkRepo add smoke/terra.txt
+    & git -C $symlinkRepo commit -m 'seed' | Out-Null
+    $link = Join-Path $symlinkRepo 'smoke/terra-symlink.txt'
+    $linked = $false
+    try {
+        if ($IsWindows -or $env:OS -match 'Windows') {
+            cmd /c "mklink `"$link`" `"smoke\terra.txt`"" | Out-Null
+        } else {
+            Push-Location (Split-Path -Parent $link)
+            try { & /bin/ln -s -- 'terra.txt' 'terra-symlink.txt' } finally { Pop-Location }
+        }
+        $item = Get-Item -LiteralPath $link -Force -ErrorAction SilentlyContinue
+        $linked = $null -ne $item -and (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or $item.LinkType -eq 'SymbolicLink')
+    } catch { $linked = $false }
+    if ($linked) {
+        & git -C $symlinkRepo add smoke/terra-symlink.txt 2>$null
+        $rejected = $false
+        try {
+            Get-CanonicalDiffRecord -Root $symlinkRepo -AllowedPaths @('smoke/terra.txt', 'smoke/terra-symlink.txt') | Out-Null
+        } catch {
+            $rejected = ("$($_.Exception.Message)" -match 'Symlink/submodule modes are not allowed|Reparse points are not allowed')
+        }
+        Assert-True $rejected 'symlink/reparse path gate rejects allowlisted symlink artifacts'
+    } else {
+        Write-Host 'symlink fixture skipped (ln -s / mklink unavailable)'
+    }
+} finally {
+    Remove-Item -LiteralPath $symlinkRepo -Recurse -Force -ErrorAction SilentlyContinue
+}
 
 Write-Host "Contract tests passed: $passed assertions"

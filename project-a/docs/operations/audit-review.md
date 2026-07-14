@@ -1,5 +1,11 @@
 # Audit review guide
 
+Related: [blocked-change catalog](blocked-change-catalog.md),
+[audit troubleshooting](audit-troubleshooting.md),
+[network failure cases](network-failure-cases.md),
+[logging architecture](../architecture/logging.md),
+[audit module template](../../terraform/audit/README.md).
+
 Review CloudTrail and AWS Config as one evidence stream. Confirm the trail is
 multi-region, log-file validation is enabled, the archive bucket is versioned,
 and the KMS key alias matches the approved security boundary before trusting any

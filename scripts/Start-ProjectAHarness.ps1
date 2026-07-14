@@ -21,8 +21,15 @@ if ([string]$executionApproval.validator_implementation_sha256 -ne [string]$exec
 if ([string]$executionApproval.execution_bundle_sha256 -ne [string]$execution.sha256) { throw 'Project A execution bundle hash drifted.' }
 if (-not $DryRun -and -not [bool]$executionApproval.execution_approved) { throw 'Project A execution is not approved. Phase 4 review must complete before any model call.' }
 
-$terraform = Get-Command terraform.exe -ErrorAction SilentlyContinue
-if (-not $terraform) { $terraform = Get-Command terraform.cmd -ErrorAction SilentlyContinue }
+$terraform = $null
+if ($IsWindows -or $env:OS -match 'Windows') {
+    $terraform = Get-Command terraform.exe -ErrorAction SilentlyContinue
+    if (-not $terraform) { $terraform = Get-Command terraform.cmd -ErrorAction SilentlyContinue }
+    if (-not $terraform) { $terraform = Get-Command terraform -ErrorAction SilentlyContinue }
+} else {
+    $terraform = Get-Command terraform -ErrorAction SilentlyContinue
+    if (-not $terraform) { $terraform = Get-Command terraform.cmd -ErrorAction SilentlyContinue }
+}
 if (-not $terraform) {
     Write-Host 'Terraform 1.15.5 is missing. Recovery from an elevated shell:'
     Write-Host '  choco install terraform --version=1.15.5 -y --no-progress'
@@ -30,20 +37,40 @@ if (-not $terraform) {
 } elseif ((& $terraform.Source version -json | ConvertFrom-Json).terraform_version -ne '1.15.5') { throw 'Terraform must be exactly 1.15.5 for this execution bundle.' }
 
 $adapterDir = Join-Path $root '.harness/bin'
-$system32 = Join-Path $env:SystemRoot 'System32'; if (-not (($env:PATH -split ';') -contains $system32)) { $env:PATH="$system32;$env:PATH" }
-$resolvedCodex = (Get-Command codex.cmd -All | Where-Object { -not ([IO.Path]::GetFullPath($_.Source)).StartsWith([IO.Path]::GetFullPath($adapterDir),[StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)
+if (-not [string]::IsNullOrWhiteSpace($env:SystemRoot)) {
+    $system32 = Join-Path $env:SystemRoot 'System32'
+    if (-not (($env:PATH -split [IO.Path]::PathSeparator) -contains $system32)) { $env:PATH = ($system32 + [IO.Path]::PathSeparator + $env:PATH) }
+}
+$isWindowsHost = ($IsWindows -or $env:OS -match 'Windows')
+function Get-NonAdapterCommand([string[]]$Names) {
+    foreach ($name in $Names) {
+        $hit = @(Get-Command $name -All -ErrorAction SilentlyContinue | Where-Object {
+            -not ([IO.Path]::GetFullPath($_.Source)).StartsWith([IO.Path]::GetFullPath($adapterDir), [StringComparison]::OrdinalIgnoreCase)
+        } | Select-Object -First 1)[0]
+        if ($hit) { return $hit }
+    }
+    return $null
+}
+$codexNames = if ($isWindowsHost) { @('codex.cmd', 'codex') } else { @('codex', 'codex.cmd') }
+$resolvedCodex = Get-NonAdapterCommand -Names $codexNames
 $realCodex = if ($resolvedCodex) {
     $resolvedCodexPath = [IO.Path]::GetFullPath($resolvedCodex.Source)
     $fixtureShim = Join-Path $root 'tests/fixtures/fake-codex.cmd'
-    if ($resolvedCodexPath.Equals((Join-Path $root 'tests/fixtures/codex.cmd'), [StringComparison]::OrdinalIgnoreCase) -and (Test-Path -LiteralPath $fixtureShim -PathType Leaf)) {
+    $fixtureCmd = Join-Path $root 'tests/fixtures/codex.cmd'
+    $fixtureSh = Join-Path $root 'tests/fixtures/codex'
+    if ($isWindowsHost -and $resolvedCodexPath.Equals($fixtureCmd, [StringComparison]::OrdinalIgnoreCase) -and (Test-Path -LiteralPath $fixtureShim -PathType Leaf)) {
         [IO.Path]::GetFullPath($fixtureShim)
+    } elseif ($resolvedCodexPath.Equals($fixtureSh, [StringComparison]::OrdinalIgnoreCase)) {
+        $resolvedCodexPath
     } else {
         $resolvedCodexPath
     }
 } else {
     $null
 }
-$realRalphy = (Get-Command ralphy.cmd -All | Select-Object -First 1).Source
+$ralphyNames = if ($isWindowsHost) { @('ralphy.cmd', 'ralphy') } else { @('ralphy', 'ralphy.cmd') }
+$realRalphyCmd = Get-NonAdapterCommand -Names $ralphyNames
+$realRalphy = if ($realRalphyCmd) { $realRalphyCmd.Source } else { $null }
 if (-not $realCodex -or -not $realRalphy) { throw 'Codex and Ralphy must be installed before Project A execution.' }
 $codexVersion = (& $realCodex --version 2>&1 | Out-String).Trim()
 if ($codexVersion -notmatch [string]$toolVersions.codex_regex) { throw "Unsupported Codex CLI: $codexVersion. Expected $($toolVersions.codex_regex)." }
@@ -195,7 +222,7 @@ try {
     $logRoot=Join-Path $localBase "RalphyHarness/cloud/$runId"; [IO.Directory]::CreateDirectory($logRoot)|Out-Null
     $env:HARNESS_ROOT=$root; $env:HARNESS_PROFILE_ID='project-a'; $env:HARNESS_REAL_CODEX=$realCodex; $env:HARNESS_RUN_ID=$runId; $env:HARNESS_LOG_DIR=$logRoot
     $env:HARNESS_BUNDLE_HASH=[string]$execution.sha256; $env:HARNESS_VALIDATOR_HASH=[string]$execution.members.'scripts/Invoke-ProjectAValidators.ps1'
-    $env:HARNESS_MANIFEST_PATH=$manifestPath; $env:PATH="$adapterDir;$env:PATH"
+    $env:HARNESS_MANIFEST_PATH=$manifestPath; $env:PATH = ($adapterDir + [IO.Path]::PathSeparator + $env:PATH)
     $arguments=@('--codex','--json',$manifestPath,'--model','gpt-5.6-terra','--max-retries','0','--no-commit','--no-tests','--no-lint','--no-browser')
     if($DryRun){$arguments+=@('--dry-run','--max-iterations','7')}
     foreach($forbiddenFlag in @('--parallel','--worktree','--worktrees','--sandbox','--branch-per-task')){

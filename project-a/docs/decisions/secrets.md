@@ -18,3 +18,11 @@ secret store. Suspected exposure requires stopping work, revoking or rotating
 the value, preserving audit evidence, and notifying security.
 
 Reference: [Terraform sensitive data guidance](https://developer.hashicorp.com/terraform/language/manage-sensitive-data).
+
+## Related
+
+- [Platform architecture overview](../architecture/overview.md)
+- [Accounts and OU taxonomy](../architecture/accounts.md)
+- [S3 backend decision](backend.md)
+- [Organizations guardrails](../guardrails/organizations.md)
+- [Organization taxonomy checklist](../../terraform/organization/TAXONOMY.md)

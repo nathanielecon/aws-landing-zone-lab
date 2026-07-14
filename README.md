@@ -30,7 +30,7 @@ repo-only tasks and their human gates. It is intentionally marked non-executable
 until Phase 4 generalizes the smoke adapter, scrubs cloud credentials, implements
 the allowlisted validators, and binds explicit approval receipts to exact diffs.
 
-Phase 4 implementation and its remaining execution-approval gate are documented
+Phase 4 implementation and its execution-approval pins (`execution_approved: true`) are documented
 in [project-a/HARNESS.md](project-a/HARNESS.md). Architecture and delivery
 navigation live under
 [project-a/docs/architecture/overview.md](project-a/docs/architecture/overview.md).

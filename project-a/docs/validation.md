@@ -27,3 +27,7 @@ integration tests that keep the composition shell intentionally non-deploying.
 Stop and escalate when the proposed fix would add live provider credentials,
 introduce a deployable root module, collapse environment separation, or bypass
 the approved validation order.
+
+Replay blocked platform changes from the offline
+[blocked-change catalog](operations/blocked-change-catalog.md) before widening
+network, audit, Organizations, state-key, or credential-shaped examples.

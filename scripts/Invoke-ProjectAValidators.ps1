@@ -139,12 +139,12 @@ function Invoke-TerraformBehavioralTests([string]$Id,[string]$ModuleRelative,[st
 }
 
 try {
+    $runtimeExcluded = @(Get-HarnessLifecycleExcludedPaths -Root $Root -ProfileId 'project-a')
     $beforeFingerprint = $null
-    $beforeFingerprint = Get-DiffFingerprint -Root $Root
+    $beforeFingerprint = Get-DiffFingerprint -Root $Root -ExcludedPaths $runtimeExcluded
     $allowed = @($policy.allowed_paths | ForEach-Object { [string]$_ })
     $adapterOwned = @($policy.adapter_owned_paths | ForEach-Object { [string]$_ })
     $allowedExecutablePaths = if ($policy.PSObject.Properties.Name -contains 'allowed_executable_paths') { @($policy.allowed_executable_paths | ForEach-Object { [string]$_ }) } else { @() }
-    $runtimeExcluded = @(Get-HarnessLifecycleExcludedPaths -Root $Root -ProfileId 'project-a')
     if (-not $Committed) {
         $changed = @(Get-ChangedPaths -Root $Root -ExcludedPaths $runtimeExcluded)
         $agentOwned = @($changed | Where-Object { Test-AllowedPath -Path $_ -AllowedPaths $allowed })
@@ -229,7 +229,15 @@ try {
                 $message=if($unsafe){'Allow statement contains wildcard Action or Resource.'}elseif($missing){"Missing IAM constructs: $($missing -join ', ')"}else{'IAM policy, boundary, trust, break-glass, and least-privilege contracts are present.'};Add-Result $id ($missing.Count -eq 0 -and -not $unsafe) $message $timer.ElapsedMilliseconds
             }
             'governance_semantics' {
-                Assert-ExpectedArtifacts;$text=Get-ProjectText @('project-a/docs/guardrails/policy-validation.md','project-a/tests/governance','project-a/tests/iam');$missing=Test-RequiredPatterns $text ([ordered]@{fmt='(?i)terraform fmt';validate='(?i)terraform validate';lint='(?i)(tflint|lint)';required_tags='(?i)required tags?|tagging';naming='(?i)naming';blocked_example='(?i)(blocked|reject|fail).*(change|example|test)|change.*(blocked|rejected)';assert='(?m)^\s*assert\s*\{'});$message=if($missing){"Governance-as-code contract missing: $($missing -join ', ')"}else{'Validation, lint, naming/tagging, and blocked-change examples are present.'};Add-Result $id ($missing.Count -eq 0) $message $timer.ElapsedMilliseconds
+                Assert-ExpectedArtifacts;$text=Get-ProjectText @('project-a/docs/guardrails/policy-validation.md','project-a/tests/governance','project-a/tests/iam');$missing=Test-RequiredPatterns $text ([ordered]@{fmt='(?i)terraform fmt';validate='(?i)terraform validate';lint='(?i)(tflint|lint)';required_tags='(?i)required tags?|tagging';naming='(?i)naming';blocked_example='(?i)(blocked|reject|fail).*(change|example|test)|change.*(blocked|rejected)';assert='(?m)^\s*assert\s*\{';scp_negatives='(?i)Assert-ScpAttachmentNegatives|rejects_root_scp_attachment'})
+                if($missing.Count -gt 0){Add-Result $id $false "Governance-as-code contract missing: $($missing -join ', ')" $timer.ElapsedMilliseconds}
+                else{
+                    # Fail-closed BC-ORG-01 path: invoke offline SCP attachment negatives (no AWS).
+                    $assertScript=Join-Path $Root 'project-a/tests/governance/Assert-ScpAttachmentNegatives.ps1'
+                    if(-not(Test-Path -LiteralPath $assertScript -PathType Leaf)){throw "VALIDATOR_FAILED: $id - missing Assert-ScpAttachmentNegatives.ps1"}
+                    $pwsh=(Get-Command pwsh -ErrorAction Stop).Source
+                    Invoke-ExternalCheck $id $pwsh @('-NoLogo','-NoProfile','-File',$assertScript) $Root ([int]$validator.timeout_seconds)
+                }
             }
             'iam_negative_tests' {
                 Assert-ExpectedArtifacts;Invoke-TerraformBehavioralTests $id 'project-a/terraform/identity' 'project-a/tests/iam' ([int]$validator.timeout_seconds)
@@ -285,7 +293,7 @@ try {
             }
         $timer.Stop()
     }
-    $afterFingerprint = Get-DiffFingerprint -Root $Root
+    $afterFingerprint = Get-DiffFingerprint -Root $Root -ExcludedPaths $runtimeExcluded
     if ($beforeFingerprint -ne $afterFingerprint) { throw 'VALIDATOR_MUTATION: a validator changed repository content' }
     $digestResults = @($results | ForEach-Object { [ordered]@{ id=$_.id; passed=$_.passed; message=$_.message; implementation=$_.implementation } })
     $resultJson = $digestResults | ConvertTo-Json -Compress -Depth 8
@@ -296,7 +304,7 @@ try {
     $message = $_.Exception.Message
     if ($null -ne $beforeFingerprint) {
         try {
-            if((Get-DiffFingerprint -Root $Root) -ne $beforeFingerprint){$message='VALIDATOR_MUTATION: a validator changed repository content'}
+            if((Get-DiffFingerprint -Root $Root -ExcludedPaths $runtimeExcluded) -ne $beforeFingerprint){$message='VALIDATOR_MUTATION: a validator changed repository content'}
         } catch { }
     }
     $errorClass = if ($message -match '^(?<class>[A-Z_]+):') { $Matches.class } else { 'GATE_EXCEPTION' }

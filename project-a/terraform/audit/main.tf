@@ -108,7 +108,7 @@ data "aws_iam_policy_document" "kms" {
     effect = "Allow"
 
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "cloudtrail.amazonaws.com",
         "config.amazonaws.com",
@@ -184,7 +184,8 @@ resource "aws_s3_bucket_versioning" "archive" {
   bucket = aws_s3_bucket.archive.id
 
   versioning_configuration {
-    status = "Enabled"
+    # enable_archive_versioning is fail-closed (must be true); Suspended is unreachable on valid plans.
+    status = var.enable_archive_versioning ? "Enabled" : "Suspended"
   }
 }
 
@@ -193,8 +194,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "archive" {
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.audit.arn
-      sse_algorithm     = "aws:kms"
+      kms_master_key_id = var.require_customer_managed_kms ? aws_kms_key.audit.arn : null
+      sse_algorithm     = var.require_customer_managed_kms ? "aws:kms" : "AES256"
     }
   }
 }
@@ -202,10 +203,11 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "archive" {
 resource "aws_s3_bucket_public_access_block" "archive" {
   bucket = aws_s3_bucket.archive.id
 
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  # allow_public_archive_acls is fail-closed (must be false); negation keeps all blocks on.
+  block_public_acls       = !var.allow_public_archive_acls
+  block_public_policy     = !var.allow_public_archive_acls
+  ignore_public_acls      = !var.allow_public_archive_acls
+  restrict_public_buckets = !var.allow_public_archive_acls
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "archive" {
@@ -252,8 +254,10 @@ resource "aws_cloudtrail" "audit" {
   s3_key_prefix                 = var.cloudtrail_prefix
   include_global_service_events = true
   is_multi_region_trail         = true
-  enable_log_file_validation    = true
-  kms_key_id                    = aws_kms_key.audit.arn
+  # is_organization_trail is fail-closed (must stay false); org-trail remains interface-only.
+  is_organization_trail      = var.is_organization_trail
+  enable_log_file_validation = var.enable_log_file_validation
+  kms_key_id                 = aws_kms_key.audit.arn
 
   event_selector {
     read_write_type           = "All"

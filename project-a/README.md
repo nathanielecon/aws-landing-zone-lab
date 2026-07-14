@@ -29,12 +29,31 @@ review the [backend](docs/decisions/backend.md) and
 [secrets](docs/decisions/secrets.md) decisions. Cite lab evidence files for
 live account resources; other examples remain placeholders for human review.
 
-Use the [platform diagram](docs/diagrams/platform.svg), the
-[network diagram](docs/diagrams/network.svg), and the
-[evidence index](evidence-index.md) to inspect the full repo-only contract.
-The [Graphify report](graphify-out/GRAPH_REPORT.md) is a structural navigation
+### Delivery path (zero orphans)
+
+README → architecture → evidence → review:
+
+1. [Architecture overview](docs/architecture/overview.md)
+2. [Evidence index](evidence-index.md)
+3. [Claims boundary](docs/portfolio/claims-boundary.md)
+4. [Pushback and handoff](docs/review/pushback-and-handoff.md)
+5. [Azure Government readiness](docs/azure-government/readiness.md) (translation-only)
+
+Also use the [platform diagram](docs/diagrams/platform.svg) and
+[network diagram](docs/diagrams/network.svg). The
+[Graphify report](graphify-out/GRAPH_REPORT.md) is a structural navigation
 aid only; it is not a substitute for Terraform, policy, security, or human
 validation, and it does not prove cloud behavior.
+
+Fresh-clone Windows one-command proof matching CI (pin fail-closed):
+
+```powershell
+$env:HARNESS_STRICT_PINS = '1'
+pwsh -NoLogo -NoProfile -File ../scripts/Invoke-HarnessReleaseValidation.ps1
+```
+
+Details: [HARNESS.md](HARNESS.md).
+
 This repository proves a documented junior-to-mid level infrastructure design
 exercise plus an honest single-account live lab; it does **not** prove
 production readiness, senior ownership, enterprise operations, or

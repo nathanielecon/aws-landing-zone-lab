@@ -16,6 +16,33 @@ variable "archive_bucket_name" {
 variable "kms_alias_name" {
   description = "Approved alias name for the audit KMS key."
   type        = string
+
+  validation {
+    condition     = can(regex("^alias/.+", var.kms_alias_name))
+    error_message = "Audit KMS alias must be a non-empty alias/* name; missing KMS alias is rejected offline."
+  }
+}
+
+variable "allow_public_archive_acls" {
+  description = "Must remain false. Attempting public ACLs on the Log Archive bucket fails offline validation."
+  type        = bool
+  default     = false
+
+  validation {
+    condition     = var.allow_public_archive_acls == false
+    error_message = "Public ACLs on the Log Archive bucket are forbidden."
+  }
+}
+
+variable "require_customer_managed_kms" {
+  description = "Must remain true. Missing customer-managed KMS for archive SSE fails offline validation."
+  type        = bool
+  default     = true
+
+  validation {
+    condition     = var.require_customer_managed_kms == true
+    error_message = "Log Archive objects require customer-managed KMS encryption."
+  }
 }
 
 variable "cloudtrail_prefix" {
@@ -61,5 +88,38 @@ variable "config_snapshot_delivery_frequency" {
       "TwentyFour_Hours"
     ], var.config_snapshot_delivery_frequency)
     error_message = "Config snapshot delivery frequency must use an approved AWS Config enum."
+  }
+}
+
+variable "enable_log_file_validation" {
+  description = "Must remain true. Disabling CloudTrail log-file validation fails offline validation."
+  type        = bool
+  default     = true
+
+  validation {
+    condition     = var.enable_log_file_validation == true
+    error_message = "CloudTrail log-file validation must remain enabled."
+  }
+}
+
+variable "enable_archive_versioning" {
+  description = "Must remain true. Disabling Log Archive bucket versioning fails offline validation."
+  type        = bool
+  default     = true
+
+  validation {
+    condition     = var.enable_archive_versioning == true
+    error_message = "Log Archive bucket versioning must remain enabled."
+  }
+}
+
+variable "is_organization_trail" {
+  description = "Must remain false in this baseline. Organization CloudTrail / org-trail delivery is interface-only here: the module documents the intended org-scoped path into Log Archive but does not enable an organization trail. Setting true is rejected offline."
+  type        = bool
+  default     = false
+
+  validation {
+    condition     = !var.is_organization_trail
+    error_message = "Organization trail (is_organization_trail = true) is not enabled in this baseline; org-trail delivery remains interface-only."
   }
 }

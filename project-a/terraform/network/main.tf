@@ -1,5 +1,14 @@
 locals {
   name_prefix = "project-a-${var.environment}"
+  # Fail-closed review inputs; validation rejects unrestricted ingress/egress attempts
+  # and any typed SG exception shape (CIDR / port / protocol must stay empty).
+  unrestricted_ingress_blocked = !var.allow_unrestricted_ingress
+  unrestricted_egress_blocked  = !var.allow_unrestricted_egress
+  sg_exception_shape_empty = (
+    length(var.sg_exception_attempts.cidrs) == 0 &&
+    length(var.sg_exception_attempts.ports) == 0 &&
+    var.sg_exception_attempts.protocol == ""
+  )
   tags = {
     Project            = "project-a"
     Environment        = var.environment
@@ -7,6 +16,22 @@ locals {
     CostCenter         = "pending-human-approval"
     ManagedBy          = "terraform"
     DataClassification = "internal"
+  }
+}
+
+# Cross-variable CIDR containment cannot live in variable validation (single-var
+# scope only). This check rejects subnet CIDRs outside the VPC prefix offline.
+# Implemented with cidrhost (this Terraform pin has no cidrcontains).
+check "private_subnets_inside_vpc" {
+  assert {
+    condition = alltrue([
+      for subnet in values(var.private_subnets) :
+      can(cidrnetmask(subnet.cidr)) &&
+      tonumber(split("/", subnet.cidr)[1]) >= tonumber(split("/", var.vpc_cidr)[1]) &&
+      cidrhost(format("%s/%s", cidrhost(subnet.cidr, 0), split("/", var.vpc_cidr)[1]), 0) == cidrhost(var.vpc_cidr, 0) &&
+      cidrhost(format("%s/%s", cidrhost(subnet.cidr, -1), split("/", var.vpc_cidr)[1]), 0) == cidrhost(var.vpc_cidr, 0)
+    ])
+    error_message = "Each private subnet CIDR must be contained within the VPC CIDR."
   }
 }
 

@@ -20,3 +20,11 @@ duration, escalation path, and revocation procedure before it exists.
 The included `deny_root_user.json` policy is a guardrail template for a
 separately reviewed attachment. It is a deny-only policy and does not grant any
 access.
+
+## Related
+
+- [Blocked-change catalog](../operations/blocked-change-catalog.md) (BC-IAM-01–04,
+  BC-ID-01)
+- [Policy validation](policy-validation.md)
+- [Identity module](../../terraform/identity/README.md)
+- [IAM negative tests](../../tests/iam/README.md)

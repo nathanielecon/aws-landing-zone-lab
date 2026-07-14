@@ -1,0 +1,7 @@
+{
+  "description": "Known-bad SCP attachment sample: organization root and account ID targets (BC-ORG-01). Must fail closed.",
+  "scp_attachments": {
+    "deny_leave_organization": "root",
+    "deny_leave_organization_account": "123456789012"
+  }
+}

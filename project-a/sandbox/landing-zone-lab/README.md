@@ -52,3 +52,7 @@ cloud-validated across Orgs + network + identity.
 
 Evidence: [`EVIDENCE.md`](EVIDENCE.md). Prior audit-only sandbox:
 [`../aws-proof/EVIDENCE.md`](../aws-proof/EVIDENCE.md).
+
+## Teardown / cost
+
+See [`TEARDOWN.md`](TEARDOWN.md) for cost notes and destroy order (not yet claimed executed here).

@@ -16,6 +16,10 @@ provider "aws" {
   region = var.aws_region
 }
 
+# Stretch only (do not enable in this single-account lab): future cross-account
+# assume-role provider aliases would belong here when unique member-account
+# emails exist. Keep the single `provider "aws"` above as the live path.
+
 variable "aws_region" {
   type    = string
   default = "us-east-1"

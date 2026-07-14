@@ -49,3 +49,40 @@ variable "oidc_provider_arn" {
     error_message = "Use a GitHub Actions OIDC provider ARN."
   }
 }
+
+variable "require_permissions_boundary" {
+  description = "Must remain true. Missing a permissions boundary on the workload role fails offline validation."
+  type        = bool
+  default     = true
+
+  validation {
+    condition     = var.require_permissions_boundary == true
+    error_message = "The workload role requires an attached permissions boundary."
+  }
+}
+
+variable "workload_action_overrides" {
+  description = "Must remain empty. Over-broad workload action overrides (for example \"*\") fail offline validation and are extension-blocked."
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition = (
+      length(var.workload_action_overrides) == 0 &&
+      !contains(var.workload_action_overrides, "*") &&
+      alltrue([for action in var.workload_action_overrides : !can(regex("\\*", action))])
+    )
+    error_message = "Over-broad workload action overrides (including \"*\") are blocked for the workload role."
+  }
+}
+
+variable "require_oidc_trust_conditions" {
+  description = "Must remain true. Omitting OIDC audience/subject trust conditions on the workload role fails offline validation."
+  type        = bool
+  default     = true
+
+  validation {
+    condition     = var.require_oidc_trust_conditions == true
+    error_message = "OIDC trust conditions (aud/sub) are required on the workload role."
+  }
+}

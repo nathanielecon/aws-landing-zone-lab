@@ -1,7 +1,8 @@
 # Accounts and organizational units
 
 This repository defines a **multi-account design interface** (Organizations /
-OU / SCP) and a **single-account live lab**.
+OU / SCP) and, separately, a **single-account live lab**. The multi-account
+foundation remains repo-only / not cloud-validated.
 
 | Mode | Status |
 | --- | --- |
@@ -20,14 +21,40 @@ OU / SCP) and a **single-account live lab**.
 | Workloads | Non-production Workload | Non-production application workloads |
 | Workloads | Production Workload | Production application workloads |
 
-The Terraform organization module has explicit `aws_organizations_account`
-resources as a reviewed account-creation **interface**, not authorization to
-create accounts in this lab. Account emails and the initial cross-account role
-name are typed inputs. Member accounts are not created because this lab has a
-single billed account and no H1-approved unique member emails. Details:
+Management stays **outside** the member-account creation loop: it owns
+Organizations and billing only and is not created through the member-account
+interface.
+
+## H1 typed inputs (required before any member create)
+
+The Terraform organization module exposes reviewed account-creation
+**interfaces**, not authorization to create accounts. The following remain
+**typed inputs** until **H1** human approval:
+
+| Input | H1 requirement |
+| --- | --- |
+| Account emails | Unique, non-placeholder member emails approved at H1 |
+| Owners | Named owner / cost-owner contacts per account approved at H1 |
+| Initial cross-account role name | Role name string approved at H1 (no silent default elevation) |
+| Break-glass consequences | H1 must record who may break-glass, under what ticket/control, and that misuse is a security incident with immediate access review |
+
+Member accounts are **not** created in this lab because there is a single
+billed account and no H1-approved unique member emails/owners. Details:
 [`../../sandbox/landing-zone-lab/ORGS_INTERFACE.md`](../../sandbox/landing-zone-lab/ORGS_INTERFACE.md).
 
-## Live single-account lab
+### Blocked changes that invalidate H1
+
+Examples that must fail offline review and must not proceed without a new H1:
+
+- Changing OU taxonomy (add/remove/rename Security, Infrastructure, Workloads
+  accounts or parents) after an H1 packet was approved
+- Substituting placeholder emails or owners for H1-approved values
+- Changing the initial cross-account role name without re-approval
+- Enabling `close_on_deletion` on account resources
+- Attaching SCPs to organization root or individual accounts (see
+  [organizations guardrails](../guardrails/organizations.md))
+
+## Live single-account lab (separate from foundation)
 
 In account `<AWS_ACCOUNT_ID>`, the Landing Zone lab collapses identity, private
 network, and audit into one account. Status is **APPLIED** / cloud-validated
@@ -38,5 +65,10 @@ CI continues to validate via `.github/workflows/landing-zone-lab.yml`.
 That does **not** rewrite the multi-account design; Orgs members remain
 unavailable and **not** cloud-validated.
 
-See the [Organizations guardrail boundary](../guardrails/organizations.md) and
-the [platform architecture contract](overview.md).
+## Related
+
+- [Platform architecture overview](overview.md)
+- [S3 backend decision](../decisions/backend.md)
+- [Secrets decision](../decisions/secrets.md)
+- [Organizations guardrails](../guardrails/organizations.md)
+- [Organization taxonomy checklist](../../terraform/organization/TAXONOMY.md)
