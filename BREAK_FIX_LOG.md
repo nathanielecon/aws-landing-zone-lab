@@ -1,5 +1,20 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-4 FIXER)
+
+- Break: Slice 4 avg ~9.17 — README/overview delivery path orphaned claims /
+  review / Azure readiness; `platform.svg` subtitle claimed “no live cloud
+  execution” against separate lab APPLIED; fresh-clone CI one-command proof
+  under-documented; A-007 index drift note needed historical clarity.
+- Fix: Linked README + overview delivery navigation to claims-boundary,
+  pushback-and-handoff, and Azure readiness (README → architecture → evidence
+  → review); clarified `platform.svg` foundation repo-only vs separate
+  single-account lab APPLIED caption (no multi-account cloud claim); pointed
+  HARNESS.md + README at `Invoke-HarnessReleaseValidation.ps1` with
+  `HARNESS_STRICT_PINS=1`; marked A-007 evidence-index drift as historical
+  with `validation_digest` binding. No AWS; leave PR #15 alone; no
+  execution-bundle repin.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-3 PASS)
 
 - Clean no-leak multi-judge scores: **9.8 / 10 / 10** (avg **9.93**).

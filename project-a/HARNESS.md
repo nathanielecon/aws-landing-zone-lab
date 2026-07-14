@@ -16,14 +16,17 @@ execution bundle or its pinned validator/hash implementations change.
 
 ## One-command release validation
 
-Contract + Project A suite gate (sets `CI=1` and `HARNESS_CONTRACT_ONLY=1`,
-prints tool-version checks, then runs contract/spec/harness tests):
+**Fresh-clone Windows one-command proof matching CI:** from a clean checkout,
+set `HARNESS_STRICT_PINS=1` and run `Invoke-HarnessReleaseValidation.ps1`. That
+script sets `CI=1` and `HARNESS_CONTRACT_ONLY=1`, prints tool-version checks,
+runs contract/spec/harness tests, then `Verify-ProjectABundle.ps1`. With
+`HARNESS_STRICT_PINS=1`, terraform/ralphy/node-major mismatches exit non-zero
+(same pin fail-closed posture as Windows CI).
 
 ```powershell
+$env:HARNESS_STRICT_PINS = '1'
 pwsh -NoLogo -NoProfile -File ./scripts/Invoke-HarnessReleaseValidation.ps1
 ```
-
-Fresh-machine parity with CI pin fail-closed: set `HARNESS_STRICT_PINS=1` so terraform/ralphy/node-major mismatches exit non-zero.
 
 Pin check only (recomputes spec/execution hashes vs approval JSON):
 

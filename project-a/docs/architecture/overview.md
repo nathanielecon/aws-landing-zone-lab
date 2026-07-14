@@ -80,11 +80,19 @@ pinning, and the Windows CI gate are recorded in
 
 ## Delivery navigation
 
-Direct links for reviewers (existing content above is unchanged):
+Zero-orphan reviewer path: README → architecture → evidence → review.
 
+- Project README: [`project-a/README.md`](../../README.md)
 - Frozen rubrics: [`harness/rubrics/`](../../../harness/rubrics/)
 - Evidence index: [`project-a/evidence-index.md`](../../evidence-index.md)
+- Claims boundary: [`docs/portfolio/claims-boundary.md`](../portfolio/claims-boundary.md)
+- Pushback and handoff: [`docs/review/pushback-and-handoff.md`](../review/pushback-and-handoff.md)
+- Azure Government readiness (translation-only):
+  [`docs/azure-government/readiness.md`](../azure-government/readiness.md)
 - Platform diagram: [`docs/diagrams/platform.svg`](../diagrams/platform.svg)
 - Network diagram: [`docs/diagrams/network.svg`](../diagrams/network.svg)
 - Graphify navigation aid (not a validation substitute):
   [`graphify-out/GRAPH_REPORT.md`](../../graphify-out/GRAPH_REPORT.md)
+- Fresh-clone CI-parity gate:
+  [`HARNESS.md`](../../HARNESS.md) → `Invoke-HarnessReleaseValidation.ps1` with
+  `HARNESS_STRICT_PINS=1`
