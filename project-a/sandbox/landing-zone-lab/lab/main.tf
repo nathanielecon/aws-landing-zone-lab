@@ -59,14 +59,9 @@ locals {
   archive_bucket_name = "${var.name_prefix}-archive-${local.account_id}"
 }
 
-# GitHub Actions OIDC provider for the workload trust policy (live account).
-resource "aws_iam_openid_connect_provider" "github" {
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = [
-    "6938fd4d98bab03faadb97b34396831e3780aea1",
-    "1c58a3a8518e8759bf075b76b750d4f2df264fcd",
-  ]
+# GitHub Actions OIDC provider is owned by ../github-oidc (one-time bootstrap).
+data "aws_iam_openid_connect_provider" "github" {
+  url = "https://token.actions.githubusercontent.com"
 }
 
 module "audit" {
@@ -98,7 +93,7 @@ module "identity" {
   github_repository   = var.github_repository
   github_branch       = "main"
   audit_bucket_name   = module.audit.archive_bucket_name
-  oidc_provider_arn   = aws_iam_openid_connect_provider.github.arn
+  oidc_provider_arn   = data.aws_iam_openid_connect_provider.github.arn
 }
 
 output "account_id" {
@@ -138,5 +133,5 @@ output "workload_role_name" {
 }
 
 output "oidc_provider_arn" {
-  value = aws_iam_openid_connect_provider.github.arn
+  value = data.aws_iam_openid_connect_provider.github.arn
 }

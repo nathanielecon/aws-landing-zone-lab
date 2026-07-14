@@ -10,10 +10,11 @@ cloud validated.
 Separately, a **single-account Landing Zone lab** under
 `project-a/sandbox/landing-zone-lab` is **READY TO APPLY** / `PENDING_APPLY`
 for a collapsed composition of **identity + private network + audit** in AWS
-account `283077380808` / `us-east-1` (non-root operator IAM, remote state,
-OIDC/workload role, private VPC + flow logs, CloudTrail + KMS Log Archive).
-Designed interfaces and Terraform roots exist; live apply is **not** complete,
-so that composition is **not** yet cloud-validated as a completed fact. See
+account `283077380808` / `us-east-1`. Designed interfaces and Terraform roots
+exist; the intended control plane is **GitHub OIDC → Terraform CI**
+(`.github/workflows/landing-zone-lab.yml`, role `GitHubActionsLZLab`), not
+Cursor Cloud Agent assume-role. Live apply is **not** complete until CI/local
+bootstrap finishes and evidence updates — see
 `project-a/sandbox/landing-zone-lab/EVIDENCE.md`.
 
 The multi-account Organizations / OU / SCP layout remains a **documented and
