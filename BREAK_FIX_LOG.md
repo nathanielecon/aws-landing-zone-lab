@@ -1,5 +1,10 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-3 PASS)
+
+- Clean no-leak multi-judge scores: **9.8 / 10 / 10** (avg **9.93**).
+  Must-haves PASS.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r11)
 
 - Break: Stuck judges wanted a typed SG exception-shape matrix (CIDR / port /

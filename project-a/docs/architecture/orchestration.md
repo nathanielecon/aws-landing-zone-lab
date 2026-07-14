@@ -310,7 +310,7 @@ recorded in the table below after the dedicated clean rejudge pass.
 | --- | --- | --- | --- | --- | --- |
 | 1 | `slice-1-harness-core.md` | 9.8 / 9.5 / 9.5 | **9.6** | PASS | Clean no-leak Grok round (post fixer r1–r9) |
 | 2 | `slice-2-project-a-foundation.md` | 9.6 / 9.5 / 9.5 | **9.53** | PASS | Clean no-leak Grok round |
-| 3 | `slice-3-project-a-platform.md` | _pending_ | _pending_ | _pending_ | |
+| 3 | `slice-3-project-a-platform.md` | 9.8 / 10 / 10 | **9.93** | PASS | Clean no-leak Grok round |
 | 4 | `slice-4-final-delivery.md` | _pending_ | _pending_ | _pending_ | |
 | Cloud lab | `slice-cloud-lab-single-account.md` | _pending_ | _pending_ | _pending_ | Durable EVIDENCE + GHA OIDC only |
 
