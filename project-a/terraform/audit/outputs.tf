@@ -3,6 +3,11 @@ output "archive_bucket_name" {
   value       = aws_s3_bucket.archive.bucket
 }
 
+output "archive_bucket_arn" {
+  description = "Approved Log Archive bucket ARN (used by VPC Flow Logs destinations)."
+  value       = aws_s3_bucket.archive.arn
+}
+
 output "cloudtrail_arn" {
   description = "CloudTrail ARN for review workflows."
   value       = aws_cloudtrail.audit.arn

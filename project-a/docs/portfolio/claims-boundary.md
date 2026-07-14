@@ -7,29 +7,46 @@ with Terraform modules, deterministic validation gates, and explicit evidence.
 Harness task evidence for A-001…A-007 remains repo-only gated work and is not
 cloud validated.
 
-Separately, an **operator sandbox** under `project-a/sandbox/aws-proof` applied
-the audit module live in AWS account `283077380808` / `us-east-1` (CloudTrail +
-KMS-encrypted Log Archive bucket). See `project-a/sandbox/aws-proof/EVIDENCE.md`.
-That sandbox proves **audit-module apply efficacy** only; it does not expand the
-harness evidence claims or prove multi-account Organizations/network/identity
-deployment.
+Separately, a **single-account Landing Zone lab** under
+`project-a/sandbox/landing-zone-lab` cloud-validates a collapsed composition of
+**identity + private network + audit** in AWS account `283077380808` /
+`us-east-1` (non-root operator IAM, remote state, OIDC/workload role, private
+VPC + flow logs, CloudTrail + KMS Log Archive). See
+`project-a/sandbox/landing-zone-lab/EVIDENCE.md`.
+
+The multi-account Organizations / OU / SCP layout remains a **documented and
+offline-validated Terraform interface**; member accounts are **not** created
+under the single-account constraint. See
+`project-a/sandbox/landing-zone-lab/ORGS_INTERFACE.md`.
+
+The earlier audit-only sandbox (`project-a/sandbox/aws-proof`) remains evidence
+of the first live audit-module apply.
+
+## Honest resume bullet
+
+> Designed a multi-account AWS Landing Zone (Orgs/OU/SCP interfaces) and
+> cloud-validated a single-account lab composition of identity, private
+> network, and audit (CloudTrail/KMS Log Archive) in `us-east-1` with
+> Terraform, evidence, and CI-gated delivery.
 
 ## What this project does not prove
 
 It does not prove production deployment, enterprise operations, senior-level
-platform ownership, or that the full platform design was cloud validated across
-accounts. Azure Government remains translation-only.
+platform ownership, or that a **multi-account** Landing Zone was fully
+cloud-validated across Organizations + network + identity. Azure Government
+remains translation-only.
 
 ## Intended level
 
 The supported framing is junior-to-mid infrastructure engineering work:
-thoughtful module design, guardrails, validation, documentation, and accurate
-handoff language — optionally supplemented by a narrow live sandbox proof of the
-audit module.
+thoughtful module design, guardrails, validation, documentation, accurate
+handoff language, and an honest single-account live lab for identity/network/audit
+— superior to audit-only sandbox proof, inferior to real multi-account cloud
+validation.
 
 ## Avoid unsupported claims
 
 Avoid claims that the work is production ready, senior-level, enterprise-scale,
-or fully cloud validated. Keep Azure Government wording translation-only, not
-implemented, and evidence-based. Keep harness delivery framing repo-only unless
-citing the sandbox evidence file for the audit-module apply only.
+or a fully cloud-validated multi-account Landing Zone. Keep Azure Government
+wording translation-only. Keep harness delivery framing repo-only unless citing
+the lab evidence files for the specific live resources shown there.

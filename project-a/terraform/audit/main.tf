@@ -35,6 +35,58 @@ data "aws_iam_policy_document" "bucket" {
       "${aws_s3_bucket.archive.arn}/${var.config_prefix}/*"
     ]
   }
+
+  dynamic "statement" {
+    for_each = var.flow_logs_prefix == "" ? [] : [var.flow_logs_prefix]
+
+    content {
+      sid = "AllowVpcFlowLogsAclCheck"
+
+      principals {
+        type        = "Service"
+        identifiers = ["delivery.logs.amazonaws.com"]
+      }
+
+      actions   = ["s3:GetBucketAcl", "s3:ListBucket"]
+      resources = [aws_s3_bucket.archive.arn]
+
+      condition {
+        test     = "StringEquals"
+        variable = "aws:SourceAccount"
+        values   = [data.aws_caller_identity.current.account_id]
+      }
+    }
+  }
+
+  dynamic "statement" {
+    for_each = var.flow_logs_prefix == "" ? [] : [var.flow_logs_prefix]
+
+    content {
+      sid = "AllowVpcFlowLogsWrite"
+
+      principals {
+        type        = "Service"
+        identifiers = ["delivery.logs.amazonaws.com"]
+      }
+
+      actions = ["s3:PutObject"]
+      resources = [
+        "${aws_s3_bucket.archive.arn}/${statement.value}/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
+      ]
+
+      condition {
+        test     = "StringEquals"
+        variable = "aws:SourceAccount"
+        values   = [data.aws_caller_identity.current.account_id]
+      }
+
+      condition {
+        test     = "StringEquals"
+        variable = "s3:x-amz-acl"
+        values   = ["bucket-owner-full-control"]
+      }
+    }
+  }
 }
 
 data "aws_iam_policy_document" "kms" {
@@ -57,7 +109,12 @@ data "aws_iam_policy_document" "kms" {
 
     principals {
       type        = "Service"
-      identifiers = ["cloudtrail.amazonaws.com", "config.amazonaws.com", "s3.amazonaws.com"]
+      identifiers = [
+        "cloudtrail.amazonaws.com",
+        "config.amazonaws.com",
+        "s3.amazonaws.com",
+        "delivery.logs.amazonaws.com"
+      ]
     }
 
     actions = [

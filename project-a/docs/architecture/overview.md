@@ -2,9 +2,11 @@
 
 ## Scope and claims
 
-This repository defines a repo-only AWS platform baseline. It is not cloud
-validated; AWS and Azure are not implemented. Azure Government is outside the
-implementation scope.
+This repository defines a repo-only AWS multi-account platform **design**, plus
+a separately evidenced **single-account Landing Zone lab** in `us-east-1` that
+cloud-validates identity, private network, and audit in one account. Azure
+Government remains outside the implementation scope. Multi-account Organizations
+member creation is **not** cloud-validated here.
 
 ## Account and OU taxonomy
 
