@@ -1,0 +1,110 @@
+name: Landing Zone lab (Terraform)
+
+# Primary AWS path: GitHub OIDC → IAM role project-a-lzlab-gha → Terraform.
+# Cursor/Cloud Agents edit the repo; they do not apply AWS directly.
+
+on:
+  pull_request:
+    paths:
+      - 'project-a/sandbox/landing-zone-lab/**'
+      - 'project-a/terraform/identity/**'
+      - 'project-a/terraform/network/**'
+      - 'project-a/terraform/audit/**'
+      - '.github/workflows/landing-zone-lab.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'project-a/sandbox/landing-zone-lab/**'
+      - 'project-a/terraform/identity/**'
+      - 'project-a/terraform/network/**'
+      - 'project-a/terraform/audit/**'
+      - '.github/workflows/landing-zone-lab.yml'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: plan or apply
+        required: true
+        default: plan
+        type: choice
+        options:
+          - plan
+          - apply
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: landing-zone-lab-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  TF_IN_AUTOMATION: '1'
+  TF_INPUT: 'false'
+
+jobs:
+  plan:
+    name: Terraform plan
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.action == 'plan')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN_LZ_LAB || 'arn:aws:iam::<AWS_ACCOUNT_ID>:role/project-a-lzlab-gha' }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-lzlab-plan-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.15.5
+          terraform_wrapper: false
+
+      - name: Plan lab roots
+        run: bash ./project-a/sandbox/landing-zone-lab/plan-lab.sh
+
+  apply:
+    name: Terraform apply
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.action == 'apply')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: lab
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN_LZ_LAB || 'arn:aws:iam::<AWS_ACCOUNT_ID>:role/project-a-lzlab-gha' }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-lzlab-apply-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.15.5
+          terraform_wrapper: false
+
+      - name: Apply lab roots
+        run: bash ./project-a/sandbox/landing-zone-lab/apply-lab.sh
+
+      - name: Upload evidence capture
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: lz-lab-evidence
+          path: |
+            project-a/sandbox/landing-zone-lab/EVIDENCE.capture.md
+            project-a/sandbox/landing-zone-lab/lab/backend.hcl
+          if-no-files-found: ignore
