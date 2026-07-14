@@ -14,10 +14,12 @@ multi-account theater as success is a fail.
 - Single-account mode is explicit in README, claims-boundary,
   `docs/architecture/accounts.md`, `docs/architecture/overview.md`, and lab
   evidence; account `<AWS_ACCOUNT_ID>` and region `us-east-1` are documented.
-- Non-root operator IAM exists (`operator/` applied); evidence shows apply
-  identity is not the account root principal for lab operations.
+- Non-root apply identity: GitHub OIDC role `GitHubActionsLZLab` (preferred CI
+  path) and/or lab `operator/` IAM; evidence shows caller is not account root.
+  Cloud Agent `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` is **not** required for this slice.
 - Live Terraform lab root composes identity + network + audit in one account
-  with remote state bootstrap (S3 + KMS); no cross-account providers.
+  with remote state bootstrap (S3 + KMS); no cross-account providers. CI path
+  documented in `.github/workflows/landing-zone-lab.yml`.
 - AWS CLI evidence confirms: CloudTrail logging to KMS-encrypted archive,
   private VPC with flow logs targeting the archive, and workload identity
   role/OIDC (or equivalent documented identity resources) present.

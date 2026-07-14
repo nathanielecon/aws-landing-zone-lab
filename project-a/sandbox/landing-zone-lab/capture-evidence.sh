@@ -13,6 +13,11 @@ OUT="${1:-$ROOT/EVIDENCE.capture.md}"
   aws sts get-caller-identity
   echo '```'
   echo
+  echo '## GitHub OIDC CI role'
+  echo '```'
+  aws iam get-role --role-name GitHubActionsLZLab --query 'Role.[RoleName,Arn]' 2>&1 || true
+  echo '```'
+  echo
   echo '## operator user/role'
   echo '```'
   aws iam get-user --user-name project-a-lzlab-operator 2>&1 || true

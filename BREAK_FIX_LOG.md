@@ -1,5 +1,16 @@
 # Break/Fix Log
 
+## 2026-07-14 (LZ lab → GitHub OIDC CI)
+
+- Break: Cloud Agent AWS apply blocked on individual plan (no team External ID
+  for `CURSOR_AWS_ASSUME_IAM_ROLE_ARN`); wrong control plane for the lab goal.
+- Fix: Switch primary path to **GitHub OIDC → Terraform CI** —
+  `github-oidc/` (provider + `GitHubActionsLZLab`), workflow
+  `.github/workflows/landing-zone-lab.yml` (plan on PR, apply on main /
+  `workflow_dispatch` + environment `landing-zone-lab`), evidence render from
+  CI. Stop chasing Cursor assume-role for this lab. One-off local `aws login`
+  remains only for bootstrap.
+
 ## 2026-07-14 (LZ lab — AWS role ready, this agent not injected)
 
 - Break: Live apply blocked on this Cloud Agent run (`bc-ef4b7237-…`). Exact
