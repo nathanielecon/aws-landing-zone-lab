@@ -7,7 +7,7 @@
   "spec_approved_at": "2026-07-12",
   "approval_source": "Cursor cloud CLEAN REJUDGE slice-3 fixer r8: governance_semantics wires Assert-ScpAttachmentNegatives",
   "spec_bundle_sha256": "6723155F8D76675ADD4D03468EDA1681C2D908BAE93CD512EB1DB53A20DF5053",
-  "execution_bundle_sha256": "C8398ED7514ED969D92506479C947DF06F2F160996C98D20A6A9550A3217E66C",
+  "execution_bundle_sha256": "AED9E3079976251665A3CB899570B1AD084C150A809BE6909D2638D567C35299",
   "hash_implementation_sha256": "355A672293C178681192155CFF74F30437D542B4227D388510BF95FB813F67DB",
   "validator_implementation_sha256": "731B9B945FDA07C4F47C4C0D1279340AE141195901227018CF6E050495E967BD",
   "reason": "Repinned after Slice 3 fixer r8: governance_semantics invokes Assert-ScpAttachmentNegatives.ps1 fail-closed. Spec bundle unchanged; release/verify scripts remain outside execution-hash members."

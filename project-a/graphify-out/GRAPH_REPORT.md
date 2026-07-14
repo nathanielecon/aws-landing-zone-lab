@@ -8,4 +8,6 @@ Edges: 31
 
 This report is a repo-only structural summary of the `project-a` Terraform and
 documentation graph. It is not cloud validation and it does not prove runtime
-connectivity, deployment success, or production behavior.
+connectivity, deployment success, or production behavior. It is a navigation
+aid only and is **not** a substitute for Terraform, policy, security, or human
+validation.

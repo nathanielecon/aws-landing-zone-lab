@@ -1,5 +1,12 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-4 fixer r2)
+
+- Repin execution/bundle hashes after HARNESS.md drift from slice-4 fixer.
+- GRAPH_REPORT substitute disclaimer; orchestration closeout notes one-command
+  CI path; execution-approval records contract 139 + spec 167 assertion counts
+  alongside harness 101.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-4 FIXER)
 
 - Break: Slice 4 avg ~9.17 — README/overview delivery path orphaned claims /

@@ -293,7 +293,10 @@ fidelity:
    contract and stated claims boundary. The Terraform/architecture surface is
    an offline baseline, **not** cloud-validated production apply readiness.
    Items marked needed for 10/10 (deep fault injection, exhaustive negative
-   matrices, fresh-machine one-command CI parity) were explicitly left short.
+   matrices) were explicitly left short on that closeout. A later clean
+   rejudge added `scripts/Invoke-HarnessReleaseValidation.ps1` +
+   `HARNESS_STRICT_PINS=1` as the fresh-machine / CI-parity one-command path
+   (see `project-a/HARNESS.md` and `.github/workflows/harness-contracts.yml`).
 
 Final recorded slice advance scores for that closeout: Slice 1 **9.6**, Slice 2
 **9.6**, Slice 3 **9.5**, Slice 4 **9.6**. Technical break→fix cycles remain
