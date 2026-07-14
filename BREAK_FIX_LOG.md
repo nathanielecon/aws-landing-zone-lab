@@ -1,5 +1,10 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE cloud-lab PASS)
+
+- Clean no-leak multi-judge scores: **9.5 / 9.5 / 9.5** (avg **9.5**).
+  Must-haves PASS. All five slices now have clean no-leak averages.
+
 ## 2026-07-14 (CLEAN REJUDGE cloud-lab fixer)
 
 - Add `sandbox/landing-zone-lab/TEARDOWN.md` (cost drivers + destroy order +

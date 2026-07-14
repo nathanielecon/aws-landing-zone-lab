@@ -315,7 +315,7 @@ recorded in the table below after the dedicated clean rejudge pass.
 | 2 | `slice-2-project-a-foundation.md` | 9.6 / 9.5 / 9.5 | **9.53** | PASS | Clean no-leak Grok round |
 | 3 | `slice-3-project-a-platform.md` | 9.8 / 10 / 10 | **9.93** | PASS | Clean no-leak Grok round |
 | 4 | `slice-4-final-delivery.md` | 9.6 / 9.5 / 9.5 | **9.53** | PASS | Clean no-leak Grok round |
-| Cloud lab | `slice-cloud-lab-single-account.md` | _pending_ | _pending_ | _pending_ | Durable EVIDENCE + GHA OIDC only |
+| Cloud lab | `slice-cloud-lab-single-account.md` | 9.5 / 9.5 / 9.5 | **9.5** | PASS | Clean no-leak Grok round; TEARDOWN.md |
 
 ## Operator entry points
 
