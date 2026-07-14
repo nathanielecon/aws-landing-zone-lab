@@ -6,7 +6,7 @@ run "accepts_protected_branch" {
   variables {
     github_organization = "example-org"
     github_repository   = "platform"
-    audit_bucket_name   = "example-audit-bucket"
+    audit_bucket_name   = "example-log-archive"
   }
 
   assert {
@@ -22,7 +22,7 @@ run "rejects_unprotected_branch" {
     github_organization = "example-org"
     github_repository   = "platform"
     github_branch       = "feature"
-    audit_bucket_name   = "example-audit-bucket"
+    audit_bucket_name   = "example-log-archive"
   }
 
   expect_failures = [var.github_branch]
@@ -34,7 +34,7 @@ run "rejects_missing_permissions_boundary" {
   variables {
     github_organization           = "example-org"
     github_repository             = "platform"
-    audit_bucket_name             = "example-audit-bucket"
+    audit_bucket_name             = "example-log-archive"
     require_permissions_boundary  = false
   }
 
@@ -47,7 +47,7 @@ run "rejects_non_github_oidc_trust_principal" {
   variables {
     github_organization = "example-org"
     github_repository   = "platform"
-    audit_bucket_name   = "example-audit-bucket"
+    audit_bucket_name   = "example-log-archive"
     oidc_provider_arn   = "arn:aws:iam::123456789012:oidc-provider/example.com"
   }
 

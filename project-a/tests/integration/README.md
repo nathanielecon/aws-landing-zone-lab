@@ -29,7 +29,10 @@ The `log_archive_arn_prefix_contract_alignment` run additionally proves the
 shared Log Archive ARN/prefix contract stays aligned across identity
 (`audit_bucket_name` → `arn:aws:s3:::…/workload/*`), network (S3 ARN validation
 on `flow_logs_destination_arn`), audit (`archive_bucket_arn` +
-`flow_logs_prefix`), and environment `audit_prefix` locals.
+`flow_logs_prefix`), and environment `audit_prefix` locals. It also asserts
+**string equality** of the shared offline bucket name token across identity /
+network / audit fixtures (`example-log-archive`) and lab wiring to
+`module.audit.archive_bucket_*`.
 
 ## Minimal executable check
 

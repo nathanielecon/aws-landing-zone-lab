@@ -1,5 +1,19 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r8)
+
+- Break: SCP negatives existed as prose/fixtures but were not on an allowlisted
+  validator path; BC-ORG-01 still cited only the H1 sample; integration Log
+  Archive alignment lacked string-equality of the shared bucket name token
+  across identity / network / audit.
+- Fix: Extended `governance_semantics` to invoke
+  `Assert-ScpAttachmentNegatives.ps1` fail-closed; catalog BC-ORG-01 cites
+  `organization.tftest.hcl` + Assert script; integration assert requires
+  identity `audit_bucket_name`, network `flow_logs_destination_arn`, and audit
+  `archive_bucket_name` share `example-log-archive` (plus lab
+  `module.audit.archive_bucket_*` wiring). Repinned execution-bundle approvals
+  after `Invoke-ProjectAValidators.ps1` edit. No AWS.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r7)
 
 - Break: Governance suite still prose-only (no executable SCP/root-attachment

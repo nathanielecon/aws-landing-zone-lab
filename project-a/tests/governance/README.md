@@ -7,7 +7,9 @@ resource, plus least-privilege actions, resources, principals, and conditions.
 ## Executable SCP attachment negatives
 
 Fail-closed coverage for BC-ORG-01 (SCP attach to organization root or an
-individual account):
+individual account). The allowlisted `governance_semantics` validator invokes
+`Assert-ScpAttachmentNegatives.ps1` and fails closed when the assert is missing
+or returns non-zero:
 
 | Artifact | Role |
 | --- | --- |
@@ -21,7 +23,7 @@ Run the offline assert (no AWS, no provider init):
 pwsh -NoLogo -NoProfile -File project-a/tests/governance/Assert-ScpAttachmentNegatives.ps1
 ```
 
-Terraform behavioral runs copy this directory beside the organization module
+Terraform behavioral runs can copy this directory beside the organization module
 (same pattern as harness `Invoke-TerraformBehavioralTests`), then:
 
 ```powershell

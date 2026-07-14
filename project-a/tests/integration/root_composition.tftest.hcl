@@ -94,8 +94,14 @@ run "log_archive_arn_prefix_contract_alignment" {
       can(regex("(?s)arn:aws:s3:::\\$\\{var\\.audit_bucket_name\\}/workload/\\*", file("${path.root}/terraform/identity/main.tf"))) &&
       # Environments: distinct audit_prefix values stay aligned with env composition.
       can(regex("(?s)audit_prefix\\s*=\\s*\"nonproduction/audit\"", file("${path.root}/environments/nonproduction/main.tf"))) &&
-      can(regex("(?s)audit_prefix\\s*=\\s*\"production/audit\"", file("${path.root}/environments/production/main.tf")))
+      can(regex("(?s)audit_prefix\\s*=\\s*\"production/audit\"", file("${path.root}/environments/production/main.tf"))) &&
+      # String equality: identity / network / audit offline fixtures share one bucket name token.
+      regex("(?m)^\\s*audit_bucket_name\\s*=\\s*\"([^\"]+)\"", file("${path.root}/tests/iam/identity.tftest.hcl")) == regex("(?m)^\\s*archive_bucket_name\\s*=\\s*\"([^\"]+)\"", file("${path.root}/tests/audit/audit.tftest.hcl")) &&
+      regex("(?m)^\\s*flow_logs_destination_arn\\s*=\\s*\"arn:aws:s3:::([^\"]+)\"", file("${path.root}/tests/network/network.tftest.hcl")) == regex("(?m)^\\s*archive_bucket_name\\s*=\\s*\"([^\"]+)\"", file("${path.root}/tests/audit/audit.tftest.hcl")) &&
+      # Lab composition wires identity + network flow logs to the same audit archive outputs.
+      can(regex("(?s)audit_bucket_name\\s*=\\s*module\\.audit\\.archive_bucket_name", file("${path.root}/sandbox/landing-zone-lab/lab/main.tf"))) &&
+      can(regex("(?s)flow_logs_destination_arn\\s*=\\s*\"\\$\\{module\\.audit\\.archive_bucket_arn\\}/", file("${path.root}/sandbox/landing-zone-lab/lab/main.tf")))
     )
-    error_message = "Shared Log Archive ARN/prefix contracts must stay aligned across identity (audit_bucket_name), network (flow_logs S3 ARN), audit (archive_bucket_arn + flow_logs_prefix), and environment audit_prefix locals."
+    error_message = "Shared Log Archive bucket token must be string-equal across identity audit_bucket_name, network flow_logs_destination_arn, and audit archive_bucket_name/ARN (fixtures + lab wiring)."
   }
 }
