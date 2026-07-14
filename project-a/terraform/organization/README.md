@@ -1,9 +1,12 @@
 # Organizations baseline
 
 This module defines the proposed AWS Organizations topology only. It has no
-provider configuration and must not be applied from this repository. A human
-must approve account emails, account-creation semantics, OU topology, and SCP
-attachments at H1 before any separately controlled deployment is considered.
+provider configuration and must not be applied from this repository. Under the
+single-account Landing Zone lab, member accounts are intentionally **not**
+created — see
+[`../../sandbox/landing-zone-lab/ORGS_INTERFACE.md`](../../sandbox/landing-zone-lab/ORGS_INTERFACE.md).
+A human must approve account emails, account-creation semantics, OU topology, and SCP
+attachments at H1 before any separately controlled multi-account deployment is considered.
 
 ## Topology
 

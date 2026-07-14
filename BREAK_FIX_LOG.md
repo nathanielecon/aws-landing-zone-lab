@@ -1,5 +1,18 @@
 # Break/Fix Log
 
+## 2026-07-14 (single-account Landing Zone lab)
+
+- Operator plan: with one AWS account, run collapsed Landing Zone lab (identity +
+  network + audit live; Orgs as interface only) and judge to ≥9.5 on
+  single-account lab rubrics — not fake multi-account claims.
+  Action: Added `project-a/sandbox/landing-zone-lab/{operator,state-bootstrap,lab}`,
+  frozen `harness/rubrics/slice-cloud-lab-single-account.md`, extended audit
+  module for VPC Flow Logs archive permissions, parameterized identity
+  `oidc_provider_arn`, documented Orgs non-apply in `ORGS_INTERFACE.md`, updated
+  claims/README/accounts/overview. Live apply requires AWS credentials in the
+  executing environment (cloud agent starts `aws login --remote` waiter; see
+  `/opt/cursor/artifacts/aws-login/`).
+
 ## 2026-07-13 (sandbox AWS proof)
 
 - Operator override: live AWS apply requested despite repo-only stop conditions.

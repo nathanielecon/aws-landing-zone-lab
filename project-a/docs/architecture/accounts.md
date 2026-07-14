@@ -1,7 +1,14 @@
 # Accounts and organizational units
 
-This is a repo-only proposed topology. It is not cloud validated, and no AWS
-accounts or organization resources have been created by this repository.
+This repository defines a **multi-account design interface** (Organizations /
+OU / SCP) and a **single-account live lab**.
+
+| Mode | Status |
+| --- | --- |
+| Organization module (OU + member interface + SCP) | Offline-validated design interface — **member accounts not created** |
+| Live lab account `<AWS_ACCOUNT_ID>` / `us-east-1` | Cloud-validated collapsed identity + network + audit composition |
+
+## Proposed multi-account taxonomy (design only)
 
 | Parent | Account | Responsibility |
 | --- | --- | --- |
@@ -13,17 +20,19 @@ accounts or organization resources have been created by this repository.
 | Workloads | Non-production Workload | Non-production application workloads |
 | Workloads | Production Workload | Production application workloads |
 
-The Terraform module has explicit `aws_organizations_account` resources, but
-it is a reviewed account-creation interface, not authorization to create an
-account. Account email addresses and the initial cross-account role name are
-typed inputs. Before an apply outside this repository, H1 must approve each
-email, the account owner and billing contact, the initial role, break-glass
-access, and the consequence of creating an account in the target organization.
+The Terraform organization module has explicit `aws_organizations_account`
+resources as a reviewed account-creation **interface**, not authorization to
+create accounts in this lab. Account emails and the initial cross-account role
+name are typed inputs. Member accounts are not created because this lab has a
+single billed account and no H1-approved unique member emails. Details:
+[`../../sandbox/landing-zone-lab/ORGS_INTERFACE.md`](../../sandbox/landing-zone-lab/ORGS_INTERFACE.md).
 
-The Management account is deliberately outside the member-account loop. It
-owns Organizations and billing but does not host workloads. Account IDs and the
-organization ID are outputs only after an approved deployment; they are never
-committed as values here.
+## Live single-account lab
+
+In account `<AWS_ACCOUNT_ID>`, the Landing Zone lab collapses identity, private
+network, and audit into one account for cloud validation. That does **not**
+rewrite the multi-account design; it is an honest lab composition while Orgs
+members remain unavailable.
 
 See the [Organizations guardrail boundary](../guardrails/organizations.md) and
 the [platform architecture contract](overview.md).

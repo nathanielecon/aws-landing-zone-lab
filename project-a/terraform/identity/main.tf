@@ -5,7 +5,7 @@ locals {
       Sid    = "GitHubActionsFromProtectedBranch"
       Effect = "Allow"
       Principal = {
-        Federated = "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
+        Federated = var.oidc_provider_arn
       }
       Action = "sts:AssumeRoleWithWebIdentity"
       Condition = {

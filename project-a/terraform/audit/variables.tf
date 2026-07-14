@@ -30,6 +30,12 @@ variable "config_prefix" {
   default     = "config"
 }
 
+variable "flow_logs_prefix" {
+  description = "S3 prefix for VPC Flow Logs delivery into the Log Archive bucket. Empty disables the flow-logs bucket-policy statements."
+  type        = string
+  default     = "vpc-flow-logs"
+}
+
 variable "retention_days" {
   description = "Minimum retention window for audit objects before expiration."
   type        = number
