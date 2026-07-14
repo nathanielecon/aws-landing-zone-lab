@@ -47,7 +47,7 @@ variable "private_subnets" {
           (
             cidrhost(format("%s/%s", cidrhost(var.private_subnets[a].cidr, 0), split("/", var.private_subnets[b].cidr)[1]), 0)
             == cidrhost(var.private_subnets[b].cidr, 0)
-          ) || (
+            ) || (
             cidrhost(format("%s/%s", cidrhost(var.private_subnets[b].cidr, 0), split("/", var.private_subnets[a].cidr)[1]), 0)
             == cidrhost(var.private_subnets[a].cidr, 0)
           )
@@ -87,5 +87,28 @@ variable "allow_unrestricted_egress" {
   validation {
     condition     = var.allow_unrestricted_egress == false
     error_message = "Unrestricted egress exceptions are blocked for the private workload boundary."
+  }
+}
+
+variable "sg_exception_attempts" {
+  description = "Typed security-group exception review shape (CIDR, port, protocol). Must remain empty/deny in this baseline; any non-empty exception attempt fails closed and is extension-blocked pending a separate human-approved design."
+  type = object({
+    cidrs    = optional(list(string), [])
+    ports    = optional(list(number), [])
+    protocol = optional(string, "")
+  })
+  default = {
+    cidrs    = []
+    ports    = []
+    protocol = ""
+  }
+
+  validation {
+    condition = (
+      length(var.sg_exception_attempts.cidrs) == 0 &&
+      length(var.sg_exception_attempts.ports) == 0 &&
+      var.sg_exception_attempts.protocol == ""
+    )
+    error_message = "SG exception attempts (non-empty CIDR, port, or protocol) are blocked for the private workload boundary in this baseline."
   }
 }

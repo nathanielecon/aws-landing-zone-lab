@@ -53,3 +53,29 @@ run "rejects_non_github_oidc_trust_principal" {
 
   expect_failures = [var.oidc_provider_arn]
 }
+
+run "rejects_overbroad_workload_actions" {
+  command = plan
+
+  variables {
+    github_organization       = "example-org"
+    github_repository         = "platform"
+    audit_bucket_name         = "example-log-archive"
+    workload_action_overrides = ["*"]
+  }
+
+  expect_failures = [var.workload_action_overrides]
+}
+
+run "rejects_missing_oidc_trust_conditions" {
+  command = plan
+
+  variables {
+    github_organization            = "example-org"
+    github_repository              = "platform"
+    audit_bucket_name              = "example-log-archive"
+    require_oidc_trust_conditions  = false
+  }
+
+  expect_failures = [var.require_oidc_trust_conditions]
+}

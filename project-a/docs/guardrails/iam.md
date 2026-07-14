@@ -23,7 +23,7 @@ access.
 
 ## Related
 
-- [Blocked-change catalog](../operations/blocked-change-catalog.md) (BC-IAM-01/02,
+- [Blocked-change catalog](../operations/blocked-change-catalog.md) (BC-IAM-01–04,
   BC-ID-01)
 - [Policy validation](policy-validation.md)
 - [Identity module](../../terraform/identity/README.md)

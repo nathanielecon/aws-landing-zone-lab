@@ -14,9 +14,11 @@ zones, regions, route intent, destinations, and any ingress or egress exception.
 Fail-closed review inputs `allow_unrestricted_ingress` and
 `allow_unrestricted_egress` default to `false` and must stay false. Setting
 either to `true` fails offline validation; opening SG ingress/egress remains
-**extension-blocked** until a separate human-approved design. Subnet CIDRs must
-stay inside the VPC prefix (`check.private_subnets_inside_vpc`) and must not
-overlap.
+**extension-blocked** until a separate human-approved design. Typed review input
+`sg_exception_attempts` defaults to empty CIDRs, ports, and protocol and must
+stay empty; any non-empty exception shape fails closed (BC-NET-10–12). Subnet
+CIDRs must stay inside the VPC prefix (`check.private_subnets_inside_vpc`) and
+must not overlap.
 
 Run only offline checks:
 
@@ -30,5 +32,5 @@ terraform test -no-color -test-directory=../../tests/network
 See the [network architecture](../../docs/architecture/network.md),
 [network failure cases](../../docs/operations/network-failure-cases.md), the
 [blocked-change catalog](../../docs/operations/blocked-change-catalog.md)
-(BC-NET-01–09), and the offline policy fixtures in
+(BC-NET-01–12), and the offline policy fixtures in
 [tests/network](../../tests/network/README.md) (`network.tftest.hcl`).

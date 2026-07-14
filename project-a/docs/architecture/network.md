@@ -17,7 +17,9 @@ Private subnets do not assign public IPs. Their route table has no default route
 so it provides no internet or cross-account path. The workload security group is
 default-deny: no ingress and no egress rules are defined. Fail-closed inputs
 `allow_unrestricted_ingress` and `allow_unrestricted_egress` default to deny and
-are extension-blocked. Any required ingress or egress exception needs a source,
+are extension-blocked. Typed `sg_exception_attempts` (CIDR / port / protocol)
+defaults to empty and is extension-blocked; any non-empty exception shape fails
+offline validation. Any required ingress or egress exception needs a source,
 destination, protocol, port, owner, expiry, and human review. Private subnet
 CIDRs must sit inside the VPC prefix and must not overlap.
 

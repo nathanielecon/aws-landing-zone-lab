@@ -11,17 +11,20 @@ Related: [blocked-change catalog](blocked-change-catalog.md),
 [audit troubleshooting](audit-troubleshooting.md),
 [network module](../../terraform/network/README.md).
 
-## Fail-closed review inputs and CIDR negatives (BC-NET-06 / BC-NET-08 / BC-NET-09)
+## Fail-closed review inputs and CIDR negatives (BC-NET-06 / BC-NET-08 / BC-NET-09 / BC-NET-10–12)
 
-Offline review rejects unrestricted security-group exceptions and bad address
-plans before any deploy. Replay these against the catalog when triage suggests
-opening the private boundary:
+Offline review rejects unrestricted security-group exceptions, typed SG exception
+shapes (CIDR / port / protocol), and bad address plans before any deploy. Replay
+these against the catalog when triage suggests opening the private boundary:
 
 | Catalog ID | Fail-closed signal | Offline `expect_failures` |
 | --- | --- | --- |
 | BC-NET-06 | `allow_unrestricted_ingress` defaults to deny and must stay `false` (extension-blocked) | `rejects_unrestricted_ingress_exception` → `var.allow_unrestricted_ingress` |
 | BC-NET-08 | `allow_unrestricted_egress` defaults to deny and must stay `false` (extension-blocked) | `rejects_unrestricted_egress_exception` → `var.allow_unrestricted_egress` |
 | BC-NET-09 | Private subnet CIDRs must sit inside the VPC and must not overlap | `check.private_subnets_inside_vpc` and `var.private_subnets` overlap / edge cases |
+| BC-NET-10 | `sg_exception_attempts.cidrs` must stay empty (extension-blocked) | `rejects_sg_exception_cidr_shape` → `var.sg_exception_attempts` |
+| BC-NET-11 | `sg_exception_attempts.ports` must stay empty (extension-blocked) | `rejects_sg_exception_port_shape` → `var.sg_exception_attempts` |
+| BC-NET-12 | `sg_exception_attempts.protocol` must stay empty (extension-blocked) | `rejects_sg_exception_protocol_shape` → `var.sg_exception_attempts` |
 
 Happy-path coverage for the empty SG is
 `enforces_default_deny_security_group` (`ingress = []`, `egress = []`). These
@@ -37,12 +40,13 @@ this repository:
    `ingress` and `egress`.
 2. Confirm change inputs did not set `allow_unrestricted_ingress` or
    `allow_unrestricted_egress` to `true` (both must remain `false` offline;
-   BC-NET-06 / BC-NET-08).
+   BC-NET-06 / BC-NET-08), and that `sg_exception_attempts` stayed empty for
+   CIDR / port / protocol (BC-NET-10–12).
 3. Identify the approved source or destination, protocol, port, owner, and
    expiry for any exception request.
-4. Stop and escalate if the proposed repair opens `0.0.0.0/0`, adds
-   NAT/IGW/TGW/VPN/DX/RAM, or bypasses Network-owner review (see BC-NET-03 and
-   related catalog rows).
+4. Stop and escalate if the proposed repair opens `0.0.0.0/0`, populates
+   `sg_exception_attempts`, adds NAT/IGW/TGW/VPN/DX/RAM, or bypasses
+   Network-owner review (see BC-NET-03 and related catalog rows).
 
 ## Private workload to the public internet
 

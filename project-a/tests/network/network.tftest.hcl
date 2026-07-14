@@ -164,6 +164,69 @@ run "rejects_unrestricted_egress_exception" {
   expect_failures = [var.allow_unrestricted_egress]
 }
 
+run "rejects_sg_exception_cidr_shape" {
+  command = plan
+
+  variables {
+    environment               = "nonproduction"
+    vpc_cidr                  = "10.20.0.0/16"
+    flow_logs_destination_arn = "arn:aws:s3:::example-log-archive"
+    sg_exception_attempts = {
+      cidrs    = ["10.0.0.0/8"]
+      ports    = []
+      protocol = ""
+    }
+    private_subnets = {
+      az1 = { availability_zone = "us-east-1a", cidr = "10.20.1.0/24" }
+      az2 = { availability_zone = "us-east-1b", cidr = "10.20.2.0/24" }
+    }
+  }
+
+  expect_failures = [var.sg_exception_attempts]
+}
+
+run "rejects_sg_exception_port_shape" {
+  command = plan
+
+  variables {
+    environment               = "nonproduction"
+    vpc_cidr                  = "10.20.0.0/16"
+    flow_logs_destination_arn = "arn:aws:s3:::example-log-archive"
+    sg_exception_attempts = {
+      cidrs    = []
+      ports    = [443]
+      protocol = ""
+    }
+    private_subnets = {
+      az1 = { availability_zone = "us-east-1a", cidr = "10.20.1.0/24" }
+      az2 = { availability_zone = "us-east-1b", cidr = "10.20.2.0/24" }
+    }
+  }
+
+  expect_failures = [var.sg_exception_attempts]
+}
+
+run "rejects_sg_exception_protocol_shape" {
+  command = plan
+
+  variables {
+    environment               = "nonproduction"
+    vpc_cidr                  = "10.20.0.0/16"
+    flow_logs_destination_arn = "arn:aws:s3:::example-log-archive"
+    sg_exception_attempts = {
+      cidrs    = []
+      ports    = []
+      protocol = "tcp"
+    }
+    private_subnets = {
+      az1 = { availability_zone = "us-east-1a", cidr = "10.20.1.0/24" }
+      az2 = { availability_zone = "us-east-1b", cidr = "10.20.2.0/24" }
+    }
+  }
+
+  expect_failures = [var.sg_exception_attempts]
+}
+
 run "rejects_non_s3_flow_logs_destination_arn" {
   command = plan
 

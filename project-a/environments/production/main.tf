@@ -10,12 +10,14 @@ locals {
 
   # Non-secret identity module inputs (OIDC trust + workload → Log Archive).
   identity_module_inputs = {
-    github_organization          = "example-org"
-    github_repository            = "example-repo"
-    github_branch                = "main"
-    audit_bucket_name            = local.log_archive_bucket_name
-    oidc_provider_arn            = "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
-    require_permissions_boundary = true
+    github_organization           = "example-org"
+    github_repository             = "example-repo"
+    github_branch                 = "main"
+    audit_bucket_name             = local.log_archive_bucket_name
+    oidc_provider_arn             = "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
+    require_permissions_boundary  = true
+    workload_action_overrides     = []
+    require_oidc_trust_conditions = true
   }
 
   # Non-secret network module inputs (private-only VPC → Log Archive flow logs).
@@ -29,6 +31,11 @@ locals {
     flow_logs_destination_arn  = "arn:aws:s3:::${local.log_archive_bucket_name}/vpc-flow-logs"
     allow_unrestricted_ingress = false
     allow_unrestricted_egress  = false
+    sg_exception_attempts = {
+      cidrs    = []
+      ports    = []
+      protocol = ""
+    }
   }
 
   # Non-secret audit module inputs (Security Tooling path → Log Archive storage).

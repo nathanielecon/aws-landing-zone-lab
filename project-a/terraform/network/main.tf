@@ -1,8 +1,14 @@
 locals {
   name_prefix = "project-a-${var.environment}"
-  # Fail-closed review inputs; validation rejects unrestricted ingress/egress attempts.
+  # Fail-closed review inputs; validation rejects unrestricted ingress/egress attempts
+  # and any typed SG exception shape (CIDR / port / protocol must stay empty).
   unrestricted_ingress_blocked = !var.allow_unrestricted_ingress
   unrestricted_egress_blocked  = !var.allow_unrestricted_egress
+  sg_exception_shape_empty = (
+    length(var.sg_exception_attempts.cidrs) == 0 &&
+    length(var.sg_exception_attempts.ports) == 0 &&
+    var.sg_exception_attempts.protocol == ""
+  )
   tags = {
     Project            = "project-a"
     Environment        = var.environment

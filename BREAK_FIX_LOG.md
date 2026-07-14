@@ -1,5 +1,17 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r11)
+
+- Break: Stuck judges wanted a typed SG exception-shape matrix (CIDR / port /
+  protocol) plus deeper IAM negatives beyond unprotected-branch / boundary /
+  non-GitHub OIDC.
+- Fix: Added fail-closed `sg_exception_attempts` (default empty/deny;
+  extension-blocked) with `expect_failures` for non-empty CIDR, port, and
+  protocol shapes (BC-NET-10–12); added IAM `workload_action_overrides` (rejects
+  `*`) and `require_oidc_trust_conditions` with matching `expect_failures`
+  (BC-IAM-03/04); mirrored empty/deny defaults into env compositions. No AWS;
+  no execution-bundle repin.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r10)
 
 - Break: Production env composition stayed thin while nonproduction already
