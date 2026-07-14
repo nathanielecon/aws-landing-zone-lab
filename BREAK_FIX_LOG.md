@@ -1,5 +1,17 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r6)
+
+- Break: Scores stuck ~9.0 — catalog lacked BC-AUD rows for disable log-file
+  validation and disable archive versioning; audit troubleshooting did not map
+  those IDs; identity/network/audit module READMEs lacked catalog + policy-fixture
+  cross-links; `network.svg` ownership graph omitted Security Tooling.
+- Fix: Added BC-AUD-03/04 to `blocked-change-catalog.md` and mapped them in
+  `audit-troubleshooting.md`; cross-linked terraform identity/network/audit
+  READMEs to the catalog and `tests/*/README.md` fixtures; labeled Security
+  Tooling (trail/Config path) on `network.svg`. Docs-only; no AWS apply; no
+  execution-bundle repin.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r5)
 
 - Break: Scores short of 10/10 — `network.svg` lacked Network-account /

@@ -28,5 +28,8 @@ terraform validate
 terraform test -no-color -test-directory=../../tests/iam
 ```
 
-See [IAM guardrails](../../docs/guardrails/iam.md) and
-[policy validation](../../docs/guardrails/policy-validation.md).
+See [IAM guardrails](../../docs/guardrails/iam.md),
+[policy validation](../../docs/guardrails/policy-validation.md), the
+[blocked-change catalog](../../docs/operations/blocked-change-catalog.md)
+(BC-ID-01, BC-IAM-01/02), and the offline policy fixtures in
+[tests/iam](../../tests/iam/README.md) (`identity.tftest.hcl`).

@@ -28,5 +28,8 @@ terraform validate
 ```
 
 See the [logging architecture](../../docs/architecture/logging.md), the
-[audit review guide](../../docs/operations/audit-review.md), and the
-[audit troubleshooting guide](../../docs/operations/audit-troubleshooting.md).
+[audit review guide](../../docs/operations/audit-review.md), the
+[audit troubleshooting guide](../../docs/operations/audit-troubleshooting.md),
+the [blocked-change catalog](../../docs/operations/blocked-change-catalog.md)
+(BC-AUD-01–04), and the offline policy fixtures in
+[tests/audit](../../tests/audit/README.md) (`audit.tftest.hcl`).

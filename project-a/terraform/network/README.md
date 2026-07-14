@@ -27,5 +27,8 @@ terraform validate
 terraform test -no-color -test-directory=../../tests/network
 ```
 
-See the [network architecture](../../docs/architecture/network.md) and
-[network failure cases](../../docs/operations/network-failure-cases.md).
+See the [network architecture](../../docs/architecture/network.md),
+[network failure cases](../../docs/operations/network-failure-cases.md), the
+[blocked-change catalog](../../docs/operations/blocked-change-catalog.md)
+(BC-NET-01–09), and the offline policy fixtures in
+[tests/network](../../tests/network/README.md) (`network.tftest.hcl`).
