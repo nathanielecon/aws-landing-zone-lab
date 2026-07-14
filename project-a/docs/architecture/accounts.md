@@ -5,8 +5,8 @@ OU / SCP) and a **single-account live lab**.
 
 | Mode | Status |
 | --- | --- |
-| Organization module (OU + member interface + SCP) | Offline-validated design interface — **member accounts not created** |
-| Live lab account `<AWS_ACCOUNT_ID>` / `us-east-1` | **READY TO APPLY** / `PENDING_APPLY` — designed collapsed identity + network + audit composition; **not** yet cloud-validated as a completed fact |
+| Organization module (OU + member interface + SCP) | Offline-validated design interface — **member accounts not created**; multi-account Orgs **not** cloud-validated |
+| Live lab account `<AWS_ACCOUNT_ID>` / `us-east-1` | **APPLIED** / cloud-validated — collapsed identity + network + audit via GitHub OIDC CI ([run 29366105164](https://github.com/nathanielecon/cloud/actions/runs/29366105164), role `project-a-lzlab-gha`); see [`EVIDENCE.md`](../../sandbox/landing-zone-lab/EVIDENCE.md) |
 
 ## Proposed multi-account taxonomy (design only)
 
@@ -30,11 +30,12 @@ single billed account and no H1-approved unique member emails. Details:
 ## Live single-account lab
 
 In account `<AWS_ACCOUNT_ID>`, the Landing Zone lab collapses identity, private
-network, and audit into one account for an honest single-account apply path.
-Status is **READY TO APPLY** / `PENDING_APPLY` until operator, state, and lab
-roots are applied and evidence is filled. That does **not** rewrite the
-multi-account design; it is an honest lab composition while Orgs members remain
-unavailable.
+network, and audit into one account. Status is **APPLIED** / cloud-validated
+(GHA OIDC apply run `29366105164`, role `project-a-lzlab-gha`). Offline
+`terraform validate` was historically green; CI plan on
+`.github/workflows/landing-zone-lab.yml` continues to validate the lab on PR.
+That does **not** rewrite the multi-account design; Orgs members remain
+unavailable and **not** cloud-validated.
 
 See the [Organizations guardrail boundary](../guardrails/organizations.md) and
 the [platform architecture contract](overview.md).

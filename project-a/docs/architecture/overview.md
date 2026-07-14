@@ -4,12 +4,15 @@
 
 This repository defines a repo-only AWS multi-account platform **design**, plus
 a separately evidenced **single-account Landing Zone lab** in AWS account
-`<AWS_ACCOUNT_ID>` / `us-east-1` that is **READY TO APPLY** / `PENDING_APPLY` for
-identity, private network, and audit in one account. Designed Terraform
-interfaces exist; live cloud apply of that composition is **not** yet complete,
-so identity + network + audit are **not** cloud-validated as a completed fact.
-Azure Government remains outside the implementation scope. Multi-account
-Organizations member creation is **not** cloud-validated here.
+`<AWS_ACCOUNT_ID>` / `us-east-1` that is **APPLIED** / cloud-validated for
+identity, private network, and audit in one account via **GitHub OIDC →
+Terraform CI** (role `project-a-lzlab-gha`, run
+[29366105164](https://github.com/nathanielecon/cloud/actions/runs/29366105164)).
+See [`sandbox/landing-zone-lab/EVIDENCE.md`](../../sandbox/landing-zone-lab/EVIDENCE.md).
+Offline `terraform validate` was historically green; CI plan on the lab
+workflow continues to validate changes on PR. Azure Government remains outside
+the implementation scope. Multi-account Organizations member creation is
+**not** cloud-validated here.
 
 ## Account and OU taxonomy
 
@@ -25,8 +28,8 @@ and permission boundaries cap delegated roles. Account emails, IDs, principals,
 and organization IDs remain typed inputs until separately approved.
 
 The single-account lab target account is explicitly `<AWS_ACCOUNT_ID>` (commercial
-AWS, `us-east-1`). That account hosts the collapsed lab composition when
-applied; it does not imply Organizations member accounts were created.
+AWS, `us-east-1`). That account hosts the collapsed lab composition; it does
+not imply Organizations member accounts were created.
 
 ## Regions and environments
 
