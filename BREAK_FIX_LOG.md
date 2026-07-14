@@ -1,5 +1,12 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r9)
+
+- Point `AGENTS.md` fast-validation at `Invoke-HarnessReleaseValidation.ps1`
+  (CI-parity one-command gate + Verify-ProjectABundle).
+- Expand contract property/mutation loop to N=25 distinct one-byte SHA256
+  mutations with uniqueness + idempotent rewrite asserts.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r8)
 
 - Extended `Test-JsonSchema` in `Harness.Common.psm1` to evaluate top-level
