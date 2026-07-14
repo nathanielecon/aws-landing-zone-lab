@@ -1,5 +1,19 @@
 # Break/Fix Log
 
+## 2026-07-14 (LZ lab — AWS role ready, this agent not injected)
+
+- Break: Live apply blocked on this Cloud Agent run (`bc-ef4b7237-…`). Exact
+  errors after role secret was configured on the dashboard:
+  - `aws sts get-caller-identity` → `NoCredentials: Unable to locate credentials`
+  - `aws sts get-caller-identity --profile cursor-cloud-agent` →
+    `The config profile (cursor-cloud-agent) could not be found`
+  - Env has neither `AWS_PROFILE=cursor-cloud-agent` nor `AWS_CONFIG_FILE`
+    (Cursor IAM-role injection not present on this pre-secret pod).
+- Fix (partial, repo): Merged `main` (`bf62431` role guidance + `cloud-harness`)
+  into `cursor/single-account-lz-lab-b6ce`; updated `apply-lab.sh` / operator to
+  use CursorCloudAgent profile and drop long-lived access keys. **Requires
+  restart or new Cloud Agent on this branch/main so Cursor injects the role.**
+
 ## 2026-07-14 (FIXER — judge 5.2 claims tense)
 
 - Break: Judge score **5.2** — premature "cloud-validated" wording treated the

@@ -9,9 +9,12 @@
 
 ## Prerequisites
 
-- Valid AWS credentials for account `283077380808` in the executing environment
-  (**still required** — live apply has not run; without credentials this lab
-  remains designed / ready-to-apply only)
+- Cloud Agent AWS auth via dashboard secret `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` →
+  `arn:aws:iam::283077380808:role/CursorCloudAgent` (injected
+  `cursor-cloud-agent` profile / default credential chain). Do **not** use
+  `aws login` or `/opt/cursor/artifacts/aws-login/code.txt`.
+- Status remains `PENDING_APPLY` until a session with that role injection
+  successfully runs `apply-lab.sh` and captures CLI evidence below.
 - Non-root operator IAM created under `operator/`
 - Remote state bootstrap under `state-bootstrap/`
 - Lab composition under `lab/` (identity + network + audit)
