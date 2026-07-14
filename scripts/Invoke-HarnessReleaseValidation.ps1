@@ -7,8 +7,9 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $Root = [System.IO.Path]::GetFullPath($Root)
 
-# Capture incoming CI before this script forces CI=1 for suites.
-$inCi = ($env:CI -eq '1')
+# Capture incoming CI / strict-pin mode before this script forces CI=1 for suites.
+# HARNESS_STRICT_PINS=1 matches CI fail-closed terraform/ralphy pin checks on a fresh machine.
+$strictPins = ($env:CI -eq '1') -or ($env:HARNESS_STRICT_PINS -eq '1')
 
 $pinsPath = Join-Path $Root 'project-a/harness/tool-versions.json'
 $expected = [ordered]@{
@@ -84,7 +85,7 @@ if ($toolState.node.available) {
     }
 }
 
-if ($inCi) {
+if ($strictPins) {
     $pinFailures = @()
     if ($toolState.terraform.mismatch) {
         $pinFailures += "terraform pin mismatch: actual='$($toolState.terraform.actual)' expected='$($expected.terraform)' (major.minor.patch must match)"
@@ -93,14 +94,11 @@ if ($inCi) {
         $pinFailures += "ralphy pin mismatch: actual='$($toolState.ralphy.actual)' must contain expected version string '$($expected.ralphy)'"
     }
     if ($toolState.node.mismatch) {
-        if ($toolState.terraform.mismatch -and $toolState.ralphy.mismatch) {
-            $pinFailures += "node major mismatch: actual='$($toolState.node.actual)' expected major $($expected.node) (fail-closed because terraform and ralphy also mismatch)"
-        } else {
-            Write-Warning "node major mismatch: actual='$($toolState.node.actual)' expected major $($expected.node) (warning only unless both terraform and ralphy mismatch)"
-        }
+        # Node remains warn-only under CI / HARNESS_STRICT_PINS unless terraform and ralphy also mismatch.
+        Write-Warning "node major mismatch: actual='$($toolState.node.actual)' expected major $($expected.node) (warning only; terraform/ralphy are fail-closed)"
     }
     if ($pinFailures.Count -gt 0) {
-        Write-Host "Harness release validation FAILED (CI tool pin):"
+        Write-Host "Harness release validation FAILED (strict tool pin; CI=1 or HARNESS_STRICT_PINS=1):"
         foreach ($failure in $pinFailures) { Write-Host "  - $failure" }
         exit 1
     }

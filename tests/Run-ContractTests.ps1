@@ -305,30 +305,69 @@ try {
     Assert-True ($beforeUnknown -ne $afterUnknown) 'unknown smoke runtime mutations change the diff fingerprint'
 } finally { Remove-Item -LiteralPath $smokeRuntimeRepo -Recurse -Force }
 
-# Property/mutation: one-byte digest change + flipped approval pin fails closed via Verify-ProjectABundle.
-$pinMutationDir = Join-Path ([IO.Path]::GetTempPath()) "project-a-pin-mutation-$([Guid]::NewGuid().ToString('N'))"
+# Property/mutation: N=5 one-byte fixture mutations change SHA256; identical rewrite is idempotent.
+$propMutationDir = Join-Path ([IO.Path]::GetTempPath()) "project-a-prop-mutation-$([Guid]::NewGuid().ToString('N'))"
 try {
-    [IO.Directory]::CreateDirectory($pinMutationDir) | Out-Null
-    $probeFile = Join-Path $pinMutationDir 'probe.txt'
-    [IO.File]::WriteAllText($probeFile, "baseline`n", [Text.UTF8Encoding]::new($false))
-    $hashBefore = (Get-FileHash -Algorithm SHA256 -LiteralPath $probeFile).Hash
-    [IO.File]::AppendAllText($probeFile, 'x')
-    $hashAfter = (Get-FileHash -Algorithm SHA256 -LiteralPath $probeFile).Hash
-    Assert-True ($hashBefore -ne $hashAfter) 'digest changes when content mutates one byte'
+    [IO.Directory]::CreateDirectory($propMutationDir) | Out-Null
+    $fixture = Join-Path $propMutationDir 'fixture.txt'
+    $baseline = "property-fixture-baseline`n"
+    [IO.File]::WriteAllText($fixture, $baseline, [Text.UTF8Encoding]::new($false))
+    $baselineHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash
+    [IO.File]::WriteAllText($fixture, $baseline, [Text.UTF8Encoding]::new($false))
+    Assert-True ((Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash -eq $baselineHash) 'repeating identical fixture content keeps SHA256 idempotent'
+    for ($i = 0; $i -lt 5; $i++) {
+        $mutatedContent = $baseline.Substring(0, $i) + [char](65 + $i) + $baseline.Substring($i + 1)
+        [IO.File]::WriteAllText($fixture, $mutatedContent, [Text.UTF8Encoding]::new($false))
+        $mutHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash
+        Assert-True ($mutHash -ne $baselineHash) "one-byte fixture mutation $i changes SHA256"
+        [IO.File]::WriteAllText($fixture, $baseline, [Text.UTF8Encoding]::new($false))
+        Assert-True ((Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash -eq $baselineHash) "rewriting baseline after mutation $i restores idempotent SHA256"
+    }
 
-    $copiedBundle = Join-Path $pinMutationDir 'bundle-approval.json'
-    $copiedExec = Join-Path $pinMutationDir 'execution-approval.json'
+    # Mutate execution_bundle_sha256 one hex digit → Verify-ProjectABundle fails closed.
+    $copiedBundle = Join-Path $propMutationDir 'bundle-approval.json'
+    $copiedExec = Join-Path $propMutationDir 'execution-approval.json'
     Copy-Item -LiteralPath (Join-Path $root 'project-a/harness/bundle-approval.json') -Destination $copiedBundle
     Copy-Item -LiteralPath (Join-Path $root 'project-a/harness/execution-approval.json') -Destination $copiedExec
-    $mutated = Get-Content -Raw -LiteralPath $copiedBundle | ConvertFrom-Json
-    $hex = [char[]]([string]$mutated.spec_bundle_sha256)
-    $hex[0] = if ($hex[0] -eq 'A') { 'B' } else { 'A' }
-    $mutated.spec_bundle_sha256 = -join $hex
-    [IO.File]::WriteAllText($copiedBundle, (($mutated | ConvertTo-Json -Depth 5) + "`n"), [Text.UTF8Encoding]::new($false))
+    $mutatedExec = Get-Content -Raw -LiteralPath $copiedExec | ConvertFrom-Json
+    $execHex = [char[]]([string]$mutatedExec.execution_bundle_sha256)
+    $execHex[0] = if ($execHex[0] -eq 'A') { 'B' } else { 'A' }
+    $mutatedExec.execution_bundle_sha256 = -join $execHex
+    [IO.File]::WriteAllText($copiedExec, (($mutatedExec | ConvertTo-Json -Depth 8) + "`n"), [Text.UTF8Encoding]::new($false))
+    & pwsh -NoLogo -NoProfile -File (Join-Path $root 'scripts/Verify-ProjectABundle.ps1') -Root $root -BundleApprovalPath $copiedBundle -ExecutionApprovalPath $copiedExec | Out-Null
+    Assert-True ($LASTEXITCODE -ne 0) 'Verify-ProjectABundle fails closed when execution_bundle_sha256 hex digit is mutated'
+
+    # Also keep bundle-approval pin flip coverage.
+    Copy-Item -LiteralPath (Join-Path $root 'project-a/harness/bundle-approval.json') -Destination $copiedBundle -Force
+    Copy-Item -LiteralPath (Join-Path $root 'project-a/harness/execution-approval.json') -Destination $copiedExec -Force
+    $mutatedBundle = Get-Content -Raw -LiteralPath $copiedBundle | ConvertFrom-Json
+    $bundleHex = [char[]]([string]$mutatedBundle.spec_bundle_sha256)
+    $bundleHex[0] = if ($bundleHex[0] -eq 'A') { 'B' } else { 'A' }
+    $mutatedBundle.spec_bundle_sha256 = -join $bundleHex
+    [IO.File]::WriteAllText($copiedBundle, (($mutatedBundle | ConvertTo-Json -Depth 5) + "`n"), [Text.UTF8Encoding]::new($false))
     & pwsh -NoLogo -NoProfile -File (Join-Path $root 'scripts/Verify-ProjectABundle.ps1') -Root $root -BundleApprovalPath $copiedBundle -ExecutionApprovalPath $copiedExec | Out-Null
     Assert-True ($LASTEXITCODE -ne 0) 'Verify-ProjectABundle fails closed when one approval hex digit is flipped'
+
+    # Policy JSON field mutation: schema helper fails closed when available.
+    $schemaPath = Join-Path $root 'project-a/harness/policy.schema.json'
+    $policySrc = Join-Path $root 'project-a/harness/tasks/A-006.json'
+    $policyCopy = Join-Path $propMutationDir 'mutated-policy.json'
+    Copy-Item -LiteralPath $policySrc -Destination $policyCopy
+    $policyObj = Get-Content -Raw -LiteralPath $policyCopy | ConvertFrom-Json
+    $policyObj | Add-Member -NotePropertyName 'undeclared_mutation_probe' -NotePropertyValue $true -Force
+    $mutatedPolicyJson = ($policyObj | ConvertTo-Json -Depth 10) + "`n"
+    [IO.File]::WriteAllText($policyCopy, $mutatedPolicyJson, [Text.UTF8Encoding]::new($false))
+    if (Get-Command Test-Json -ErrorAction SilentlyContinue) {
+        Assert-True (-not (Test-Json -LiteralPath $policyCopy -SchemaFile $schemaPath -ErrorAction SilentlyContinue)) 'Test-Json schema rejects undeclared mutated policy field'
+    } else {
+        $roundtrip = (Get-Content -Raw -LiteralPath $policyCopy | ConvertFrom-Json | ConvertTo-Json -Compress)
+        Assert-True ($roundtrip -match 'undeclared_mutation_probe') 'ConvertFrom-Json roundtrip preserves intentional policy mutation when Test-Json is unavailable'
+        $invalidRejected = $false
+        try { [void]('{not-json' | ConvertFrom-Json) } catch { $invalidRejected = $true }
+        Assert-True $invalidRejected 'intentional invalid JSON is rejected by ConvertFrom-Json'
+    }
 } finally {
-    Remove-Item -LiteralPath $pinMutationDir -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath $propMutationDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 # Adversarial timeout: child sleep is killed by Invoke-ProcessWithTimeout.

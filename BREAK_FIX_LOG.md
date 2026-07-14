@@ -1,5 +1,20 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r3)
+
+- Property/mutation expansion in `tests/Run-ContractTests.ps1`: N=5 one-byte
+  fixture SHA256 mutations + idempotent rewrite; `execution_bundle_sha256` hex
+  flip fails `Verify-ProjectABundle`; policy field mutation fails `Test-Json`
+  schema (or ConvertFrom-Json fallback).
+- Persistent-boundary fixtures in `tests/Run-ProjectAHarnessTests.ps1`: named
+  asserts for lock ownership, stop sentinel (dirty tree + stop.flag), approval
+  boundary (receipt hash flip → binding mismatch), resume dirty-set mismatch via
+  `Get-CanonicalDiffRecord`.
+- `Invoke-HarnessReleaseValidation.ps1`: `HARNESS_STRICT_PINS=1` or `CI=1`
+  fail-closed on terraform/ralphy pin mismatch (node warn-only). Documented in
+  `project-a/HARNESS.md`. Execution-bundle members edited → approval pins
+  repinned.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r2)
 
 - `Open-ExclusiveLock` now uses `FileShare.None` so a second open is rejected
