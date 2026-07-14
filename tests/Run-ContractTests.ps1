@@ -345,21 +345,24 @@ try {
     Assert-True ($beforeUnknown -ne $afterUnknown) 'unknown smoke runtime mutations change the diff fingerprint'
 } finally { Remove-Item -LiteralPath $smokeRuntimeRepo -Recurse -Force }
 
-# Property/mutation: N=5 one-byte fixture mutations change SHA256; identical rewrite is idempotent.
+# Property/mutation: N=25 one-byte fixture mutations change SHA256; identical rewrite is idempotent.
 $propMutationDir = Join-Path ([IO.Path]::GetTempPath()) "project-a-prop-mutation-$([Guid]::NewGuid().ToString('N'))"
 try {
     [IO.Directory]::CreateDirectory($propMutationDir) | Out-Null
     $fixture = Join-Path $propMutationDir 'fixture.txt'
-    $baseline = "property-fixture-baseline`n"
+    $baseline = ("property-fixture-baseline-" + ('x' * 40) + "`n")
     [IO.File]::WriteAllText($fixture, $baseline, [Text.UTF8Encoding]::new($false))
     $baselineHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash
     [IO.File]::WriteAllText($fixture, $baseline, [Text.UTF8Encoding]::new($false))
     Assert-True ((Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash -eq $baselineHash) 'repeating identical fixture content keeps SHA256 idempotent'
-    for ($i = 0; $i -lt 5; $i++) {
-        $mutatedContent = $baseline.Substring(0, $i) + [char](65 + $i) + $baseline.Substring($i + 1)
+    $seen = [System.Collections.Generic.HashSet[string]]::new()
+    [void]$seen.Add($baselineHash)
+    for ($i = 0; $i -lt 25; $i++) {
+        $mutatedContent = $baseline.Substring(0, $i) + [char](65 + ($i % 26)) + $baseline.Substring($i + 1)
         [IO.File]::WriteAllText($fixture, $mutatedContent, [Text.UTF8Encoding]::new($false))
         $mutHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash
         Assert-True ($mutHash -ne $baselineHash) "one-byte fixture mutation $i changes SHA256"
+        Assert-True ($seen.Add($mutHash)) "one-byte fixture mutation $i produces a distinct SHA256"
         [IO.File]::WriteAllText($fixture, $baseline, [Text.UTF8Encoding]::new($false))
         Assert-True ((Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash -eq $baselineHash) "rewriting baseline after mutation $i restores idempotent SHA256"
     }
