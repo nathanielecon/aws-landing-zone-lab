@@ -13,7 +13,11 @@
 - Fixer: carve-out in `orchestration.md`; re-freeze rubric to
   `project-a-lzlab-gha` / `ci-bootstrap/`; strip stale capture error;
   add `OFFLINE_VALIDATE.md` with fresh local validate Success on lab +
-  modules; retone `operator/README.md`. Rejudge follows on this branch.
+  modules; retone `operator/README.md`.
+- Round 2 scores: **9.5 / 9.5 / 9.5** (avg **9.5**). Must-haves PASS.
+  `merge_ready: yes` ×3. Follow-up: carve lab vs harness in
+  `project-a/evidence-index.md` opener (judge R2 gap). Slice exit ≥9.5 on
+  clean multi-judge rejudge.
 
 ## 2026-07-14 (LZ lab slice exit ≥9.5)
 

@@ -1,7 +1,13 @@
 # Evidence index
 
-Project A is repo-only, not implemented in cloud accounts, and not cloud
-validated. The evidence below records deterministic validation for each task.
+Harness tasks `A-001`…`A-007` are repo-only and **not** cloud-validated. The
+table below records deterministic validation for each harness task.
+
+Separately, the single-account Landing Zone lab under
+[`sandbox/landing-zone-lab/EVIDENCE.md`](sandbox/landing-zone-lab/EVIDENCE.md)
+is **APPLIED** / cloud-validated for identity + private network + audit via
+GitHub OIDC CI (role `project-a-lzlab-gha`, run `29366105164`). Multi-account
+Organizations member creation remains **not** cloud-validated.
 
 | Task | Commit | Evidence | Validation |
 | --- | --- | --- | --- |
