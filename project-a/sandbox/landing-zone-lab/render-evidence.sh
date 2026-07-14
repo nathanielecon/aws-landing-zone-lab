@@ -18,7 +18,7 @@ cat > "$OUT" <<EOF
 | Mode | Collapsed single-account lab |
 | Status | \`APPLIED\` — cloud-validated via GitHub OIDC → Terraform CI |
 | Captured | \`${STAMP}\` |
-| Control plane | GitHub Actions OIDC role \`GitHubActionsLZLab\` (not Cursor assume-role) |
+| Control plane | GitHub Actions OIDC role \`project-a-lzlab-gha\` (ci-bootstrap/; not Cursor assume-role) |
 
 ## Caller
 
@@ -28,7 +28,7 @@ ${CALLER}
 
 ## Prerequisites satisfied
 
-- GitHub OIDC provider + \`GitHubActionsLZLab\` role (\`github-oidc/\`)
+- GitHub OIDC provider + \`project-a-lzlab-gha\` role (\`ci-bootstrap/\`)
 - Remote state bootstrap (\`state-bootstrap/\`)
 - Lab composition applied (\`lab/\`: identity + network + audit)
 

@@ -15,7 +15,7 @@ OUT="${1:-$ROOT/EVIDENCE.capture.md}"
   echo
   echo '## GitHub OIDC CI role'
   echo '```'
-  aws iam get-role --role-name GitHubActionsLZLab --query 'Role.[RoleName,Arn]' 2>&1 || true
+  aws iam get-role --role-name project-a-lzlab-gha --query 'Role.[RoleName,Arn]' 2>&1 || true
   echo '```'
   echo
   echo '## operator user/role'
