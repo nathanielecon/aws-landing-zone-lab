@@ -316,6 +316,15 @@ recorded in the table below after the dedicated clean rejudge pass.
 
 ## Operator entry points
 
+Fresh-clone Windows one-command proof matching CI:
+
+```powershell
+$env:HARNESS_STRICT_PINS = '1'
+pwsh -NoLogo -NoProfile -File ./scripts/Invoke-HarnessReleaseValidation.ps1
+```
+
+Harness loop:
+
 ```powershell
 ./scripts/Start-Harness.ps1
 ./scripts/Start-ProjectAHarness.ps1 -DryRun
