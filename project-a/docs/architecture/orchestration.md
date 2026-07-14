@@ -1,8 +1,15 @@
 # Orchestration architecture
 
 This document records how Project A work is partitioned, scored, approved, and
-proven. It does not authorize cloud calls. Project A remains repo-only:
-`cloud_validated: false`, `aws_implemented: false`, `azure_implemented: false`.
+proven. It does not authorize cloud calls from harness task evidence.
+
+**Claims carve-out:** Harness tasks `A-001`…`A-007` remain repo-only
+(`cloud_validated: false`, `aws_implemented: false`, `azure_implemented: false`).
+The separate single-account Landing Zone lab under `sandbox/landing-zone-lab/`
+is **APPLIED** / cloud-validated for identity + private network + audit via
+GitHub OIDC CI (role `project-a-lzlab-gha`, run `29366105164`) — see
+`sandbox/landing-zone-lab/EVIDENCE.md`. Multi-account Organizations member
+creation is still **not** cloud-validated.
 
 Related architecture docs (preserved):
 

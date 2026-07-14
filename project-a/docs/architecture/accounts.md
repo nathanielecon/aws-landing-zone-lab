@@ -32,8 +32,9 @@ single billed account and no H1-approved unique member emails. Details:
 In account `<AWS_ACCOUNT_ID>`, the Landing Zone lab collapses identity, private
 network, and audit into one account. Status is **APPLIED** / cloud-validated
 (GHA OIDC apply run `29366105164`, role `project-a-lzlab-gha`). Offline
-`terraform validate` was historically green; CI plan on
-`.github/workflows/landing-zone-lab.yml` continues to validate the lab on PR.
+`terraform validate` for lab + modules is documented in
+[`../../sandbox/landing-zone-lab/OFFLINE_VALIDATE.md`](../../sandbox/landing-zone-lab/OFFLINE_VALIDATE.md).
+CI continues to validate via `.github/workflows/landing-zone-lab.yml`.
 That does **not** rewrite the multi-account design; Orgs members remain
 unavailable and **not** cloud-validated.
 

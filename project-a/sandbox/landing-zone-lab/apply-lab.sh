@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Apply sequence for single-account Landing Zone lab (us-east-1).
-# Preferred: GitHub Actions OIDC role project-a-lzlab-gha (see ci-bootstrap/).
-# Legacy: CURSOR_AWS_ASSUME_IAM_ROLE_ARN → CursorCloudAgent.
-# Do NOT use account root.
+# Scored control plane: GitHub Actions OIDC role project-a-lzlab-gha
+# (see ci-bootstrap/ + .github/workflows/landing-zone-lab.yml).
+# Do NOT use account root. Do NOT chase CURSOR_AWS_ASSUME_IAM_ROLE_ARN
+# for this lab — Cloud Agents edit PRs; GHA applies.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=aws-env.sh
@@ -15,10 +16,14 @@ case "$CALLER_ARN" in
   *[:/]root) echo "Refusing to apply as account root: $CALLER_ARN" >&2; exit 2 ;;
 esac
 case "$CALLER_ARN" in
-  *project-a-lzlab-gha*|*CursorCloudAgent*|*assumed-role*) ;;
+  *project-a-lzlab-gha*) ;;
+  *project-a-lzlab-operator*|*assumed-role*)
+    echo "Warning: caller is not GHA OIDC role project-a-lzlab-gha: $CALLER_ARN" >&2
+    echo "Preferred scored path is assumed-role/project-a-lzlab-gha via GitHub Actions." >&2
+    ;;
   *)
     echo "Warning: caller is not clearly a lab CI role: $CALLER_ARN" >&2
-    echo "Expected assumed-role/project-a-lzlab-gha (GitHub OIDC) or CursorCloudAgent." >&2
+    echo "Expected assumed-role/project-a-lzlab-gha (GitHub OIDC)." >&2
     ;;
 esac
 

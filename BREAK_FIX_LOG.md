@@ -1,5 +1,28 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE — no transcript leak)
+
+- Orchestrator turn loaded durable artifacts only; spawned 3 independent Grok
+  4.5 judges with fresh short contracts (no implementing transcript).
+- Round 1 scores: **9.3 / 9.2 / 9.2** (avg **9.23**). Must-haves PASS.
+  Gaps: orchestration blanket `cloud_validated: false` vs lab APPLIED;
+  frozen rubric still preferred dead role `GitHubActionsLZLab`;
+  `EVIDENCE.capture.md` still recorded that role’s `NoSuchEntity`;
+  “historically green” validate hearsay; operator README framed Cursor
+  assume-role as apply path.
+- Fixer: carve-out in `orchestration.md`; re-freeze rubric to
+  `project-a-lzlab-gha` / `ci-bootstrap/`; strip stale capture error;
+  add `OFFLINE_VALIDATE.md` with fresh local validate Success on lab +
+  modules; retone `operator/README.md`.
+- Round 2 scores: **9.5 / 9.5 / 9.5** (avg **9.5**). Must-haves PASS.
+  `merge_ready: yes` ×3. Follow-up: carve lab vs harness in
+  `project-a/evidence-index.md` opener (judge R2 gap). Slice exit ≥9.5 on
+  clean multi-judge rejudge.
+- Closeout polish: derive `project-a-lzlab-gha` Role.[Name,Arn] from STS in
+  `EVIDENCE.capture.md`; add organization module to `OFFLINE_VALIDATE.md`;
+  retone `apply-lab.sh` / `aws-env.sh` so GHA OIDC is the only scored path
+  (no Cursor assume-role auto-select). Landed on `main` per operator order.
+
 ## 2026-07-14 (LZ lab slice exit ≥9.5)
 
 - Judge #1 post-apply: **8.7** (doc tense drift). Fixer retensed → Judge #2:

@@ -9,10 +9,11 @@ identity, private network, and audit in one account via **GitHub OIDC →
 Terraform CI** (role `project-a-lzlab-gha`, run
 [29366105164](https://github.com/nathanielecon/cloud/actions/runs/29366105164)).
 See [`sandbox/landing-zone-lab/EVIDENCE.md`](../../sandbox/landing-zone-lab/EVIDENCE.md).
-Offline `terraform validate` was historically green; CI plan on the lab
-workflow continues to validate changes on PR. Azure Government remains outside
-the implementation scope. Multi-account Organizations member creation is
-**not** cloud-validated here.
+Offline `terraform validate` for lab composition + modules is documented in
+[`sandbox/landing-zone-lab/OFFLINE_VALIDATE.md`](../../sandbox/landing-zone-lab/OFFLINE_VALIDATE.md).
+CI continues to exercise the lab via `.github/workflows/landing-zone-lab.yml`.
+Azure Government remains outside the implementation scope. Multi-account
+Organizations member creation is **not** cloud-validated here.
 
 ## Account and OU taxonomy
 
