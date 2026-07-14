@@ -14,6 +14,7 @@
 
 - Prefer the repo `.cursor/environment.json` image (PowerShell, Node 24, Terraform 1.15.5, AWS CLI, Docker).
 - Do not reinstall those tools with `apt-get` / `npm install` at session start; they are already in the image.
+- AWS auth for Cloud Agents uses the dashboard secret `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` → `arn:aws:iam::<AWS_ACCOUNT_ID>:role/CursorCloudAgent`. Use the injected `cursor-cloud-agent` AWS profile / default credential chain. Do **not** run `aws login`, do **not** ask for `/opt/cursor/artifacts/aws-login/code.txt`, and do not request long-lived access keys.
 - Keep harness runs sequential and repo-only unless the user explicitly asks for live cloud validation.
 - Fast validation order when touching harness code:
   1. `pwsh -NoLogo -NoProfile -File tests/Run-ProjectAHarnessTests.ps1`
