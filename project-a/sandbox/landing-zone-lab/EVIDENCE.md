@@ -8,7 +8,7 @@
 | Status | `APPLIED` — cloud-validated via **GitHub OIDC → Terraform CI** |
 | Captured | `2026-07-14T20:33:19Z` |
 | Apply run | [29366105164](https://github.com/nathanielecon/cloud/actions/runs/29366105164) (success) |
-| Branch tip | `cursor/single-account-lz-lab-b6ce` @ `8434d15` |
+| Branch tip | `cursor/single-account-lz-lab-b6ce` @ `43972ec` (evidence/docs closeout) |
 | Control plane | IAM role `project-a-lzlab-gha` via `ci-bootstrap/` — **not** Cursor Cloud Agent assume-role |
 
 ## Caller (non-root CI)
