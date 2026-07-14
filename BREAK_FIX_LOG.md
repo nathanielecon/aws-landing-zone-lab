@@ -13,6 +13,10 @@
   into `cursor/single-account-lz-lab-b6ce`; updated `apply-lab.sh` / operator to
   use CursorCloudAgent profile and drop long-lived access keys. **Requires
   restart or new Cloud Agent on this branch/main so Cursor injects the role.**
+- Fix (follow-up): Added shared `aws-env.sh` fail-fast bootstrap sourced by
+  `apply-lab.sh` and `capture-evidence.sh` so a restarted agent with role
+  injection can finish immediately, and old pods fail with an explicit restart
+  message instead of opaque `NoCredentials`.
 
 ## 2026-07-14 (FIXER — judge 5.2 claims tense)
 
