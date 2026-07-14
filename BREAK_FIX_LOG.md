@@ -1,5 +1,22 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER)
+
+- Break: Slice 3 must-haves passed; avg ~8.7 below bar on 9/10–10/10 gaps —
+  weak Log Archive vs Security Tooling ownership language, no offline
+  blocked-change catalog, thin cost/teardown interview sizing, and sparse
+  network/audit negative coverage.
+- Fix: Stated Log Archive owns protected storage and Network/Security Tooling
+  boundaries in `logging.md` / `network.md`; added replayable
+  `operations/blocked-change-catalog.md` (TGW/NFW/NAT/VPN/DX/RAM, Identity
+  Center lifecycle, live audit deploy, root SCP, `close_on_deletion`, shared
+  state keys, credential-shaped examples) linked from `validation.md` and
+  `baseline-runbook.md`; expanded `cost-and-teardown.md` with order-of-magnitude
+  drivers + teardown order without live billing/teardown claims; added offline
+  negative cases in `tests/network` (bad flow-log ARN, default-deny SG) and
+  `tests/audit` (short retention, public ACL block + KMS). Docs/tests only; no
+  AWS apply; no execution-bundle repin.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-2 PASS)
 
 - Clean no-leak multi-judge scores: **9.6 / 9.5 / 9.5** (avg **9.53**).

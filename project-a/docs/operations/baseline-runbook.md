@@ -29,4 +29,8 @@ Stop and escalate when a proposed fix would:
 - introduce provider credentials or cloud login into the repo workflow,
 - remove environment separation between nonproduction and production,
 - bypass the Log Archive destination or KMS protection,
-- add a root module that could destroy after validation or deploy from this repo.
+- add a root module that could destroy after validation or deploy from this repo,
+- implement any row in the offline [blocked-change catalog](blocked-change-catalog.md)
+  (TGW/NFW/NAT/VPN/DX/RAM, live Identity Center lifecycle, live audit deploy,
+  root SCP attach, `close_on_deletion`, shared state keys, credential-shaped
+  examples).

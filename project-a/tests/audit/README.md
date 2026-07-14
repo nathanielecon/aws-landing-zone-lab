@@ -1,5 +1,6 @@
-# Audit validation notes
+# Audit negative tests
 
-This task relies on offline `terraform validate` plus documentation review,
-because the audit module is a centralized logging template and no live trail or
-Config delivery path is authorized from this repository.
+`audit.tftest.hcl` stays offline with a mocked AWS provider. It rejects
+retention below the review floor and asserts Log Archive protected-storage
+posture (public ACL block + KMS SSE). It does not call live log services or
+deploy the audit path.

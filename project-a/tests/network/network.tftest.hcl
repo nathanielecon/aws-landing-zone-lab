@@ -49,3 +49,43 @@ run "rejects_single_private_subnet" {
 
   expect_failures = [var.private_subnets]
 }
+
+run "rejects_non_s3_flow_logs_destination_arn" {
+  command = plan
+
+  variables {
+    environment               = "nonproduction"
+    vpc_cidr                  = "10.20.0.0/16"
+    flow_logs_destination_arn = "arn:aws:logs:us-east-1:123456789012:log-group:example"
+    private_subnets = {
+      az1 = { availability_zone = "us-east-1a", cidr = "10.20.1.0/24" }
+      az2 = { availability_zone = "us-east-1b", cidr = "10.20.2.0/24" }
+    }
+  }
+
+  expect_failures = [var.flow_logs_destination_arn]
+}
+
+run "rejects_public_security_group_ingress" {
+  command = plan
+
+  variables {
+    environment               = "nonproduction"
+    vpc_cidr                  = "10.20.0.0/16"
+    flow_logs_destination_arn = "arn:aws:s3:::example-log-archive"
+    private_subnets = {
+      az1 = { availability_zone = "us-east-1a", cidr = "10.20.1.0/24" }
+      az2 = { availability_zone = "us-east-1b", cidr = "10.20.2.0/24" }
+    }
+  }
+
+  assert {
+    condition     = length(aws_security_group.private_workload.ingress) == 0
+    error_message = "Public or any ingress exception must not appear on the private workload security group."
+  }
+
+  assert {
+    condition     = length(aws_security_group.private_workload.egress) == 0
+    error_message = "Egress exceptions must not appear on the default-deny private workload security group."
+  }
+}
