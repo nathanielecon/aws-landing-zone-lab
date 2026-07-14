@@ -12,6 +12,9 @@ case "$CALLER_ARN" in
   *[:/]root) echo "Refusing to plan as account root: $CALLER_ARN" >&2; exit 2 ;;
 esac
 
+ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+STATE_BUCKET="project-a-lzlab-tfstate-${ACCOUNT}"
+
 echo "== operator plan =="
 cd "$ROOT/operator"
 terraform init -backend=false -input=false
@@ -24,11 +27,25 @@ terraform plan -input=false -no-color
 
 echo "== lab plan =="
 cd "$ROOT/lab"
-if [[ -f backend.hcl ]]; then
-  terraform init -backend-config=backend.hcl -input=false -reconfigure
-else
-  # Before first apply, state backend may not exist yet — validate/plan local-only.
-  terraform init -backend=false -input=false
+if [[ ! -f backend.hcl ]]; then
+  cat > backend.hcl <<EOF
+bucket       = "${STATE_BUCKET}"
+key          = "lab/landing-zone-lab.tfstate"
+region       = "${AWS_REGION}"
+encrypt      = true
+use_lockfile = true
+EOF
+  echo "Wrote provisional lab/backend.hcl"
+  cat backend.hcl
 fi
-terraform plan -input=false -no-color
+
+if aws s3api head-bucket --bucket "$STATE_BUCKET" 2>/dev/null; then
+  terraform init -backend-config=backend.hcl -input=false -reconfigure
+  terraform plan -input=false -no-color
+else
+  echo "State bucket ${STATE_BUCKET} not present yet; validate only (apply state-bootstrap first)."
+  terraform init -backend=false -input=false -reconfigure
+  terraform validate
+fi
+
 echo "plan-ok"
