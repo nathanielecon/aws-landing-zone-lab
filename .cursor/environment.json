@@ -1,0 +1,9 @@
+{
+  "name": "cloud-harness",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "install": "pwsh -NoLogo -NoProfile -Command \"git --version; node --version; pwsh -Version; terraform version; aws --version\"",
+  "start": "sudo service docker start || true"
+}
