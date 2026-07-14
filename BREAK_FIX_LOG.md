@@ -1,5 +1,10 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-2 PASS)
+
+- Clean no-leak multi-judge scores: **9.6 / 9.5 / 9.5** (avg **9.53**).
+  Must-haves PASS.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-2 fixer r2)
 
 - Break: Slice 2 must-haves passed; scores still below bar on 10/10 gaps —
