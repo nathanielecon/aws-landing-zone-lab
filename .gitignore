@@ -10,3 +10,6 @@
 **/.terraform.lock.hcl
 project-a/sandbox/**/terraform.tfvars
 project-a/sandbox/**/*.auto.tfvars
+project-a/sandbox/**/backend.hcl
+project-a/sandbox/**/operator-outputs.json
+/opt/cursor/artifacts/aws-login/code.txt

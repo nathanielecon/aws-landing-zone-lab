@@ -14,7 +14,12 @@
 
 - Prefer the repo `.cursor/environment.json` image (PowerShell, Node 24, Terraform 1.15.5, AWS CLI, Docker).
 - Do not reinstall those tools with `apt-get` / `npm install` at session start; they are already in the image.
-- AWS auth for Cloud Agents uses the dashboard secret `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` → `arn:aws:iam::283077380808:role/CursorCloudAgent`. Use the injected `cursor-cloud-agent` AWS profile / default credential chain. Do **not** run `aws login`, do **not** ask for `/opt/cursor/artifacts/aws-login/code.txt`, and do not request long-lived access keys.
+- **Landing Zone lab AWS apply** uses **GitHub OIDC → Terraform CI**
+  (`.github/workflows/landing-zone-lab.yml`, role `project-a-lzlab-gha` from
+  `ci-bootstrap/`). Cloud Agents edit Terraform/PRs; they do **not** hold apply
+  creds for this lab. `NoCredentials` in Cloud Agent pods is expected. Do
+  **not** chase `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` / External ID / `aws login`
+  for the lab goal. Do **not** recreate `github-oidc/` / `GitHubActionsLZLab`.
 - Keep harness runs sequential and repo-only unless the user explicitly asks for live cloud validation.
 - Fast validation order when touching harness code:
   1. `pwsh -NoLogo -NoProfile -File tests/Run-ProjectAHarnessTests.ps1`

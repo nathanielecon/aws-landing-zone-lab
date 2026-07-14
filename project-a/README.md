@@ -5,17 +5,29 @@ platform: inspectable Terraform and documentation, deterministic harness gates,
 and evidence for A-001…A-007 that is **not** cloud-validated. Azure Government
 remains translation-only.
 
-Separately, an operator sandbox under
-[`sandbox/aws-proof`](sandbox/aws-proof/EVIDENCE.md) applied the **audit**
-module live in a commercial AWS account (CloudTrail + KMS Log Archive). That
-proves audit-module apply efficacy only — not Organizations, network, or
-identity deployment, and not production readiness.
+Separately, a **single-account Landing Zone lab** under
+[`sandbox/landing-zone-lab`](sandbox/landing-zone-lab/EVIDENCE.md) was
+**cloud-validated** in account `283077380808` / `us-east-1` via GitHub OIDC →
+Terraform CI (role `project-a-lzlab-gha`): identity + private network + audit
+(CloudTrail/KMS Log Archive). Organizations member accounts are **not**
+created; the Orgs/OU/SCP module remains a design interface
+([`ORGS_INTERFACE.md`](sandbox/landing-zone-lab/ORGS_INTERFACE.md)).
+
+An earlier audit-only sandbox
+([`sandbox/aws-proof`](sandbox/aws-proof/EVIDENCE.md)) remains historical
+evidence of the first live audit-module apply.
+
+### Honest resume bullet
+
+> Designed a multi-account AWS Landing Zone (Orgs/OU/SCP interfaces) and
+> cloud-validated a single-account lab composition of identity, private
+> network, and audit (CloudTrail/KMS Log Archive) in `us-east-1` with
+> Terraform, evidence, and CI-gated delivery.
 
 Start with the [architecture overview](docs/architecture/overview.md), then
 review the [backend](docs/decisions/backend.md) and
-[secrets](docs/decisions/secrets.md) decisions. All account IDs, regions,
-names, and backend settings in examples are placeholders requiring human
-review unless citing the sandbox evidence file.
+[secrets](docs/decisions/secrets.md) decisions. Cite lab evidence files for
+live account resources; other examples remain placeholders for human review.
 
 Use the [platform diagram](docs/diagrams/platform.svg), the
 [network diagram](docs/diagrams/network.svg), and the
@@ -24,6 +36,6 @@ The [Graphify report](graphify-out/GRAPH_REPORT.md) is a structural navigation
 aid only; it is not a substitute for Terraform, policy, security, or human
 validation, and it does not prove cloud behavior.
 This repository proves a documented junior-to-mid level infrastructure design
-exercise (optionally plus a narrow live audit proof); it does not prove
-production readiness, senior ownership, enterprise operations, or full-platform
-cloud validation.
+exercise plus an honest single-account live lab; it does **not** prove
+production readiness, senior ownership, enterprise operations, or
+multi-account cloud validation.

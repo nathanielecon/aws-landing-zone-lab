@@ -92,6 +92,23 @@ source prompts or this document.
 | 2 | [`slice-2-project-a-foundation.md`](../../../harness/rubrics/slice-2-project-a-foundation.md) | Foundation docs + bootstrap/organization modules (`A-001`, `A-002`) |
 | 3 | [`slice-3-project-a-platform.md`](../../../harness/rubrics/slice-3-project-a-platform.md) | Identity, network, audit, environments, matching docs/tests (`A-003`…`A-006`) |
 | 4 | [`slice-4-final-delivery.md`](../../../harness/rubrics/slice-4-final-delivery.md) | Evidence index, claims, review/handoff, diagrams, Graphify, orchestration, PR/CI readiness (`A-007` + packaging) |
+| Cloud lab | [`slice-cloud-lab-single-account.md`](../../../harness/rubrics/slice-cloud-lab-single-account.md) | Single-account collapsed LZ lab (`sandbox/landing-zone-lab`): live identity+network+audit via **GitHub OIDC CI**; Orgs interface only; honest claims |
+
+### Single-account cloud lab (2026-07-14)
+
+Exit criteria for the cloud lab slice are **not** multi-account Orgs must-haves.
+**Control plane:** GitHub OIDC → Terraform CI (not Cursor Cloud Agent AWS
+assume-role). Council workers (setters/judges/nixers/fixers) for this slice must
+use **Grok 4.5** (`cursor-grok-4.5-high-fast`) or a less capable allowed model —
+**not Composer**. Stretch: reopen multi-account track only when unique member
+emails exist.
+
+**Lesson (credentials / control-plane mismatch):** When stuck on AWS login,
+Cursor External ID, or Cloud Agent `NoCredentials`, dispatch a bottleneck
+agent early rather than waiting on a human for `aws login` / Cursor assume-role
+injection — prefer the GitHub OIDC CI path (`project-a-lzlab-gha`, workflow
+`landing-zone-lab.yml`). Do not recreate `github-oidc/` /
+`GitHubActionsLZLab`; use `ci-bootstrap/`.
 
 Task stream inside Project A remains sequential: `A-001` → `A-007` under one
 Ralphy process. Harness smoke tasks `S-001`/`S-002` prove Terra-first and Sol

@@ -11,9 +11,10 @@ privilege: it writes only beneath the supplied audit bucket's `workload/`
 prefix. The permission boundary repeats that maximum permission, so delegated
 changes cannot grant broader permissions.
 
-The OIDC provider ARN contains a documentation-only account placeholder. A
-controlled deployment must replace it only after H2 review; no real account ID,
-principal, or credential belongs in this repository.
+The OIDC provider ARN defaults to a documentation-only account placeholder for
+offline review. Live lab applies must pass `oidc_provider_arn` for the real
+account provider (see `sandbox/landing-zone-lab/lab`). No real account ID,
+principal, or credential belongs in this repository as a committed default.
 
 Run only offline checks:
 

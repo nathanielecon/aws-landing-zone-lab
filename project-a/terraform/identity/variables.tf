@@ -38,3 +38,14 @@ variable "audit_bucket_name" {
     error_message = "Use a valid S3 bucket name."
   }
 }
+
+variable "oidc_provider_arn" {
+  description = "GitHub Actions OIDC provider ARN. Default is a documentation-only placeholder account for offline review; live applies must supply the real provider ARN."
+  type        = string
+  default     = "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
+
+  validation {
+    condition     = can(regex("^arn:aws:iam::[0-9]{12}:oidc-provider/token\\.actions\\.githubusercontent\\.com$", var.oidc_provider_arn))
+    error_message = "Use a GitHub Actions OIDC provider ARN."
+  }
+}

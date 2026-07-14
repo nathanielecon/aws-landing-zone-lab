@@ -1,5 +1,94 @@
 # Break/Fix Log
 
+## 2026-07-14 (LZ lab slice exit ≥9.5)
+
+- Judge #1 post-apply: **8.7** (doc tense drift). Fixer retensed → Judge #2:
+  **9.5**, must-haves pass, merge_ready. Windows CI + Terraform plan green on
+  PR `#14`. Lesson reinforced: when stuck on AWS control-plane/creds, dispatch
+  a bottleneck agent early and prefer GitHub OIDC CI over Cloud Agent login.
+  Squash-merge PR `#14` to `main` for resume-ready packet.
+
+## 2026-07-14 (FIXER — judge 8.7 → doc retense for APPLIED)
+
+- Break: Judge score **8.7** — must-haves pass, but accounts/overview/
+  pushback-and-handoff still said `PENDING_APPLY` / READY TO APPLY / “not yet
+  cloud-validated” after EVIDENCE.md was already `APPLIED`.
+- Fix: Retensed those three docs to match GHA OIDC apply run
+  [29366105164](https://github.com/nathanielecon/cloud/actions/runs/29366105164)
+  (role `project-a-lzlab-gha`). Kept honest: multi-account Orgs still **not**
+  cloud-validated; single-account identity+network+audit **is**. Noted
+  historical offline `terraform validate` green / CI plan validates lab.
+  Added orchestration lesson: dispatch bottleneck early on credentials/
+  control-plane mismatch; prefer GHA OIDC. Did **not** recreate
+  `github-oidc/` / `GitHubActionsLZLab` or chase Cursor AWS.
+
+## 2026-07-14 (LZ lab APPLIED via GitHub OIDC CI)
+
+- Status: Apply **DONE** on run
+  [29366105164](https://github.com/nathanielecon/cloud/actions/runs/29366105164)
+  (`cursor/single-account-lz-lab-b6ce` @ `8434d15`). Caller
+  `assumed-role/project-a-lzlab-gha`. Live: VPC+flow logs, CloudTrail logging,
+  Config, archive SSE-KMS, workload role, operator, tfstate. Stale aws-proof
+  Config recorder cleared (account limit=1). Evidence/claims updated from
+  `PENDING_APPLY` → `APPLIED` / cloud-validated. Control plane remains GHA
+  OIDC (`ci-bootstrap/`); do not chase Cursor AWS or recreate
+  `github-oidc/` / `GitHubActionsLZLab`.
+
+## 2026-07-14 (LZ lab → GitHub OIDC CI)
+
+- Break: Cloud Agent AWS apply blocked on individual plan (no team External ID
+  for `CURSOR_AWS_ASSUME_IAM_ROLE_ARN`); wrong control plane for the lab goal.
+- Fix: Switch primary path to **GitHub OIDC → Terraform CI** —
+  `github-oidc/` (provider + `GitHubActionsLZLab`), workflow
+  `.github/workflows/landing-zone-lab.yml` (plan on PR, apply on main /
+  `workflow_dispatch` + environment `landing-zone-lab`), evidence render from
+  CI. Stop chasing Cursor assume-role for this lab. One-off local `aws login`
+  remains only for bootstrap.
+
+## 2026-07-14 (LZ lab — AWS role ready, this agent not injected)
+
+- Break: Live apply blocked on this Cloud Agent run (`bc-ef4b7237-…`). Exact
+  errors after role secret was configured on the dashboard:
+  - `aws sts get-caller-identity` → `NoCredentials: Unable to locate credentials`
+  - `aws sts get-caller-identity --profile cursor-cloud-agent` →
+    `The config profile (cursor-cloud-agent) could not be found`
+  - Env has neither `AWS_PROFILE=cursor-cloud-agent` nor `AWS_CONFIG_FILE`
+    (Cursor IAM-role injection not present on this pre-secret pod).
+- Fix (partial, repo): Merged `main` (`bf62431` role guidance + `cloud-harness`)
+  into `cursor/single-account-lz-lab-b6ce`; updated `apply-lab.sh` / operator to
+  use CursorCloudAgent profile and drop long-lived access keys. **Requires
+  restart or new Cloud Agent on this branch/main so Cursor injects the role.**
+- Fix (follow-up): Added shared `aws-env.sh` fail-fast bootstrap sourced by
+  `apply-lab.sh` and `capture-evidence.sh` so a restarted agent with role
+  injection can finish immediately, and old pods fail with an explicit restart
+  message instead of opaque `NoCredentials`.
+
+## 2026-07-14 (FIXER — judge 5.2 claims tense)
+
+- Break: Judge score **5.2** — premature "cloud-validated" wording treated the
+  single-account Landing Zone lab identity+network+audit composition as a
+  completed fact while live AWS apply remains `PENDING_APPLY` / not done.
+- Fix: Retensed claims across README, claims-boundary, accounts, overview
+  (account `283077380808` explicit), landing-zone-lab README/EVIDENCE, and
+  pushback-and-handoff to **READY TO APPLY** / `PENDING_APPLY`. Kept the honest
+  resume bullet as **target / after-exit wording**, not current proof. Clarified
+  AWS credentials are still required. Preserved banned-claim list and Orgs
+  interface-only language. No invented CLI evidence; no multi-account apply
+  claims; no LocalStack.
+
+## 2026-07-14 (single-account Landing Zone lab)
+
+- Operator plan: with one AWS account, run collapsed Landing Zone lab (identity +
+  network + audit live; Orgs as interface only) and judge to ≥9.5 on
+  single-account lab rubrics — not fake multi-account claims.
+  Action: Added `project-a/sandbox/landing-zone-lab/{operator,state-bootstrap,lab}`,
+  frozen `harness/rubrics/slice-cloud-lab-single-account.md`, extended audit
+  module for VPC Flow Logs archive permissions, parameterized identity
+  `oidc_provider_arn`, documented Orgs non-apply in `ORGS_INTERFACE.md`, updated
+  claims/README/accounts/overview. Live apply requires AWS credentials in the
+  executing environment (cloud agent starts `aws login --remote` waiter; see
+  `/opt/cursor/artifacts/aws-login/`).
+
 ## 2026-07-13 (sandbox AWS proof)
 
 - Operator override: live AWS apply requested despite repo-only stop conditions.

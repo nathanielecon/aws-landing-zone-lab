@@ -2,9 +2,17 @@
 
 ## Scope and claims
 
-This repository defines a repo-only AWS platform baseline. It is not cloud
-validated; AWS and Azure are not implemented. Azure Government is outside the
-implementation scope.
+This repository defines a repo-only AWS multi-account platform **design**, plus
+a separately evidenced **single-account Landing Zone lab** in AWS account
+`283077380808` / `us-east-1` that is **APPLIED** / cloud-validated for
+identity, private network, and audit in one account via **GitHub OIDC →
+Terraform CI** (role `project-a-lzlab-gha`, run
+[29366105164](https://github.com/nathanielecon/cloud/actions/runs/29366105164)).
+See [`sandbox/landing-zone-lab/EVIDENCE.md`](../../sandbox/landing-zone-lab/EVIDENCE.md).
+Offline `terraform validate` was historically green; CI plan on the lab
+workflow continues to validate changes on PR. Azure Government remains outside
+the implementation scope. Multi-account Organizations member creation is
+**not** cloud-validated here.
 
 ## Account and OU taxonomy
 
@@ -18,6 +26,10 @@ tree is:
 Organizations and SCPs are guardrails, not permissions. IAM roles grant access
 and permission boundaries cap delegated roles. Account emails, IDs, principals,
 and organization IDs remain typed inputs until separately approved.
+
+The single-account lab target account is explicitly `283077380808` (commercial
+AWS, `us-east-1`). That account hosts the collapsed lab composition; it does
+not imply Organizations member accounts were created.
 
 ## Regions and environments
 
