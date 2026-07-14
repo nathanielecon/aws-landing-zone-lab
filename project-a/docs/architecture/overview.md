@@ -2,18 +2,21 @@
 
 ## Scope and claims
 
-This repository defines a repo-only AWS multi-account platform **design**, plus
-a separately evidenced **single-account Landing Zone lab** in AWS account
-`283077380808` / `us-east-1` that is **APPLIED** / cloud-validated for
-identity, private network, and audit in one account via **GitHub OIDC →
-Terraform CI** (role `project-a-lzlab-gha`, run
+**Foundation (A-001 / multi-account design):** This repository defines a
+**repo-only** AWS multi-account platform design. That foundation surface is
+**not** cloud-validated: AWS multi-account Organizations member creation is
+**not** implemented here, Azure is **not** implemented, and Azure Government
+remains outside the implementation scope. Harness evidence for A-001…A-007
+stays repo-only.
+
+**Separate lab (not Slice 2 foundation proof):** A single-account Landing Zone
+lab under `sandbox/landing-zone-lab/` is **APPLIED** / cloud-validated only for
+collapsed identity + private network + audit in account `283077380808` /
+`us-east-1` via GitHub OIDC CI (role `project-a-lzlab-gha`, run
 [29366105164](https://github.com/nathanielecon/cloud/actions/runs/29366105164)).
-See [`sandbox/landing-zone-lab/EVIDENCE.md`](../../sandbox/landing-zone-lab/EVIDENCE.md).
-Offline `terraform validate` for lab composition + modules is documented in
-[`sandbox/landing-zone-lab/OFFLINE_VALIDATE.md`](../../sandbox/landing-zone-lab/OFFLINE_VALIDATE.md).
-CI continues to exercise the lab via `.github/workflows/landing-zone-lab.yml`.
-Azure Government remains outside the implementation scope. Multi-account
-Organizations member creation is **not** cloud-validated here.
+See [`sandbox/landing-zone-lab/EVIDENCE.md`](../../sandbox/landing-zone-lab/EVIDENCE.md)
+and [`OFFLINE_VALIDATE.md`](../../sandbox/landing-zone-lab/OFFLINE_VALIDATE.md).
+Lab apply does **not** rewrite the multi-account foundation claims above.
 
 ## Account and OU taxonomy
 
