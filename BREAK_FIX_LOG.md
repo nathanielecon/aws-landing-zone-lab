@@ -1,5 +1,11 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE cloud-lab fixer)
+
+- Add `sandbox/landing-zone-lab/TEARDOWN.md` (cost drivers + destroy order +
+  one-time bootstrap posture). Must-haves already passed; polish for clean
+  multi-judge average.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-4 PASS)
 
 - Clean no-leak multi-judge scores: **9.6 / 9.5 / 9.5** (avg **9.53**).
