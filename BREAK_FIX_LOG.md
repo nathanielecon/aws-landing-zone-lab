@@ -1,5 +1,10 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-1 PASS)
+
+- Clean no-leak multi-judge scores: **9.8 / 9.5 / 9.5** (avg **9.6**).
+  Must-haves PASS. Orchestrator alone applied the advance rule.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r9)
 
 - Point `AGENTS.md` fast-validation at `Invoke-HarnessReleaseValidation.ps1`
