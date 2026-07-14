@@ -1,5 +1,7 @@
 # Cloud agent base image for the Ralphy / Project A harness.
 # Do not COPY the repo; Cursor checks out the commit into the workspace.
+# Orch contract: ../.cursor/README.md — install path must stay version-check only.
+# Secrets (AWS keys/roles, etc.) belong in Cursor Cloud Agents Secrets / IAM — never here.
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
