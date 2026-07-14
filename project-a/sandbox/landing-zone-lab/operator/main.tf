@@ -102,8 +102,8 @@ resource "aws_iam_role_policy_attachment" "operator" {
   policy_arn = aws_iam_policy.operator.arn
 }
 
-# No long-lived access keys. Cloud Agents apply via Cursor-injected
-# cursor-cloud-agent profile (CURSOR_AWS_ASSUME_IAM_ROLE_ARN → CursorCloudAgent).
+# No long-lived access keys. Lab apply is via GitHub Actions OIDC
+# (role project-a-lzlab-gha from ../ci-bootstrap).
 
 output "operator_user_name" {
   value = aws_iam_user.operator.name

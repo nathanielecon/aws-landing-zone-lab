@@ -59,7 +59,7 @@ locals {
   archive_bucket_name = "${var.name_prefix}-archive-${local.account_id}"
 }
 
-# GitHub Actions OIDC provider is owned by ../github-oidc (one-time bootstrap).
+# OIDC provider is created once by ../ci-bootstrap (GitHub Actions control plane).
 data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
 }
