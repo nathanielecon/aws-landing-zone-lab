@@ -112,3 +112,14 @@ variable "enable_archive_versioning" {
     error_message = "Log Archive bucket versioning must remain enabled."
   }
 }
+
+variable "is_organization_trail" {
+  description = "Must remain false in this baseline. Organization CloudTrail / org-trail delivery is interface-only here: the module documents the intended org-scoped path into Log Archive but does not enable an organization trail. Setting true is rejected offline."
+  type        = bool
+  default     = false
+
+  validation {
+    condition     = !var.is_organization_trail
+    error_message = "Organization trail (is_organization_trail = true) is not enabled in this baseline; org-trail delivery remains interface-only."
+  }
+}

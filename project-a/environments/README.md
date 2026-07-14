@@ -16,6 +16,21 @@ without committing credentials, state, or live provider configuration.
   and `terraform test` can confirm there is no accidental live deployment entry
   point in this repository.
 
+## Deepened nonproduction composition
+
+`nonproduction/main.tf` wires non-secret module inputs for identity, network,
+and audit into one reviewable locals/outputs composition. A shared
+`log_archive_bucket_name` token aligns:
+
+- identity `audit_bucket_name`
+- network `flow_logs_destination_arn` (`arn:aws:s3:::…/vpc-flow-logs`)
+- audit `archive_bucket_name`
+
+and keeps `is_organization_trail = false` (org-trail interface-only). No
+provider block, secrets, credentials, or module `source` apply path is present;
+production remains the thinner locals/outputs shell. Reviewers inspect the
+outputs offline—this directory is not a live deployment entry point.
+
 Use the [validation guide](../docs/validation.md), the
 [baseline runbook](../docs/operations/baseline-runbook.md), and
 [cost and teardown guidance](../docs/operations/cost-and-teardown.md) together.

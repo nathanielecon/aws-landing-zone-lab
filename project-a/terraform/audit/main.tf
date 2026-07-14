@@ -108,7 +108,7 @@ data "aws_iam_policy_document" "kms" {
     effect = "Allow"
 
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "cloudtrail.amazonaws.com",
         "config.amazonaws.com",
@@ -254,8 +254,10 @@ resource "aws_cloudtrail" "audit" {
   s3_key_prefix                 = var.cloudtrail_prefix
   include_global_service_events = true
   is_multi_region_trail         = true
-  enable_log_file_validation    = var.enable_log_file_validation
-  kms_key_id                    = aws_kms_key.audit.arn
+  # is_organization_trail is fail-closed (must stay false); org-trail remains interface-only.
+  is_organization_trail      = var.is_organization_trail
+  enable_log_file_validation = var.enable_log_file_validation
+  kms_key_id                 = aws_kms_key.audit.arn
 
   event_selector {
     read_write_type           = "All"

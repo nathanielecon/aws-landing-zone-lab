@@ -1,5 +1,16 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r9)
+
+- Break: Audit org-trail stayed prose-only (no typed `is_organization_trail`);
+  environment compositions were thin locals without wired identity/network/audit
+  inputs; `docs/guardrails/iam.md` lacked a blocked-change-catalog cross-link.
+- Fix: Added fail-closed `is_organization_trail` (default false) on the audit
+  module + `rejects_organization_trail_enabled` expect_failures + BC-AUD-05;
+  deepened `environments/nonproduction` with non-secret identity/network/audit
+  module-input composition (shared Log Archive token, org-trail false); linked
+  `iam.md` to the blocked-change catalog. No AWS; no execution-bundle repin.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r8)
 
 - Break: SCP negatives existed as prose/fixtures but were not on an allowlisted

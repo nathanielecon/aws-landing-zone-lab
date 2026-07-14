@@ -81,11 +81,11 @@ run "rejects_disabled_log_file_validation" {
   command = plan
 
   variables {
-    trail_name                  = "example-trail"
-    config_recorder_name        = "example-recorder"
-    archive_bucket_name         = "example-log-archive"
-    kms_alias_name              = "alias/example-audit"
-    enable_log_file_validation  = false
+    trail_name                 = "example-trail"
+    config_recorder_name       = "example-recorder"
+    archive_bucket_name        = "example-log-archive"
+    kms_alias_name             = "alias/example-audit"
+    enable_log_file_validation = false
   }
 
   expect_failures = [var.enable_log_file_validation]
@@ -95,14 +95,28 @@ run "rejects_disabled_archive_versioning" {
   command = plan
 
   variables {
-    trail_name                 = "example-trail"
-    config_recorder_name       = "example-recorder"
-    archive_bucket_name        = "example-log-archive"
-    kms_alias_name             = "alias/example-audit"
-    enable_archive_versioning  = false
+    trail_name                = "example-trail"
+    config_recorder_name      = "example-recorder"
+    archive_bucket_name       = "example-log-archive"
+    kms_alias_name            = "alias/example-audit"
+    enable_archive_versioning = false
   }
 
   expect_failures = [var.enable_archive_versioning]
+}
+
+run "rejects_organization_trail_enabled" {
+  command = plan
+
+  variables {
+    trail_name            = "example-trail"
+    config_recorder_name  = "example-recorder"
+    archive_bucket_name   = "example-log-archive"
+    kms_alias_name        = "alias/example-audit"
+    is_organization_trail = true
+  }
+
+  expect_failures = [var.is_organization_trail]
 }
 
 run "enforces_private_archive_acl_and_kms_encryption" {

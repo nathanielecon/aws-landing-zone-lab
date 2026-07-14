@@ -18,9 +18,11 @@ events and regional control-plane activity land in one review path.
 
 Organization CloudTrail (org-trail) is part of that design as an interface
 semantic: the intended control plane for organization-scoped trail delivery into
-Log Archive. This repository models the trail, bucket, KMS, and Config
-interfaces only; it does not enable an org-trail in AWS, does not claim a live
-organization trail exists, and does not authorize cloud deployment.
+Log Archive. The audit module exposes typed `is_organization_trail` (default
+`false`, fail-closed) so reviewers can see the interface without enabling it.
+This repository models the trail, bucket, KMS, and Config interfaces only; it
+does not enable an org-trail in AWS, does not claim a live organization trail
+exists, and does not authorize cloud deployment.
 
 CloudTrail log-file validation stays enabled so investigators can prove whether
 archived trail objects were modified after delivery. AWS Config snapshots and
