@@ -90,3 +90,25 @@ variable "config_snapshot_delivery_frequency" {
     error_message = "Config snapshot delivery frequency must use an approved AWS Config enum."
   }
 }
+
+variable "enable_log_file_validation" {
+  description = "Must remain true. Disabling CloudTrail log-file validation fails offline validation."
+  type        = bool
+  default     = true
+
+  validation {
+    condition     = var.enable_log_file_validation == true
+    error_message = "CloudTrail log-file validation must remain enabled."
+  }
+}
+
+variable "enable_archive_versioning" {
+  description = "Must remain true. Disabling Log Archive bucket versioning fails offline validation."
+  type        = bool
+  default     = true
+
+  validation {
+    condition     = var.enable_archive_versioning == true
+    error_message = "Log Archive bucket versioning must remain enabled."
+  }
+}

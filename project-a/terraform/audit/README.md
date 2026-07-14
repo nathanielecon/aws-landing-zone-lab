@@ -12,9 +12,12 @@ that an org-trail is enabled in AWS, and no cloud deployment is authorized from
 this repository.
 
 Versioning and lifecycle retention are both required because recovery depends on
-restoring prior audit objects while still enforcing a bounded review window. A
-human must approve bucket names, KMS administrators, retention periods, recorder
-scope, and delivery prefixes before any separate deployment is considered.
+restoring prior audit objects while still enforcing a bounded review window.
+Fail-closed review inputs `enable_log_file_validation` and
+`enable_archive_versioning` default to `true` and must stay true; setting either
+false fails offline validation. A human must approve bucket names, KMS
+administrators, retention periods, recorder scope, and delivery prefixes before
+any separate deployment is considered.
 
 Run only offline checks:
 

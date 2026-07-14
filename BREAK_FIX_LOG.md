@@ -1,5 +1,19 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r5)
+
+- Break: Scores short of 10/10 — `network.svg` lacked Network-account /
+  default-deny SG / Flow Logs→Log Archive ownership labels; audit negatives
+  omitted log-file validation and versioning disable paths; catalog missing
+  BC-IAM rows for permissions boundary and non–GitHub OIDC trust; `audit-review.md`
+  lacked Related cross-links.
+- Fix: Updated `network.svg` labels for Network-account VPC ownership,
+  default-deny SG, and Log Archive storage ownership on the Flow Logs edge;
+  added fail-closed `enable_log_file_validation` /
+  `enable_archive_versioning` with matching `expect_failures`; catalog
+  BC-IAM-01/02; Related links on `audit-review.md`. Docs/tests/module
+  validations only; no AWS apply; no execution-bundle repin.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r4)
 
 - Break: Scores stuck ~9.2 — network failure ops doc thin on fail-closed

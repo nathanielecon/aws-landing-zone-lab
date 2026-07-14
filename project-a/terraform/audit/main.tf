@@ -184,7 +184,8 @@ resource "aws_s3_bucket_versioning" "archive" {
   bucket = aws_s3_bucket.archive.id
 
   versioning_configuration {
-    status = "Enabled"
+    # enable_archive_versioning is fail-closed (must be true); Suspended is unreachable on valid plans.
+    status = var.enable_archive_versioning ? "Enabled" : "Suspended"
   }
 }
 
@@ -253,7 +254,7 @@ resource "aws_cloudtrail" "audit" {
   s3_key_prefix                 = var.cloudtrail_prefix
   include_global_service_events = true
   is_multi_region_trail         = true
-  enable_log_file_validation    = true
+  enable_log_file_validation    = var.enable_log_file_validation
   kms_key_id                    = aws_kms_key.audit.arn
 
   event_selector {
