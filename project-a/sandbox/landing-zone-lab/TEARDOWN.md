@@ -17,8 +17,11 @@ in this Cloud Agent pod.
 
 - Preferred ongoing apply identity: GitHub OIDC → `project-a-lzlab-gha`
   (non-root), evidenced by apply run `29366105164`.
-- Root / break-glass may be used **at most** for one-time `ci-bootstrap/` and
-  `state-bootstrap/`. Subsequent plan/apply evidence must be non-root GHA OIDC.
+- `state-bootstrap/` README applies with the **non-root operator** after
+  `operator/` exists (`AWS_PROFILE=lzlab-operator` or equivalent).
+- Root / break-glass may be used **at most** for one-time `ci-bootstrap/`
+  (OIDC provider + GHA role) when no operator path exists yet. Subsequent
+  plan/apply evidence must be non-root GHA OIDC.
 - Cloud Agents do **not** hold lab apply creds (`NoCredentials` expected).
 
 ## Teardown order (manual / CI `workflow_dispatch` destroy when authorized)
