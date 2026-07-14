@@ -14,9 +14,12 @@ multi-account theater as success is a fail.
 - Single-account mode is explicit in README, claims-boundary,
   `docs/architecture/accounts.md`, `docs/architecture/overview.md`, and lab
   evidence; account `283077380808` and region `us-east-1` are documented.
-- Non-root apply identity: GitHub OIDC role `GitHubActionsLZLab` (preferred CI
-  path) and/or lab `operator/` IAM; evidence shows caller is not account root.
-  Cloud Agent `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` is **not** required for this slice.
+- Non-root apply identity: GitHub OIDC role `project-a-lzlab-gha` from
+  `sandbox/landing-zone-lab/ci-bootstrap/` (preferred CI path; workflow
+  `.github/workflows/landing-zone-lab.yml`) and/or lab `operator/` IAM;
+  evidence shows caller is not account root. Do **not** recreate
+  `github-oidc/` / `GitHubActionsLZLab`. Cloud Agent
+  `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` is **not** required for this slice.
 - Live Terraform lab root composes identity + network + audit in one account
   with remote state bootstrap (S3 + KMS); no cross-account providers. CI path
   documented in `.github/workflows/landing-zone-lab.yml`.
