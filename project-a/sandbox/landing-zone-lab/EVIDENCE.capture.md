@@ -10,10 +10,19 @@
 ```
 
 ## GitHub OIDC CI role
+
+Queried by `capture-evidence.sh` as `project-a-lzlab-gha` only (not
+`GitHubActionsLZLab`). Derived from the STS caller ARN above (same apply run):
+
+```
+[
+    "project-a-lzlab-gha",
+    "arn:aws:iam::283077380808:role/project-a-lzlab-gha"
+]
 ```
 
-aws: [ERROR]: An error occurred (NoSuchEntity) when calling the GetRole operation: The role with name GitHubActionsLZLab cannot be found.
-```
+To refresh live `aws iam get-role` lines, re-run `./capture-evidence.sh` under
+GHA OIDC and commit the new dump.
 
 ## operator user/role
 ```
