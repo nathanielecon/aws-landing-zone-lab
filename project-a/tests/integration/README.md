@@ -25,6 +25,11 @@ the archive bucket/KMS posture.
 
 `root_composition.tftest.hcl` asserts those paths and locals/outputs contracts
 with `fileexists` / content checks during `terraform test` (no AWS credentials).
+The `log_archive_arn_prefix_contract_alignment` run additionally proves the
+shared Log Archive ARN/prefix contract stays aligned across identity
+(`audit_bucket_name` → `arn:aws:s3:::…/workload/*`), network (S3 ARN validation
+on `flow_logs_destination_arn`), audit (`archive_bucket_arn` +
+`flow_logs_prefix`), and environment `audit_prefix` locals.
 
 ## Minimal executable check
 

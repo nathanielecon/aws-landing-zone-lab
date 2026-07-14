@@ -1,5 +1,17 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r7)
+
+- Break: Governance suite still prose-only (no executable SCP/root-attachment
+  negative); integration composition checks did not assert shared Log Archive
+  ARN/prefix alignment across identity/network/audit/env interfaces.
+- Fix: Added `tests/governance/organization.tftest.hcl` (`expect_failures` for
+  root and account-ID SCP attach), known-bad fixture +
+  `Assert-ScpAttachmentNegatives.ps1` fail-closed offline assert; added
+  `log_archive_arn_prefix_contract_alignment` to
+  `tests/integration/root_composition.tftest.hcl`. Docs/tests only; no AWS
+  apply; no execution-bundle repin.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r6)
 
 - Break: Scores stuck ~9.0 — catalog lacked BC-AUD rows for disable log-file

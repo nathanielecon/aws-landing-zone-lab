@@ -77,3 +77,25 @@ run "identity_network_audit_interface_consistency" {
     error_message = "Identity→audit bucket, network→flow-log archive, and audit→CloudTrail/archive interfaces must remain present for offline composition consistency."
   }
 }
+
+run "log_archive_arn_prefix_contract_alignment" {
+  command = plan
+
+  assert {
+    condition = (
+      # Network: Flow Logs destination must be an S3 ARN owned by Log Archive.
+      can(regex("(?s)variable\\s+\"flow_logs_destination_arn\"[\\s\\S]*?condition\\s*=\\s*can\\(regex\\(\"\\^arn:aws:s3:::\"", file("${path.root}/terraform/network/variables.tf"))) &&
+      # Audit: protected bucket name + ARN output + flow-logs prefix interface.
+      can(regex("(?s)variable\\s+\"archive_bucket_name\"", file("${path.root}/terraform/audit/variables.tf"))) &&
+      can(regex("(?s)variable\\s+\"flow_logs_prefix\"", file("${path.root}/terraform/audit/variables.tf"))) &&
+      can(regex("(?s)output\\s+\"archive_bucket_arn\"[\\s\\S]*?aws_s3_bucket\\.archive\\.arn", file("${path.root}/terraform/audit/outputs.tf"))) &&
+      # Identity: workload writes target the same Log Archive bucket name contract.
+      can(regex("(?s)variable\\s+\"audit_bucket_name\"", file("${path.root}/terraform/identity/variables.tf"))) &&
+      can(regex("(?s)arn:aws:s3:::\\$\\{var\\.audit_bucket_name\\}/workload/\\*", file("${path.root}/terraform/identity/main.tf"))) &&
+      # Environments: distinct audit_prefix values stay aligned with env composition.
+      can(regex("(?s)audit_prefix\\s*=\\s*\"nonproduction/audit\"", file("${path.root}/environments/nonproduction/main.tf"))) &&
+      can(regex("(?s)audit_prefix\\s*=\\s*\"production/audit\"", file("${path.root}/environments/production/main.tf")))
+    )
+    error_message = "Shared Log Archive ARN/prefix contracts must stay aligned across identity (audit_bucket_name), network (flow_logs S3 ARN), audit (archive_bucket_arn + flow_logs_prefix), and environment audit_prefix locals."
+  }
+}
