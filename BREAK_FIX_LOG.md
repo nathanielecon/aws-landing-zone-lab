@@ -1,5 +1,17 @@
 # Break/Fix Log
 
+## 2026-07-14 (LZ lab APPLIED via GitHub OIDC CI)
+
+- Status: Apply **DONE** on run
+  [29366105164](https://github.com/nathanielecon/cloud/actions/runs/29366105164)
+  (`cursor/single-account-lz-lab-b6ce` @ `8434d15`). Caller
+  `assumed-role/project-a-lzlab-gha`. Live: VPC+flow logs, CloudTrail logging,
+  Config, archive SSE-KMS, workload role, operator, tfstate. Stale aws-proof
+  Config recorder cleared (account limit=1). Evidence/claims updated from
+  `PENDING_APPLY` → `APPLIED` / cloud-validated. Control plane remains GHA
+  OIDC (`ci-bootstrap/`); do not chase Cursor AWS or recreate
+  `github-oidc/` / `GitHubActionsLZLab`.
+
 ## 2026-07-14 (LZ lab → GitHub OIDC CI)
 
 - Break: Cloud Agent AWS apply blocked on individual plan (no team External ID

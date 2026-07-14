@@ -15,11 +15,11 @@
 - Prefer the repo `.cursor/environment.json` image (PowerShell, Node 24, Terraform 1.15.5, AWS CLI, Docker).
 - Do not reinstall those tools with `apt-get` / `npm install` at session start; they are already in the image.
 - **Landing Zone lab AWS apply** uses **GitHub OIDC → Terraform CI**
-  (`.github/workflows/landing-zone-lab.yml`, role `GitHubActionsLZLab`). Cloud
-  Agents edit Terraform/PRs; they do **not** hold apply creds for this lab.
-  Do **not** chase `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` / External ID for the lab
-  goal. One-off local bootstrap may use `aws login` only for `github-oidc/` +
-  `state-bootstrap/`.
+  (`.github/workflows/landing-zone-lab.yml`, role `project-a-lzlab-gha` from
+  `ci-bootstrap/`). Cloud Agents edit Terraform/PRs; they do **not** hold apply
+  creds for this lab. `NoCredentials` in Cloud Agent pods is expected. Do
+  **not** chase `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` / External ID / `aws login`
+  for the lab goal. Do **not** recreate `github-oidc/` / `GitHubActionsLZLab`.
 - Keep harness runs sequential and repo-only unless the user explicitly asks for live cloud validation.
 - Fast validation order when touching harness code:
   1. `pwsh -NoLogo -NoProfile -File tests/Run-ProjectAHarnessTests.ps1`
