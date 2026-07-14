@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Capture AWS CLI evidence for the single-account LZ lab into EVIDENCE.capture.md
 set -euo pipefail
-export AWS_REGION="${AWS_REGION:-us-east-1}"
-OUT="${1:-$(dirname "$0")/EVIDENCE.capture.md}"
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=aws-env.sh
+source "$ROOT/aws-env.sh"
+OUT="${1:-$ROOT/EVIDENCE.capture.md}"
 {
   echo "# Capture $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo
