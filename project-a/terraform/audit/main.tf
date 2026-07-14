@@ -291,4 +291,8 @@ resource "aws_config_delivery_channel" "audit" {
   snapshot_delivery_properties {
     delivery_frequency = var.config_snapshot_delivery_frequency
   }
+
+  # AWS allows only one recorder; PutDeliveryChannel fails if the recorder
+  # create has not finished (parallel create races).
+  depends_on = [aws_config_configuration_recorder.audit]
 }
