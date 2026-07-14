@@ -301,7 +301,10 @@ try {
     $beforeUnknown = Get-DiffFingerprint -Root $smokeRuntimeRepo -ExcludedPaths $smokeExcluded
     [IO.File]::WriteAllText((Join-Path $smokeRuntimeRepo '.harness/runtime/rogue.txt'), "rogue`n", [Text.UTF8Encoding]::new($false))
     $afterUnknown = Get-DiffFingerprint -Root $smokeRuntimeRepo -ExcludedPaths $smokeExcluded
-    Assert-True (@(Get-ChangedPaths -Root $smokeRuntimeRepo -ExcludedPaths $smokeExcluded) -contains '.harness/runtime/rogue.txt') 'unknown smoke runtime artifacts stay in changed-path inventory'
+    # ExcludedPaths algebra: unknown .harness/runtime/rogue.txt stays in inventory when not excluded;
+    # when explicitly listed in ExcludedPaths it disappears.
+    Assert-True (@(Get-ChangedPaths -Root $smokeRuntimeRepo -ExcludedPaths $smokeExcluded) -contains '.harness/runtime/rogue.txt') 'ExcludedPaths algebra: unknown .harness/runtime/rogue.txt stays in inventory when not excluded'
+    Assert-True (-not (@(Get-ChangedPaths -Root $smokeRuntimeRepo -ExcludedPaths @($smokeExcluded + @('.harness/runtime/rogue.txt'))) -contains '.harness/runtime/rogue.txt')) 'ExcludedPaths algebra: explicitly listed .harness/runtime/rogue.txt disappears from inventory'
     Assert-True ($beforeUnknown -ne $afterUnknown) 'unknown smoke runtime mutations change the diff fingerprint'
 } finally { Remove-Item -LiteralPath $smokeRuntimeRepo -Recurse -Force }
 
@@ -348,7 +351,7 @@ try {
     & pwsh -NoLogo -NoProfile -File (Join-Path $root 'scripts/Verify-ProjectABundle.ps1') -Root $root -BundleApprovalPath $copiedBundle -ExecutionApprovalPath $copiedExec | Out-Null
     Assert-True ($LASTEXITCODE -ne 0) 'Verify-ProjectABundle fails closed when one approval hex digit is flipped'
 
-    # Policy JSON field mutation: schema helper fails closed when available.
+    # Policy JSON field mutation: Test-JsonSchema / Test-Json fail closed on undeclared fields.
     $schemaPath = Join-Path $root 'project-a/harness/policy.schema.json'
     $policySrc = Join-Path $root 'project-a/harness/tasks/A-006.json'
     $policyCopy = Join-Path $propMutationDir 'mutated-policy.json'
@@ -357,15 +360,14 @@ try {
     $policyObj | Add-Member -NotePropertyName 'undeclared_mutation_probe' -NotePropertyValue $true -Force
     $mutatedPolicyJson = ($policyObj | ConvertTo-Json -Depth 10) + "`n"
     [IO.File]::WriteAllText($policyCopy, $mutatedPolicyJson, [Text.UTF8Encoding]::new($false))
+    $schemaHelperRejected = $false
+    try { [void](Test-JsonSchema -InputObject $policyObj -SchemaPath $schemaPath -Context 'mutated policy') } catch { $schemaHelperRejected = $true }
+    Assert-True $schemaHelperRejected 'Test-JsonSchema rejects undeclared mutated policy field'
     if (Get-Command Test-Json -ErrorAction SilentlyContinue) {
         Assert-True (-not (Test-Json -LiteralPath $policyCopy -SchemaFile $schemaPath -ErrorAction SilentlyContinue)) 'Test-Json schema rejects undeclared mutated policy field'
-    } else {
-        $roundtrip = (Get-Content -Raw -LiteralPath $policyCopy | ConvertFrom-Json | ConvertTo-Json -Compress)
-        Assert-True ($roundtrip -match 'undeclared_mutation_probe') 'ConvertFrom-Json roundtrip preserves intentional policy mutation when Test-Json is unavailable'
-        $invalidRejected = $false
-        try { [void]('{not-json' | ConvertFrom-Json) } catch { $invalidRejected = $true }
-        Assert-True $invalidRejected 'intentional invalid JSON is rejected by ConvertFrom-Json'
     }
+    $validPolicy = Get-Content -Raw -LiteralPath $policySrc | ConvertFrom-Json
+    Assert-True (Test-JsonSchema -InputObject $validPolicy -SchemaPath $schemaPath -Context 'A-006 policy') 'Test-JsonSchema accepts published A-006 policy'
 } finally {
     Remove-Item -LiteralPath $propMutationDir -Recurse -Force -ErrorAction SilentlyContinue
 }
@@ -425,6 +427,42 @@ try {
     }
 } finally {
     Remove-Item -LiteralPath $hardLinkRepo -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# Symlink/reparse adversarial fixture: symlink under allowlisted path fails Get-CanonicalDiffRecord.
+$symlinkRepo = New-TestRepo -Name 'symlink-gate'
+try {
+    $target = Join-Path $symlinkRepo 'smoke/terra.txt'
+    [IO.Directory]::CreateDirectory((Split-Path -Parent $target)) | Out-Null
+    [IO.File]::WriteAllText($target, "TERRA_SMOKE_OK`n", [Text.UTF8Encoding]::new($false))
+    & git -C $symlinkRepo add smoke/terra.txt
+    & git -C $symlinkRepo commit -m 'seed' | Out-Null
+    $link = Join-Path $symlinkRepo 'smoke/terra-symlink.txt'
+    $linked = $false
+    try {
+        if ($IsWindows -or $env:OS -match 'Windows') {
+            cmd /c "mklink `"$link`" `"smoke\terra.txt`"" | Out-Null
+        } else {
+            Push-Location (Split-Path -Parent $link)
+            try { & /bin/ln -s -- 'terra.txt' 'terra-symlink.txt' } finally { Pop-Location }
+        }
+        $item = Get-Item -LiteralPath $link -Force -ErrorAction SilentlyContinue
+        $linked = $null -ne $item -and (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or $item.LinkType -eq 'SymbolicLink')
+    } catch { $linked = $false }
+    if ($linked) {
+        & git -C $symlinkRepo add smoke/terra-symlink.txt 2>$null
+        $rejected = $false
+        try {
+            Get-CanonicalDiffRecord -Root $symlinkRepo -AllowedPaths @('smoke/terra.txt', 'smoke/terra-symlink.txt') | Out-Null
+        } catch {
+            $rejected = ("$($_.Exception.Message)" -match 'Symlink/submodule modes are not allowed|Reparse points are not allowed')
+        }
+        Assert-True $rejected 'symlink/reparse path gate rejects allowlisted symlink artifacts'
+    } else {
+        Write-Host 'symlink fixture skipped (ln -s / mklink unavailable)'
+    }
+} finally {
+    Remove-Item -LiteralPath $symlinkRepo -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 Write-Host "Contract tests passed: $passed assertions"

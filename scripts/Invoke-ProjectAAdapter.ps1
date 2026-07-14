@@ -45,6 +45,11 @@ try {
 if ($taskId -notmatch '^A-00[1-7]$') { throw "Task does not belong to Project A: $taskId" }
 $policyPath = Join-Path $root "project-a/harness/tasks/$taskId.json"
 $policy = Read-JsonFile -Path $policyPath
+$policySchemaPath = Join-Path $adapterRoot 'project-a/harness/policy.schema.json'
+if (-not (Test-Path -LiteralPath $policySchemaPath -PathType Leaf)) {
+    $policySchemaPath = Join-Path $root 'project-a/harness/policy.schema.json'
+}
+[void](Test-JsonSchema -InputObject $policy -SchemaPath $policySchemaPath -Context "Project A task policy $taskId")
 $policyHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $policyPath).Hash
 $allowedExecutablePaths = if ($policy.PSObject.Properties.Name -contains 'allowed_executable_paths') { @($policy.allowed_executable_paths | ForEach-Object { [string]$_ }) } else { @() }
 $runtimeRoot = Join-Path $root '.harness/runtime/project-a'

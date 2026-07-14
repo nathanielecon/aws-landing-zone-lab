@@ -30,6 +30,37 @@ function Assert-JsonObjectContract {
     if ($missing.Count -gt 0) { throw "$Context is missing required field(s): $($missing -join ', ')" }
 }
 
+function Test-JsonSchema {
+    <#
+      Minimal fail-closed schema check: required[] presence and, when
+      additionalProperties is false, rejection of undeclared top-level properties.
+      Returns $true on match; throws on mismatch (fail-closed callers wrap as needed).
+    #>
+    param(
+        [Parameter(Mandatory)]$InputObject,
+        [Parameter(Mandatory)][string]$SchemaPath,
+        [string]$Context = 'JSON document'
+    )
+    if (-not (Test-Path -LiteralPath $SchemaPath -PathType Leaf)) { throw "$Context schema file missing: $SchemaPath" }
+    $schema = Get-Content -Raw -LiteralPath $SchemaPath | ConvertFrom-Json
+    if ($null -eq $InputObject) { throw "$Context must be a JSON object." }
+    $required = @()
+    if ($schema.PSObject.Properties.Name -contains 'required') {
+        $required = @($schema.required | ForEach-Object { [string]$_ })
+    }
+    $declared = @()
+    if ($schema.PSObject.Properties.Name -contains 'properties' -and $schema.properties) {
+        $declared = @($schema.properties.PSObject.Properties.Name | ForEach-Object { [string]$_ })
+    }
+    $additionalOk = $true
+    if ($schema.PSObject.Properties.Name -contains 'additionalProperties') {
+        $additionalOk = [bool]$schema.additionalProperties
+    }
+    $optional = if ($additionalOk) { @() } else { @($declared | Where-Object { $_ -notin $required }) }
+    Assert-JsonObjectContract -Value $InputObject -Context $Context -RequiredProperties $required -OptionalProperties $optional
+    return $true
+}
+
 function Assert-JsonStringField {
     param(
         [Parameter(Mandatory)]$Value,

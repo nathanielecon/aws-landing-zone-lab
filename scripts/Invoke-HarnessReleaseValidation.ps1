@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 $Root = [System.IO.Path]::GetFullPath($Root)
 
 # Capture incoming CI / strict-pin mode before this script forces CI=1 for suites.
-# HARNESS_STRICT_PINS=1 matches CI fail-closed terraform/ralphy pin checks on a fresh machine.
+# HARNESS_STRICT_PINS=1 matches CI fail-closed terraform/ralphy/node-major pin checks on a fresh machine.
 $strictPins = ($env:CI -eq '1') -or ($env:HARNESS_STRICT_PINS -eq '1')
 
 $pinsPath = Join-Path $Root 'project-a/harness/tool-versions.json'
@@ -94,8 +94,7 @@ if ($strictPins) {
         $pinFailures += "ralphy pin mismatch: actual='$($toolState.ralphy.actual)' must contain expected version string '$($expected.ralphy)'"
     }
     if ($toolState.node.mismatch) {
-        # Node remains warn-only under CI / HARNESS_STRICT_PINS unless terraform and ralphy also mismatch.
-        Write-Warning "node major mismatch: actual='$($toolState.node.actual)' expected major $($expected.node) (warning only; terraform/ralphy are fail-closed)"
+        $pinFailures += "node major mismatch: actual='$($toolState.node.actual)' expected major $($expected.node)"
     }
     if ($pinFailures.Count -gt 0) {
         Write-Host "Harness release validation FAILED (strict tool pin; CI=1 or HARNESS_STRICT_PINS=1):"

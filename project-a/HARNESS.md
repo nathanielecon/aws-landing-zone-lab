@@ -23,7 +23,7 @@ prints tool-version checks, then runs contract/spec/harness tests):
 pwsh -NoLogo -NoProfile -File ./scripts/Invoke-HarnessReleaseValidation.ps1
 ```
 
-Fresh-machine parity with CI pin fail-closed: set `HARNESS_STRICT_PINS=1` so terraform/ralphy mismatches exit non-zero (node major mismatch stays warning-only).
+Fresh-machine parity with CI pin fail-closed: set `HARNESS_STRICT_PINS=1` so terraform/ralphy/node-major mismatches exit non-zero.
 
 Pin check only (recomputes spec/execution hashes vs approval JSON):
 

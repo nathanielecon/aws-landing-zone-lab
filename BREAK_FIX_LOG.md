@@ -1,5 +1,20 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r6)
+
+- `Invoke-HarnessReleaseValidation.ps1`: under `CI=1` / `HARNESS_STRICT_PINS=1`,
+  Node major mismatch is now fail-closed with terraform/ralphy (was warn-only).
+- Contract tests: symlink/reparse adversarial fixture under allowlisted path
+  (skips if `ln -s`/`mklink` unavailable); ExcludedPaths algebra naming for
+  `.harness/runtime/rogue.txt` stay-vs-exclude.
+- Policy schema fail-closed: `Test-JsonSchema` in `Harness.Common.psm1`
+  (required + `additionalProperties:false`); adapter validates task policy
+  after read; contract assert undeclared field fails the helper.
+- `HARNESS_CONTRACT_ONLY` on-disk approval verify skipped (invasive: fixtures
+  inject synthetic `HARNESS_BUNDLE_HASH` while writing real pin files).
+- Repinned execution-bundle approval hashes after `Harness.Common.psm1` /
+  `Invoke-ProjectAAdapter.ps1` / `HARNESS.md` edits.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r5)
 
 - Commit CI wire-up of `Invoke-HarnessReleaseValidation.ps1` + `HARNESS_STRICT_PINS`
