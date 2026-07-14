@@ -1,5 +1,10 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-4 PASS)
+
+- Clean no-leak multi-judge scores: **9.6 / 9.5 / 9.5** (avg **9.53**).
+  Must-haves PASS.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-4 fixer r2)
 
 - Repin execution/bundle hashes after HARNESS.md drift from slice-4 fixer.
