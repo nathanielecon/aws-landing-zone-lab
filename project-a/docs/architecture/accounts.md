@@ -6,7 +6,7 @@ OU / SCP) and a **single-account live lab**.
 | Mode | Status |
 | --- | --- |
 | Organization module (OU + member interface + SCP) | Offline-validated design interface — **member accounts not created** |
-| Live lab account `<AWS_ACCOUNT_ID>` / `us-east-1` | Cloud-validated collapsed identity + network + audit composition |
+| Live lab account `<AWS_ACCOUNT_ID>` / `us-east-1` | **READY TO APPLY** / `PENDING_APPLY` — designed collapsed identity + network + audit composition; **not** yet cloud-validated as a completed fact |
 
 ## Proposed multi-account taxonomy (design only)
 
@@ -30,9 +30,11 @@ single billed account and no H1-approved unique member emails. Details:
 ## Live single-account lab
 
 In account `<AWS_ACCOUNT_ID>`, the Landing Zone lab collapses identity, private
-network, and audit into one account for cloud validation. That does **not**
-rewrite the multi-account design; it is an honest lab composition while Orgs
-members remain unavailable.
+network, and audit into one account for an honest single-account apply path.
+Status is **READY TO APPLY** / `PENDING_APPLY` until operator, state, and lab
+roots are applied and evidence is filled. That does **not** rewrite the
+multi-account design; it is an honest lab composition while Orgs members remain
+unavailable.
 
 See the [Organizations guardrail boundary](../guardrails/organizations.md) and
 the [platform architecture contract](overview.md).

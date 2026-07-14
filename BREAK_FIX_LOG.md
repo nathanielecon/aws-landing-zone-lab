@@ -1,5 +1,18 @@
 # Break/Fix Log
 
+## 2026-07-14 (FIXER — judge 5.2 claims tense)
+
+- Break: Judge score **5.2** — premature "cloud-validated" wording treated the
+  single-account Landing Zone lab identity+network+audit composition as a
+  completed fact while live AWS apply remains `PENDING_APPLY` / not done.
+- Fix: Retensed claims across README, claims-boundary, accounts, overview
+  (account `<AWS_ACCOUNT_ID>` explicit), landing-zone-lab README/EVIDENCE, and
+  pushback-and-handoff to **READY TO APPLY** / `PENDING_APPLY`. Kept the honest
+  resume bullet as **target / after-exit wording**, not current proof. Clarified
+  AWS credentials are still required. Preserved banned-claim list and Orgs
+  interface-only language. No invented CLI evidence; no multi-account apply
+  claims; no LocalStack.
+
 ## 2026-07-14 (single-account Landing Zone lab)
 
 - Operator plan: with one AWS account, run collapsed Landing Zone lab (identity +

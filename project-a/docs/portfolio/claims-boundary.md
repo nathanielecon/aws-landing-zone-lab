@@ -8,10 +8,12 @@ Harness task evidence for A-001…A-007 remains repo-only gated work and is not
 cloud validated.
 
 Separately, a **single-account Landing Zone lab** under
-`project-a/sandbox/landing-zone-lab` cloud-validates a collapsed composition of
-**identity + private network + audit** in AWS account `<AWS_ACCOUNT_ID>` /
-`us-east-1` (non-root operator IAM, remote state, OIDC/workload role, private
-VPC + flow logs, CloudTrail + KMS Log Archive). See
+`project-a/sandbox/landing-zone-lab` is **READY TO APPLY** / `PENDING_APPLY`
+for a collapsed composition of **identity + private network + audit** in AWS
+account `<AWS_ACCOUNT_ID>` / `us-east-1` (non-root operator IAM, remote state,
+OIDC/workload role, private VPC + flow logs, CloudTrail + KMS Log Archive).
+Designed interfaces and Terraform roots exist; live apply is **not** complete,
+so that composition is **not** yet cloud-validated as a completed fact. See
 `project-a/sandbox/landing-zone-lab/EVIDENCE.md`.
 
 The multi-account Organizations / OU / SCP layout remains a **documented and
@@ -22,7 +24,10 @@ under the single-account constraint. See
 The earlier audit-only sandbox (`project-a/sandbox/aws-proof`) remains evidence
 of the first live audit-module apply.
 
-## Honest resume bullet
+## Honest resume bullet (target / after-exit wording)
+
+Not current proof — use only after a successful live lab apply and evidence
+update. Target wording:
 
 > Designed a multi-account AWS Landing Zone (Orgs/OU/SCP interfaces) and
 > cloud-validated a single-account lab composition of identity, private
@@ -33,20 +38,24 @@ of the first live audit-module apply.
 
 It does not prove production deployment, enterprise operations, senior-level
 platform ownership, or that a **multi-account** Landing Zone was fully
-cloud-validated across Organizations + network + identity. Azure Government
-remains translation-only.
+cloud-validated across Organizations + network + identity. It also does **not**
+yet prove a completed single-account cloud validation of identity + network +
+audit while lab status remains `PENDING_APPLY`. Azure Government remains
+translation-only.
 
 ## Intended level
 
 The supported framing is junior-to-mid infrastructure engineering work:
 thoughtful module design, guardrails, validation, documentation, accurate
-handoff language, and an honest single-account live lab for identity/network/audit
-— superior to audit-only sandbox proof, inferior to real multi-account cloud
-validation.
+handoff language, and an honest single-account lab that is ready to apply for
+identity/network/audit — superior to audit-only sandbox proof once applied,
+inferior to real multi-account cloud validation.
 
 ## Avoid unsupported claims
 
 Avoid claims that the work is production ready, senior-level, enterprise-scale,
-or a fully cloud-validated multi-account Landing Zone. Keep Azure Government
-wording translation-only. Keep harness delivery framing repo-only unless citing
-the lab evidence files for the specific live resources shown there.
+or a fully cloud-validated multi-account Landing Zone. Do **not** claim the
+single-account lab identity+network+audit composition is cloud-validated while
+`EVIDENCE.md` remains `PENDING_APPLY`. Keep Azure Government wording
+translation-only. Keep harness delivery framing repo-only unless citing the lab
+evidence files for the specific live resources shown there.
