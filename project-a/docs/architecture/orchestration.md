@@ -84,6 +84,26 @@ chat. The new turn’s first actions are the scheduled re-read, then the next
 deterministic loop step. Compressed CI-only handoffs must not replace the
 source prompts or this document.
 
+## Cursor Cloud environment pipeline (`cloud-harness`)
+
+Cloud Agent environment orchestration for this repository is repo-owned under
+[`.cursor/`](../../../.cursor/README.md), baseline **`main` ≥ `6a8be57`**.
+
+| Concern | Rule |
+| --- | --- |
+| Start-commit | Agents/env builds use `main` at `6a8be57` or later (`.cursor/environment.json` present). |
+| Resolution | Repo `.cursor/environment.json` → personal → team. Prefer repo for `nathanielecon/cloud`. |
+| Image | `.cursor/Dockerfile` layers: PowerShell 7, Node 24, Terraform 1.15.5, AWS CLI v2, Docker. |
+| Install | Idempotent version checks only (`.cursor/verify-toolchain.ps1`). No apt/npm cold installs on orch startup. |
+| Start | `sudo service docker start \|\| true` |
+| Snapshots | After first successful build, save/reuse VM snapshot in Cloud Agents Environments; rebuild only on Dockerfile/`environment.json` change or unusable snapshot. |
+| Multi-repo | Include `nathanielecon/cloud` in the env repo group so `cloud-harness` is reused. |
+| Secrets | Cursor Cloud Agents Secrets / IAM roles only — never Dockerfile. |
+| Validation | First agent may build image; second same env should be near clone+run (no cold apt). |
+
+This section does **not** change harness sequential rules, approval hash pinning,
+or Codex `workspace-write` bounds. Those remain in [`AGENTS.md`](../../../AGENTS.md).
+
 ## Slice partitions
 
 | Slice | Rubric | Scope |

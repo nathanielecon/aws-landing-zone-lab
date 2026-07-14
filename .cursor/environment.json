@@ -4,6 +4,7 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
-  "install": "pwsh -NoLogo -NoProfile -Command \"git --version; node --version; pwsh -Version; terraform version; aws --version\"",
+  "agentCanUpdateSnapshot": true,
+  "install": "pwsh -NoLogo -NoProfile -File .cursor/verify-toolchain.ps1",
   "start": "sudo service docker start || true"
 }

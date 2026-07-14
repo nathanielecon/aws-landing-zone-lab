@@ -1,5 +1,18 @@
 # Break/Fix Log
 
+## 2026-07-14 (Cursor Cloud env orch)
+
+- Break: Cloud agents cold-built every run (apt/tool install), ignoring the
+  cached toolchain intent after `6a8be57` landed `.cursor/Dockerfile` +
+  `environment.json`.
+- Fix: Documented and hardened `cloud-harness` orch contract — repo env
+  preferred over personal/team, start-commit ≥ `6a8be57`, lightweight
+  `.cursor/verify-toolchain.ps1` install (no apt/npm on startup),
+  `agentCanUpdateSnapshot` for dashboard snapshot reuse, multi-repo group note,
+  secrets stay in Cursor Secrets/IAM. Files: `.cursor/README.md`,
+  `.cursor/environment.json`, `AGENTS.md`, `orchestration.md`. Harness
+  sequential rules / Codex `workspace-write` unchanged.
+
 ## 2026-07-13 (sandbox AWS proof)
 
 - Operator override: live AWS apply requested despite repo-only stop conditions.
