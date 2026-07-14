@@ -9,7 +9,10 @@ The workload role trusts only GitHub Actions tokens with the expected audience
 and one protected `main` branch subject. Its attached policy uses least
 privilege: it writes only beneath the supplied audit bucket's `workload/`
 prefix. The permission boundary repeats that maximum permission, so delegated
-changes cannot grant broader permissions.
+changes cannot grant broader permissions. Fail-closed review input
+`require_permissions_boundary` defaults to `true` and must stay true; setting it
+false fails offline validation. Non–GitHub Actions OIDC provider ARNs are
+rejected as overly broad trust principals.
 
 The OIDC provider ARN defaults to a documentation-only account placeholder for
 offline review. Live lab applies must pass `oidc_provider_arn` for the real

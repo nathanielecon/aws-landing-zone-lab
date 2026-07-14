@@ -49,3 +49,14 @@ variable "oidc_provider_arn" {
     error_message = "Use a GitHub Actions OIDC provider ARN."
   }
 }
+
+variable "require_permissions_boundary" {
+  description = "Must remain true. Missing a permissions boundary on the workload role fails offline validation."
+  type        = bool
+  default     = true
+
+  validation {
+    condition     = var.require_permissions_boundary == true
+    error_message = "The workload role requires an attached permissions boundary."
+  }
+}

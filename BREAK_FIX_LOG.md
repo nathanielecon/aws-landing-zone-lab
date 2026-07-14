@@ -1,5 +1,19 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r4)
+
+- Break: Scores stuck ~9.2 — network failure ops doc thin on fail-closed
+  ingress/egress flags and CIDR `expect_failures` (BC-NET-08/09) plus
+  default-deny SG triage; IAM negatives still only unprotected-branch; ops
+  docs lacked Related cross-links among catalog / network-failure /
+  audit-troubleshooting.
+- Fix: Expanded `network-failure-cases.md` with BC-NET-06/08/09 fail-closed
+  table, default-deny SG triage, and CIDR failure guidance; added IAM
+  `require_permissions_boundary` fail-closed + `expect_failures` for missing
+  boundary and non–GitHub OIDC trust principal; Related links across the three
+  ops docs. Docs/tests/module validations only; no AWS apply; no
+  execution-bundle repin.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r3)
 
 - Break: Scores still short of 10/10 network negative matrix — egress

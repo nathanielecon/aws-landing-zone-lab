@@ -1,5 +1,10 @@
 # Audit troubleshooting
 
+Related: [blocked-change catalog](blocked-change-catalog.md),
+[network failure cases](network-failure-cases.md),
+[logging architecture](../architecture/logging.md),
+[audit module template](../../terraform/audit/README.md).
+
 ## CloudTrail objects are missing
 
 First check the approved bucket name, trail prefix, and KMS alias against the
@@ -29,6 +34,8 @@ path. Stop and escalate if the proposed repair adds wildcard principals,
 cross-account trust outside the approved boundary, or a plaintext logging path.
 
 This guide is design-time operator guidance only. No live log-service call,
-cloud login, or deployment action is authorized from this repository. For the
-offline template shape and intended defaults, see the
-[audit module template](../../terraform/audit/README.md).
+cloud login, or deployment action is authorized from this repository. Public
+archive ACL or missing-CMK attempts are fail-closed offline (BC-AUD-02); see the
+[blocked-change catalog](blocked-change-catalog.md). For flow-log emission and
+private-boundary triage before archive delivery, see
+[network failure cases](network-failure-cases.md).

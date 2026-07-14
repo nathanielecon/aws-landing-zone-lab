@@ -6,7 +6,9 @@ separately controlled deployment without a new human approval packet. This
 repository does not perform live AWS apply, Identity Center lifecycle, audit
 deploy, or SCP attach.
 
-Related: [organizations guardrails](../guardrails/organizations.md),
+Related: [network failure cases](network-failure-cases.md),
+[audit troubleshooting](audit-troubleshooting.md),
+[organizations guardrails](../guardrails/organizations.md),
 [accounts](../architecture/accounts.md), [network architecture](../architecture/network.md),
 [logging architecture](../architecture/logging.md), [backend decision](../decisions/backend.md),
 [secrets decision](../decisions/secrets.md).

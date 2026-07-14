@@ -53,7 +53,8 @@ resource "aws_iam_policy" "permission_boundary" {
 resource "aws_iam_role" "workload" {
   name                 = "workload-audit-writer"
   assume_role_policy   = jsonencode(local.workload_trust)
-  permissions_boundary = aws_iam_policy.permission_boundary.arn
+  # require_permissions_boundary is fail-closed (must be true); negation would drop the cap.
+  permissions_boundary = var.require_permissions_boundary ? aws_iam_policy.permission_boundary.arn : null
 }
 
 resource "aws_iam_role_policy_attachment" "workload" {
