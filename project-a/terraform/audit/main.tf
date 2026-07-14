@@ -193,8 +193,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "archive" {
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.audit.arn
-      sse_algorithm     = "aws:kms"
+      kms_master_key_id = var.require_customer_managed_kms ? aws_kms_key.audit.arn : null
+      sse_algorithm     = var.require_customer_managed_kms ? "aws:kms" : "AES256"
     }
   }
 }
@@ -202,10 +202,11 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "archive" {
 resource "aws_s3_bucket_public_access_block" "archive" {
   bucket = aws_s3_bucket.archive.id
 
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  # allow_public_archive_acls is fail-closed (must be false); negation keeps all blocks on.
+  block_public_acls       = !var.allow_public_archive_acls
+  block_public_policy     = !var.allow_public_archive_acls
+  ignore_public_acls      = !var.allow_public_archive_acls
+  restrict_public_buckets = !var.allow_public_archive_acls
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "archive" {

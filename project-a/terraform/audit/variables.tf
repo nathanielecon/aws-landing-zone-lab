@@ -16,6 +16,33 @@ variable "archive_bucket_name" {
 variable "kms_alias_name" {
   description = "Approved alias name for the audit KMS key."
   type        = string
+
+  validation {
+    condition     = can(regex("^alias/.+", var.kms_alias_name))
+    error_message = "Audit KMS alias must be a non-empty alias/* name; missing KMS alias is rejected offline."
+  }
+}
+
+variable "allow_public_archive_acls" {
+  description = "Must remain false. Attempting public ACLs on the Log Archive bucket fails offline validation."
+  type        = bool
+  default     = false
+
+  validation {
+    condition     = var.allow_public_archive_acls == false
+    error_message = "Public ACLs on the Log Archive bucket are forbidden."
+  }
+}
+
+variable "require_customer_managed_kms" {
+  description = "Must remain true. Missing customer-managed KMS for archive SSE fails offline validation."
+  type        = bool
+  default     = true
+
+  validation {
+    condition     = var.require_customer_managed_kms == true
+    error_message = "Log Archive objects require customer-managed KMS encryption."
+  }
 }
 
 variable "cloudtrail_prefix" {

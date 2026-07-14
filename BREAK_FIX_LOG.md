@@ -1,5 +1,20 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER r2)
+
+- Break: Scores stuck ~9.0 — misleading audit run
+  `rejects_public_archive_acl_and_missing_kms` was a happy-path assert under a
+  reject name; network negatives lacked CIDR/subnet-edge and ingress-exception
+  `expect_failures`; integration notes did not tie `flow_logs_destination_arn`
+  shape to Log Archive ownership.
+- Fix: Renamed happy-path to `enforces_private_archive_acl_and_kms_encryption`;
+  added real `expect_failures` for public-ACL attempt, missing CMK flag, empty
+  KMS alias (plus existing short retention); fail-closed audit/network review
+  inputs; network negatives for invalid/empty-AZ/public subnet CIDR edges and
+  unrestricted ingress attempt; integration README ownership note for flow-log
+  S3 ARN → Log Archive. Docs/tests/module validations only; no AWS apply; no
+  execution-bundle repin.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-3 FIXER)
 
 - Break: Slice 3 must-haves passed; avg ~8.7 below bar on 9/10–10/10 gaps —

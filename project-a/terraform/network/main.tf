@@ -1,5 +1,7 @@
 locals {
   name_prefix = "project-a-${var.environment}"
+  # Fail-closed review input; validation rejects unrestricted ingress attempts.
+  unrestricted_ingress_blocked = !var.allow_unrestricted_ingress
   tags = {
     Project            = "project-a"
     Environment        = var.environment

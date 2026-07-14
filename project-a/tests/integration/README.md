@@ -17,6 +17,12 @@ provider:
 | Audit module | `terraform/audit/{main,outputs,README}`; `aws_cloudtrail.audit`; `archive_bucket_name` / `cloudtrail_arn` outputs |
 | Environments | Distinct `backend_key` and `audit_prefix` per env; shared `network_boundary = "private-only"`; matching outputs |
 
+**Log Archive ownership link:** `flow_logs_destination_arn` must match
+`^arn:aws:s3:::` so Network only emits flow metadata into an S3 ARN shape owned
+by the Log Archive boundary (protected storage). Non-S3 shapes fail offline
+validation (`rejects_non_s3_flow_logs_destination_arn`); Network does not own
+the archive bucket/KMS posture.
+
 `root_composition.tftest.hcl` asserts those paths and locals/outputs contracts
 with `fileexists` / content checks during `terraform test` (no AWS credentials).
 

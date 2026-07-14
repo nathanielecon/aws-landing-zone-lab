@@ -36,7 +36,48 @@ run "rejects_short_retention" {
   expect_failures = [var.retention_days]
 }
 
-run "rejects_public_archive_acl_and_missing_kms" {
+run "rejects_public_archive_acl_attempt" {
+  command = plan
+
+  variables {
+    trail_name                = "example-trail"
+    config_recorder_name      = "example-recorder"
+    archive_bucket_name       = "example-log-archive"
+    kms_alias_name            = "alias/example-audit"
+    allow_public_archive_acls = true
+  }
+
+  expect_failures = [var.allow_public_archive_acls]
+}
+
+run "rejects_missing_customer_managed_kms" {
+  command = plan
+
+  variables {
+    trail_name                   = "example-trail"
+    config_recorder_name         = "example-recorder"
+    archive_bucket_name          = "example-log-archive"
+    kms_alias_name               = "alias/example-audit"
+    require_customer_managed_kms = false
+  }
+
+  expect_failures = [var.require_customer_managed_kms]
+}
+
+run "rejects_empty_kms_alias" {
+  command = plan
+
+  variables {
+    trail_name           = "example-trail"
+    config_recorder_name = "example-recorder"
+    archive_bucket_name  = "example-log-archive"
+    kms_alias_name       = "alias/"
+  }
+
+  expect_failures = [var.kms_alias_name]
+}
+
+run "enforces_private_archive_acl_and_kms_encryption" {
   command = plan
 
   variables {
