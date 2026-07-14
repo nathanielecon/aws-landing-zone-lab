@@ -61,8 +61,7 @@ accounts subject to guardrails. Security owns audit policy and access review.
 Only a designated state administrator may change backend policy or perform
 state recovery.
 
-See the [S3 backend decision](../decisions/backend.md), [secrets decision](../decisions/secrets.md),
-and HashiCorp's [S3 backend documentation](https://developer.hashicorp.com/terraform/language/backend/s3).
+See HashiCorp's [S3 backend documentation](https://developer.hashicorp.com/terraform/language/backend/s3).
 
 ## Orchestration and slice review
 
@@ -70,6 +69,14 @@ Slice partitions, judge/nixer/fixer dispatch, scoring thresholds, approval hash
 pinning, and the Windows CI gate are recorded in
 [orchestration.md](orchestration.md). Related architecture pages:
 [accounts](accounts.md), [network](network.md), and [logging](logging.md).
+
+## Related
+
+- [Accounts and OU taxonomy](accounts.md)
+- [S3 backend decision](../decisions/backend.md)
+- [Secrets decision](../decisions/secrets.md)
+- [Organizations guardrails](../guardrails/organizations.md)
+- [Organization taxonomy checklist](../../terraform/organization/TAXONOMY.md)
 
 ## Delivery navigation
 

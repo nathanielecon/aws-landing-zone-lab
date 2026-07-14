@@ -1,5 +1,17 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-2 fixer r2)
+
+- Break: Slice 2 must-haves passed; scores still below bar on 10/10 gaps —
+  thin state-restore recovery detail, incomplete sibling cross-links, and no
+  machine-checkable account/OU taxonomy assert.
+- Fix: Exhaustive dual-approval state-restore runbook in `backend.md`
+  (detect/freeze/platform+security approve/S3 version restore/lockfile
+  verify/`terraform init`+`plan`/abort criteria; DynamoDB locking excluded);
+  Related links across overview/accounts/backend/secrets/organizations;
+  `terraform/organization/TAXONOMY.md` consistency checklist aligned to
+  `accounts.md` + module locals.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-2 fixer)
 
 - Break: Clean judges failed Slice 2 must-haves — overview lab APPLIED language

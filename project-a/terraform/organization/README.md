@@ -35,5 +35,6 @@ terraform init -backend=false -input=false -lockfile=readonly
 terraform validate
 ```
 
-See the [account architecture](../../docs/architecture/accounts.md) and
-[Organizations guardrails](../../docs/guardrails/organizations.md).
+See the [account architecture](../../docs/architecture/accounts.md),
+[Organizations guardrails](../../docs/guardrails/organizations.md), and the
+offline [TAXONOMY.md](TAXONOMY.md) consistency checklist.

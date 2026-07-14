@@ -32,3 +32,11 @@ closure.
 No SCP is attached to Management by this module. This boundary avoids treating
 an organization guardrail as an access-control grant and keeps billing and
 organization administration under human review.
+
+## Related
+
+- [Platform architecture overview](../architecture/overview.md)
+- [Accounts and OU taxonomy](../architecture/accounts.md)
+- [S3 backend decision](../decisions/backend.md)
+- [Secrets decision](../decisions/secrets.md)
+- [Organization taxonomy checklist](../../terraform/organization/TAXONOMY.md)

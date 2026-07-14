@@ -65,5 +65,10 @@ CI continues to validate via `.github/workflows/landing-zone-lab.yml`.
 That does **not** rewrite the multi-account design; Orgs members remain
 unavailable and **not** cloud-validated.
 
-See the [Organizations guardrail boundary](../guardrails/organizations.md) and
-the [platform architecture contract](overview.md).
+## Related
+
+- [Platform architecture overview](overview.md)
+- [S3 backend decision](../decisions/backend.md)
+- [Secrets decision](../decisions/secrets.md)
+- [Organizations guardrails](../guardrails/organizations.md)
+- [Organization taxonomy checklist](../../terraform/organization/TAXONOMY.md)
