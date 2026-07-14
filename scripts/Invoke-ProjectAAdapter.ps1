@@ -13,8 +13,13 @@ $bundleHash = $env:HARNESS_BUNDLE_HASH; $validatorHash = $env:HARNESS_VALIDATOR_
 foreach ($value in @($runId,$logRoot,$bundleHash,$validatorHash)) { if ([string]::IsNullOrWhiteSpace($value)) { throw 'Missing Project A harness environment.' } }
 if ($env:HARNESS_PROFILE_ID -ne 'project-a') { throw 'Project A adapter requires the explicit project-a profile.' }
 if ($env:HARNESS_CONTRACT_ONLY -eq '1') {
-    $fixture = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../tests/fixtures/fake-codex.cmd'))
-    if (-not $realCodex.Equals($fixture, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Contract-only mode refuses live Codex.' }
+    $allowedFixtures = @(
+        [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../tests/fixtures/fake-codex.cmd')),
+        [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../tests/fixtures/codex'))
+    )
+    if (-not ($allowedFixtures | Where-Object { $realCodex.Equals($_, [System.StringComparison]::OrdinalIgnoreCase) })) {
+        throw 'Contract-only mode refuses live Codex.'
+    }
 } else {
     if (-not $root.Equals($adapterRoot, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Project A root transport value does not match the adapter repository.' }
     $profile = Read-HarnessProfile -Root $root -ProfileId 'project-a'

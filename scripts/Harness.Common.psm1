@@ -32,9 +32,11 @@ function Assert-JsonObjectContract {
 
 function Test-JsonSchema {
     <#
-      Minimal fail-closed schema check: required[] presence and, when
-      additionalProperties is false, rejection of undeclared top-level properties.
-      Returns $true on match; throws on mismatch (fail-closed callers wrap as needed).
+      Fail-closed JSON Schema subset (not draft-2020 allOf/if-then):
+      required + additionalProperties:false, and per-property const/enum/type/
+      pattern/minItems at top-level and one nested object level. Array items
+      that are objects are checked lightly (required/additionalProperties/
+      properties const/pattern/type). Returns $true on match; throws on mismatch.
     #>
     param(
         [Parameter(Mandatory)]$InputObject,
@@ -44,20 +46,184 @@ function Test-JsonSchema {
     if (-not (Test-Path -LiteralPath $SchemaPath -PathType Leaf)) { throw "$Context schema file missing: $SchemaPath" }
     $schema = Get-Content -Raw -LiteralPath $SchemaPath | ConvertFrom-Json
     if ($null -eq $InputObject) { throw "$Context must be a JSON object." }
-    $required = @()
-    if ($schema.PSObject.Properties.Name -contains 'required') {
-        $required = @($schema.required | ForEach-Object { [string]$_ })
+
+    function Test-SchemaIsInteger($Value) {
+        return ($Value -is [sbyte] -or $Value -is [byte] -or $Value -is [int16] -or $Value -is [uint16] -or
+                $Value -is [int32] -or $Value -is [uint32] -or $Value -is [int64] -or $Value -is [uint64] -or
+                ($Value -is [decimal] -and [decimal]$Value -eq [math]::Truncate([decimal]$Value)) -or
+                ($Value -is [double] -and [double]$Value -eq [math]::Truncate([double]$Value)))
     }
-    $declared = @()
-    if ($schema.PSObject.Properties.Name -contains 'properties' -and $schema.properties) {
-        $declared = @($schema.properties.PSObject.Properties.Name | ForEach-Object { [string]$_ })
+
+    function Test-SchemaValueType {
+        param($Value, [string]$TypeName, [string]$Path)
+        switch ($TypeName) {
+            'null' { if ($null -ne $Value) { throw "$Path must be null." }; return }
+            'string' {
+                if ($Value -isnot [string]) { throw "$Path must be a string." }
+                return
+            }
+            'integer' {
+                if (-not (Test-SchemaIsInteger $Value)) { throw "$Path must be an integer." }
+                return
+            }
+            'boolean' {
+                if ($Value -isnot [bool]) { throw "$Path must be a boolean." }
+                return
+            }
+            'array' {
+                if ($null -eq $Value) { throw "$Path must be an array." }
+                if ($Value -is [string] -or $Value -is [hashtable] -or $Value -is [System.Management.Automation.PSCustomObject]) {
+                    throw "$Path must be an array."
+                }
+                if ($Value -isnot [System.Collections.IEnumerable]) { throw "$Path must be an array." }
+                return
+            }
+            'object' {
+                if ($null -eq $Value -or $Value -is [string] -or $Value -is [bool] -or (Test-SchemaIsInteger $Value)) {
+                    throw "$Path must be an object."
+                }
+                if ($Value -is [System.Collections.IEnumerable] -and $Value -isnot [System.Collections.IDictionary] -and $Value -isnot [hashtable]) {
+                    # Plain arrays are IEnumerable but not objects.
+                    if ($Value -is [System.Array] -or $Value.GetType().Name -eq 'Object[]') { throw "$Path must be an object." }
+                }
+                if ($null -eq $Value.PSObject -or $null -eq $Value.PSObject.Properties) { throw "$Path must be an object." }
+                return
+            }
+            default { return }
+        }
     }
-    $additionalOk = $true
-    if ($schema.PSObject.Properties.Name -contains 'additionalProperties') {
-        $additionalOk = [bool]$schema.additionalProperties
+
+    function Assert-SchemaPropertyConstraints {
+        param($Value, $PropSchema, [string]$Path, [int]$ObjectDepth)
+        if ($null -eq $PropSchema) { return }
+        $names = @($PropSchema.PSObject.Properties.Name)
+
+        if ($names -contains 'type') {
+            $typeSpec = $PropSchema.type
+            $allowedTypes = @($typeSpec | ForEach-Object { [string]$_ })
+            $matched = $false
+            foreach ($t in $allowedTypes) {
+                try { Test-SchemaValueType -Value $Value -TypeName $t -Path $Path; $matched = $true; break } catch { }
+            }
+            if (-not $matched) { throw "$Path has invalid type (expected $($allowedTypes -join '|'))." }
+        }
+
+        if ($names -contains 'const') {
+            $expected = $PropSchema.const
+            if ($null -eq $expected) {
+                if ($null -ne $Value) { throw "$Path must equal const null." }
+            } elseif ($null -eq $Value) {
+                throw "$Path must equal const '$expected'."
+            } elseif ($expected -is [bool] -or $Value -is [bool]) {
+                if (-not (($Value -is [bool]) -and ($expected -is [bool]) -and ($Value -eq $expected))) {
+                    throw "$Path must equal const $expected."
+                }
+            } elseif ((Test-SchemaIsInteger $expected) -and (Test-SchemaIsInteger $Value)) {
+                if ([int64]$Value -ne [int64]$expected) { throw "$Path must equal const $expected." }
+            } else {
+                if ([string]$Value -cne [string]$expected) { throw "$Path must equal const '$expected'." }
+            }
+        }
+
+        if ($names -contains 'enum') {
+            $enumValues = @($PropSchema.enum)
+            $found = $false
+            foreach ($candidate in $enumValues) {
+                if ($null -eq $candidate -and $null -eq $Value) { $found = $true; break }
+                if ($null -eq $candidate -or $null -eq $Value) { continue }
+                if (($candidate -is [bool] -or $Value -is [bool]) -and ($candidate -is [bool]) -and ($Value -is [bool]) -and ($candidate -eq $Value)) { $found = $true; break }
+                if ((Test-SchemaIsInteger $candidate) -and (Test-SchemaIsInteger $Value) -and ([int64]$candidate -eq [int64]$Value)) { $found = $true; break }
+                if ([string]$candidate -ceq [string]$Value) { $found = $true; break }
+            }
+            if (-not $found) { throw "$Path value is not in enum." }
+        }
+
+        if ($names -contains 'pattern' -and $null -ne $Value) {
+            if ($Value -isnot [string]) { throw "$Path must be a string to match pattern." }
+            if ([string]$Value -notmatch [string]$PropSchema.pattern) { throw "$Path does not match required pattern." }
+        }
+
+        $isArrayValue = $false
+        if ($null -ne $Value -and $Value -isnot [string] -and $Value -isnot [hashtable] -and $Value -isnot [System.Management.Automation.PSCustomObject]) {
+            if ($Value -is [System.Collections.IEnumerable] -and $Value -isnot [System.Collections.IDictionary]) {
+                $isArrayValue = $true
+            }
+        }
+
+        if ($isArrayValue) {
+            $items = @($Value)
+            if ($names -contains 'minItems') {
+                $minItems = [int]$PropSchema.minItems
+                if ($items.Count -lt $minItems) { throw "$Path must have at least $minItems item(s)." }
+            }
+            if ($names -contains 'items' -and $null -ne $PropSchema.items) {
+                $itemSchema = $PropSchema.items
+                $itemNames = @($itemSchema.PSObject.Properties.Name)
+                $itemIsObject = ($itemNames -contains 'type' -and (
+                    (@($itemSchema.type | ForEach-Object { [string]$_ }) -contains 'object')
+                )) -or ($itemNames -contains 'properties') -or ($itemNames -contains 'required') -or (
+                    $itemNames -contains 'additionalProperties'
+                )
+                $index = 0
+                foreach ($item in $items) {
+                    $itemPath = "$Path[$index]"
+                    if ($itemIsObject) {
+                        Assert-SchemaObjectNode -Node $item -NodeSchema $itemSchema -Path $itemPath -ObjectDepth $ObjectDepth
+                    } else {
+                        Assert-SchemaPropertyConstraints -Value $item -PropSchema $itemSchema -Path $itemPath -ObjectDepth $ObjectDepth
+                    }
+                    $index++
+                }
+            }
+            return
+        }
+
+        $isObjectValue = $false
+        if ($null -ne $Value -and $Value -isnot [string] -and $Value -isnot [bool] -and -not (Test-SchemaIsInteger $Value) -and -not $isArrayValue) {
+            if ($null -ne $Value.PSObject -and $null -ne $Value.PSObject.Properties) { $isObjectValue = $true }
+        }
+        if ($isObjectValue -and $ObjectDepth -lt 1) {
+            $hasObjectShape = ($names -contains 'properties') -or ($names -contains 'required') -or ($names -contains 'additionalProperties')
+            if ($hasObjectShape) {
+                Assert-SchemaObjectNode -Node $Value -NodeSchema $PropSchema -Path $Path -ObjectDepth ($ObjectDepth + 1)
+            }
+        }
     }
-    $optional = if ($additionalOk) { @() } else { @($declared | Where-Object { $_ -notin $required }) }
-    Assert-JsonObjectContract -Value $InputObject -Context $Context -RequiredProperties $required -OptionalProperties $optional
+
+    function Assert-SchemaObjectNode {
+        param($Node, $NodeSchema, [string]$Path, [int]$ObjectDepth)
+        if ($null -eq $Node) { throw "$Path must be a JSON object." }
+        $required = @()
+        if ($NodeSchema.PSObject.Properties.Name -contains 'required') {
+            $required = @($NodeSchema.required | ForEach-Object { [string]$_ })
+        }
+        $declared = @()
+        if ($NodeSchema.PSObject.Properties.Name -contains 'properties' -and $NodeSchema.properties) {
+            $declared = @($NodeSchema.properties.PSObject.Properties.Name | ForEach-Object { [string]$_ })
+        }
+        $additionalOk = $true
+        if ($NodeSchema.PSObject.Properties.Name -contains 'additionalProperties') {
+            $additionalOk = [bool]$NodeSchema.additionalProperties
+        }
+        if (-not $additionalOk) {
+            $optional = @($declared | Where-Object { $_ -notin $required })
+            Assert-JsonObjectContract -Value $Node -Context $Path -RequiredProperties $required -OptionalProperties $optional
+        } else {
+            $nodeProps = @($Node.PSObject.Properties.Name | ForEach-Object { [string]$_ })
+            $missing = @($required | Where-Object { $_ -notin $nodeProps })
+            if ($missing.Count -gt 0) { throw "$Path is missing required field(s): $($missing -join ', ')" }
+        }
+
+        if ($NodeSchema.PSObject.Properties.Name -contains 'properties' -and $NodeSchema.properties) {
+            foreach ($propName in @($NodeSchema.properties.PSObject.Properties.Name)) {
+                if ($Node.PSObject.Properties.Name -notcontains $propName) { continue }
+                $propSchema = $NodeSchema.properties.$propName
+                Assert-SchemaPropertyConstraints -Value $Node.$propName -PropSchema $propSchema -Path "$Path.$propName" -ObjectDepth $ObjectDepth
+            }
+        }
+    }
+
+    Assert-SchemaObjectNode -Node $InputObject -NodeSchema $schema -Path $Context -ObjectDepth 0
     return $true
 }
 

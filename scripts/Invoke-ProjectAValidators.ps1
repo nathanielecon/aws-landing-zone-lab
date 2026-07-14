@@ -139,12 +139,12 @@ function Invoke-TerraformBehavioralTests([string]$Id,[string]$ModuleRelative,[st
 }
 
 try {
+    $runtimeExcluded = @(Get-HarnessLifecycleExcludedPaths -Root $Root -ProfileId 'project-a')
     $beforeFingerprint = $null
-    $beforeFingerprint = Get-DiffFingerprint -Root $Root
+    $beforeFingerprint = Get-DiffFingerprint -Root $Root -ExcludedPaths $runtimeExcluded
     $allowed = @($policy.allowed_paths | ForEach-Object { [string]$_ })
     $adapterOwned = @($policy.adapter_owned_paths | ForEach-Object { [string]$_ })
     $allowedExecutablePaths = if ($policy.PSObject.Properties.Name -contains 'allowed_executable_paths') { @($policy.allowed_executable_paths | ForEach-Object { [string]$_ }) } else { @() }
-    $runtimeExcluded = @(Get-HarnessLifecycleExcludedPaths -Root $Root -ProfileId 'project-a')
     if (-not $Committed) {
         $changed = @(Get-ChangedPaths -Root $Root -ExcludedPaths $runtimeExcluded)
         $agentOwned = @($changed | Where-Object { Test-AllowedPath -Path $_ -AllowedPaths $allowed })
@@ -285,7 +285,7 @@ try {
             }
         $timer.Stop()
     }
-    $afterFingerprint = Get-DiffFingerprint -Root $Root
+    $afterFingerprint = Get-DiffFingerprint -Root $Root -ExcludedPaths $runtimeExcluded
     if ($beforeFingerprint -ne $afterFingerprint) { throw 'VALIDATOR_MUTATION: a validator changed repository content' }
     $digestResults = @($results | ForEach-Object { [ordered]@{ id=$_.id; passed=$_.passed; message=$_.message; implementation=$_.implementation } })
     $resultJson = $digestResults | ConvertTo-Json -Compress -Depth 8
@@ -296,7 +296,7 @@ try {
     $message = $_.Exception.Message
     if ($null -ne $beforeFingerprint) {
         try {
-            if((Get-DiffFingerprint -Root $Root) -ne $beforeFingerprint){$message='VALIDATOR_MUTATION: a validator changed repository content'}
+            if((Get-DiffFingerprint -Root $Root -ExcludedPaths $runtimeExcluded) -ne $beforeFingerprint){$message='VALIDATOR_MUTATION: a validator changed repository content'}
         } catch { }
     }
     $errorClass = if ($message -match '^(?<class>[A-Z_]+):') { $Matches.class } else { 'GATE_EXCEPTION' }

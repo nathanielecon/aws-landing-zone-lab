@@ -20,8 +20,10 @@ foreach ($required in @('realCodex', 'runId', 'logRoot', 'planHash')) {
     if ([string]::IsNullOrWhiteSpace((Get-Variable $required -ValueOnly))) { throw "Missing harness environment value: $required" }
 }
 $realCodex = [System.IO.Path]::GetFullPath($realCodex)
-$fixturePath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../tests/fixtures/fake-codex.cmd'))
-$isFakeFixture = $realCodex.Equals($fixturePath, [System.StringComparison]::OrdinalIgnoreCase)
+$fixtureCmd = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../tests/fixtures/fake-codex.cmd'))
+$fixtureSh = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../tests/fixtures/codex'))
+$isFakeFixture = $realCodex.Equals($fixtureCmd, [System.StringComparison]::OrdinalIgnoreCase) -or
+    $realCodex.Equals($fixtureSh, [System.StringComparison]::OrdinalIgnoreCase)
 if ($isFakeFixture -and -not [string]::IsNullOrWhiteSpace($env:HARNESS_ROOT)) { $root = [System.IO.Path]::GetFullPath($env:HARNESS_ROOT) }
 $expectedManifestPath = $env:HARNESS_MANIFEST_PATH
 if (-not $isFakeFixture) {
@@ -39,16 +41,19 @@ if (-not $isFakeFixture) {
     if ([string]::IsNullOrWhiteSpace($env:HARNESS_MANIFEST_PATH) -or -not $expectedManifestPath.Equals([System.IO.Path]::GetFullPath($env:HARNESS_MANIFEST_PATH), [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Harness manifest transport value is not the approved runtime manifest location.' }
 }
 $adapterPath = [System.IO.Path]::GetFullPath((Join-Path $root '.harness/bin/codex.cmd'))
-if ($realCodex.Equals($adapterPath, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Real Codex path resolves to the adapter; refusing recursion.' }
+$adapterShPath = [System.IO.Path]::GetFullPath((Join-Path $root '.harness/bin/codex'))
+if ($realCodex.Equals($adapterPath, [System.StringComparison]::OrdinalIgnoreCase) -or $realCodex.Equals($adapterShPath, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Real Codex path resolves to the adapter; refusing recursion.' }
 if (-not (Test-Path -LiteralPath $realCodex -PathType Leaf)) { throw "Real Codex executable not found: $realCodex" }
 if ($env:HARNESS_CONTRACT_ONLY -eq '1') {
-    $fixturePath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../tests/fixtures/fake-codex.cmd'))
-    if (-not $realCodex.Equals($fixturePath, [System.StringComparison]::OrdinalIgnoreCase)) {
+    if (-not $isFakeFixture) {
         throw 'Contract-only mode refuses every Codex executable except the committed fake fixture.'
     }
 } elseif (-not $isFakeFixture) {
     $adapterDirectory = [System.IO.Path]::GetFullPath((Join-Path $root '.harness/bin'))
-    $installedCodex = @(Get-Command codex.cmd -All -ErrorAction Stop | Where-Object { -not ([System.IO.Path]::GetFullPath($_.Source)).StartsWith($adapterDirectory, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)[0]
+    $installedCodex = @(Get-Command codex.cmd -All -ErrorAction SilentlyContinue | Where-Object { -not ([System.IO.Path]::GetFullPath($_.Source)).StartsWith($adapterDirectory, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)[0]
+    if (-not $installedCodex) {
+        $installedCodex = @(Get-Command codex -All -ErrorAction SilentlyContinue | Where-Object { -not ([System.IO.Path]::GetFullPath($_.Source)).StartsWith($adapterDirectory, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)[0]
+    }
     if (-not $installedCodex -or -not $realCodex.Equals([System.IO.Path]::GetFullPath($installedCodex.Source), [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Codex executable transport value does not match the installed non-adapter executable.' }
 }
 
@@ -83,6 +88,11 @@ if ($manifestPath -and (Test-Path -LiteralPath $manifestPath) -and -not $manifes
 if (-not $stdinText -and $manifestTask) { $stdinText = "$($manifestTask.title)`n$($manifestTask.description)" }
 $policyPath = Join-Path $root "harness/tasks/$taskId.json"
 $policy = Read-JsonFile -Path $policyPath
+# Smoke policies lack a companion schema file; skip Test-JsonSchema when absent.
+$smokePolicySchemaPath = Join-Path $root 'harness/policy.schema.json'
+if (Test-Path -LiteralPath $smokePolicySchemaPath -PathType Leaf) {
+    [void](Test-JsonSchema -InputObject $policy -SchemaPath $smokePolicySchemaPath -Context "smoke task policy $taskId")
+}
 if ([string]$policy.id -ne $taskId) { throw "Policy ID does not match task marker: $taskId" }
 $statePath = Join-Path $root ".harness/runtime/state/$taskId.json"
 $takeoverPath = Join-Path $root ".harness/runtime/takeovers/$taskId.md"

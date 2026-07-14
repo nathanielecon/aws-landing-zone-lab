@@ -1,5 +1,22 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r7)
+
+- Deepened `Test-JsonSchema` in `Harness.Common.psm1`: fail-closed const, enum,
+  type, pattern, array minItems, one nested object required/additionalProperties,
+  and light object-array item checks (e.g. validators). Not draft-2020 allOf/if-then.
+- `Invoke-CodexAdapter.ps1`: call `Test-JsonSchema` when a smoke policy schema
+  file exists; skip with a one-line comment when absent; accept Unix `codex`
+  fixture alongside `fake-codex.cmd`.
+- `Invoke-ProjectAValidators.ps1`: pass lifecycle ExcludedPaths into
+  `Get-DiffFingerprint` so held task locks are not hashed (Linux FileShare.None).
+- Contract asserts: wrong `schema_version` const, bad `id` pattern, validators
+  item missing `timeout_seconds`; Unix PATH/codex shims for ralphy contracts.
+- `Start-ProjectAHarness.ps1` / harness fixtures: Unix terraform/codex/ralphy
+  resolve, PathSeparator PATH joins; DPAPI approval broker asserts skip off-Windows.
+- `HARNESS.md` trust note updated for schema enforcement scope.
+- Repinned execution-bundle approval hashes after owned bundle member edits.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r6)
 
 - `Invoke-HarnessReleaseValidation.ps1`: under `CI=1` / `HARNESS_STRICT_PINS=1`,

@@ -7,6 +7,11 @@ $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 Import-Module (Join-Path $root 'scripts/Harness.Common.psm1') -Force
 $ralphyCommand = (Get-Command ralphy.cmd -ErrorAction Stop | Select-Object -First 1).Source
 $passed = 0
+$fakeCodexPath = if ($IsWindows -or $env:OS -match 'Windows') {
+    Join-Path $root 'tests/fixtures/fake-codex.cmd'
+} else {
+    Join-Path $root 'tests/fixtures/codex'
+}
 
 function Assert-True([bool]$Condition, [string]$Message) {
     if (-not $Condition) { throw "ASSERTION FAILED: $Message" }
@@ -108,8 +113,16 @@ try {
     $countPath = Join-Path $retryRepo 'count.txt'
     $cmd = "@echo off`r`necho call>>`"$countPath`"`r`nexit /b 9`r`n"
     [System.IO.File]::WriteAllText((Join-Path $fakeBin 'codex.cmd'), $cmd, [System.Text.ASCIIEncoding]::new())
+    # Non-Windows hosts resolve `codex` on PATH rather than `codex.cmd`.
+    $countPathSh = ($countPath -replace '\\', '/')
+    $codexSh = Join-Path $fakeBin 'codex'
+    [System.IO.File]::WriteAllText($codexSh, "#!/bin/sh`necho call>>`"$countPathSh`"`nexit 9`n", [System.Text.UTF8Encoding]::new($false))
+    if (-not ($IsWindows -or $env:OS -match 'Windows')) { & chmod +x -- $codexSh }
     $oldPath = $env:PATH
-    $env:PATH = "$env:SystemRoot\System32;$fakeBin;$oldPath"
+    $pathPrefix = @()
+    if (-not [string]::IsNullOrWhiteSpace($env:SystemRoot)) { $pathPrefix += (Join-Path $env:SystemRoot 'System32') }
+    $pathPrefix += $fakeBin
+    $env:PATH = (($pathPrefix + @($oldPath)) -join [IO.Path]::PathSeparator)
     Push-Location $retryRepo
     try {
         & $ralphyCommand --codex --max-retries 0 --no-commit --no-tests --no-lint --no-browser '[TASK:T-001] fake failure' 2>&1 | Out-Null
@@ -130,17 +143,41 @@ try {
     & git -C $stdinRepo commit -m 'add stdin policy' | Out-Null
     $oldPath = $env:PATH
     $env:HARNESS_ROOT = $stdinRepo
-    $env:HARNESS_REAL_CODEX = Join-Path $root 'tests/fixtures/fake-codex.cmd'
+    Remove-Item Env:HARNESS_PROFILE_ID -ErrorAction SilentlyContinue
+    $env:HARNESS_REAL_CODEX = $fakeCodexPath
     $env:HARNESS_RUN_ID = 'stdin-contract'
     $env:HARNESS_LOG_DIR = Join-Path $stdinRepo '.logs'
     $env:HARNESS_PLAN_HASH = ('B' * 64)
     $env:HARNESS_MANIFEST_PATH = $manifestPath
-    $env:PATH = "$env:SystemRoot\System32;$(Join-Path $root '.harness/bin');$oldPath"
+    $adapterBin = Join-Path $root '.harness/bin'
+    $unixAdapterDir = $null
+    if (-not ($IsWindows -or $env:OS -match 'Windows')) {
+        # Ralphy resolves `codex` (not codex.cmd) on Unix hosts; plant a temp adapter shim.
+        $unixAdapterDir = Join-Path ([IO.Path]::GetTempPath()) ("ralphy-adapter-bin-" + [Guid]::NewGuid().ToString('N'))
+        [IO.Directory]::CreateDirectory($unixAdapterDir) | Out-Null
+        $unixAdapter = Join-Path $unixAdapterDir 'codex'
+        $adapterPs1 = (Join-Path $root 'scripts/Invoke-CodexAdapter.ps1') -replace '\\', '/'
+        $body = @"
+#!/bin/sh
+exec pwsh -NoLogo -NoProfile -File '$adapterPs1' "`$@"
+"@
+        [IO.File]::WriteAllText($unixAdapter, ($body -replace "`r`n", "`n"), [Text.UTF8Encoding]::new($false))
+        & chmod +x -- $unixAdapter
+        $adapterBin = $unixAdapterDir
+    }
+    $pathPrefix = @()
+    if (-not [string]::IsNullOrWhiteSpace($env:SystemRoot)) { $pathPrefix += (Join-Path $env:SystemRoot 'System32') }
+    $pathPrefix += $adapterBin
+    $env:PATH = (($pathPrefix + @($oldPath)) -join [IO.Path]::PathSeparator)
     Push-Location $stdinRepo
     try {
         $ralphyOutput = & $ralphyCommand --codex --json $manifestPath --model gpt-5.6-terra --max-retries 0 --no-commit --no-tests --no-lint --no-browser 2>&1 | Out-String
         $ralphyCode = $LASTEXITCODE
-    } finally { Pop-Location; $env:PATH = $oldPath }
+    } finally {
+        Pop-Location
+        $env:PATH = $oldPath
+        if ($unixAdapterDir) { Remove-Item -LiteralPath $unixAdapterDir -Recurse -Force -ErrorAction SilentlyContinue }
+    }
     Assert-True ($ralphyCode -eq 0) "real Ralphy selects and reinjects the approved manifest task; output: $ralphyOutput"
     $stdinState = Read-JsonFile -Path (Join-Path $stdinRepo '.harness/runtime/state/S-001.json')
     Assert-True ($stdinState.status -eq 'completed') 'stdin-routed task passes adapter and commits'
@@ -158,7 +195,7 @@ try {
     & git -C $adapterRepo commit -m 'add adapter policy' | Out-Null
     $logRoot = Join-Path $adapterRepo '.logs'
     $env:HARNESS_ROOT = $adapterRepo
-    $env:HARNESS_REAL_CODEX = Join-Path $root 'tests/fixtures/fake-codex.cmd'
+    $env:HARNESS_REAL_CODEX = $fakeCodexPath
     $env:HARNESS_RUN_ID = 'contract-test'
     $env:HARNESS_LOG_DIR = $logRoot
     $env:HARNESS_PLAN_HASH = ('A' * 64)
@@ -209,7 +246,7 @@ try {
         intended_tree = $treeSha; commit_sha = $null; completed_at = $null
     })
     $env:HARNESS_ROOT = $reconcileRepo
-    $env:HARNESS_REAL_CODEX = Join-Path $root 'tests/fixtures/fake-codex.cmd'
+    $env:HARNESS_REAL_CODEX = $fakeCodexPath
     $env:HARNESS_RUN_ID = 'reconcile-contract'
     $env:HARNESS_LOG_DIR = Join-Path $reconcileRepo '.logs'
     $env:HARNESS_PLAN_HASH = ('C' * 64)
@@ -244,7 +281,7 @@ try {
         evidence_sha256 = ('0' * 64); intended_tree = ('0' * 40); commit_sha = $null; completed_at = $null
     })
     $env:HARNESS_ROOT = $forgedSmokeRepo
-    $env:HARNESS_REAL_CODEX = Join-Path $root 'tests/fixtures/fake-codex.cmd'
+    $env:HARNESS_REAL_CODEX = $fakeCodexPath
     $env:HARNESS_RUN_ID = 'forged-smoke'
     $env:HARNESS_LOG_DIR = Join-Path $forgedSmokeRepo '.logs'
     $env:HARNESS_PLAN_HASH = ('D' * 64)
@@ -368,6 +405,25 @@ try {
     }
     $validPolicy = Get-Content -Raw -LiteralPath $policySrc | ConvertFrom-Json
     Assert-True (Test-JsonSchema -InputObject $validPolicy -SchemaPath $schemaPath -Context 'A-006 policy') 'Test-JsonSchema accepts published A-006 policy'
+
+    $badVersion = Get-Content -Raw -LiteralPath $policySrc | ConvertFrom-Json
+    $badVersion.schema_version = 'project-a-task-policy-v0'
+    $constRejected = $false
+    try { [void](Test-JsonSchema -InputObject $badVersion -SchemaPath $schemaPath -Context 'bad schema_version') } catch { $constRejected = $true }
+    Assert-True $constRejected 'Test-JsonSchema rejects wrong schema_version const'
+
+    $badId = Get-Content -Raw -LiteralPath $policySrc | ConvertFrom-Json
+    $badId.id = 'A-999'
+    $patternRejected = $false
+    try { [void](Test-JsonSchema -InputObject $badId -SchemaPath $schemaPath -Context 'bad id') } catch { $patternRejected = $true }
+    Assert-True $patternRejected 'Test-JsonSchema rejects bad id pattern'
+
+    $badValidators = Get-Content -Raw -LiteralPath $policySrc | ConvertFrom-Json
+    $firstValidator = @($badValidators.validators)[0]
+    $firstValidator.PSObject.Properties.Remove('timeout_seconds')
+    $itemRequiredRejected = $false
+    try { [void](Test-JsonSchema -InputObject $badValidators -SchemaPath $schemaPath -Context 'validators missing timeout') } catch { $itemRequiredRejected = $true }
+    Assert-True $itemRequiredRejected 'Test-JsonSchema rejects validators item missing timeout_seconds'
 } finally {
     Remove-Item -LiteralPath $propMutationDir -Recurse -Force -ErrorAction SilentlyContinue
 }
