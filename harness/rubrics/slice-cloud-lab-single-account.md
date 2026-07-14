@@ -46,8 +46,9 @@ multi-account theater as success is a fail.
 
 - Independent second-pass judge ≥9.5 confirming must-haves without score
   inflation from the implementing conversation alone.
-- Operator posture is clean: root used at most for one-time operator bootstrap;
-  subsequent evidence is non-root.
+- Operator / CI posture is clean: root used at most for one-time
+  `github-oidc` + `state-bootstrap`; subsequent plan/apply evidence is
+  GitHub OIDC (non-root).
 - Claims packet could be pasted onto a resume and survive skeptical senior
   review without hedging contradictions.
 
