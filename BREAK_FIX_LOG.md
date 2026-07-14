@@ -1,5 +1,10 @@
 # Break/Fix Log
 
+## 2026-07-13 (sandbox AWS proof)
+
+- Operator override: live AWS apply requested despite repo-only stop conditions.
+  Action: Installed AWS CLI; authenticated account `283077380808`; created separate root `project-a/sandbox/aws-proof` reusing `terraform/audit`; applied in `us-east-1` (13 resources). CloudTrail `project-a-sandbox-trail` IsLogging=true; archive bucket KMS-encrypted + versioned + public access blocked. Evidence: `project-a/sandbox/aws-proof/EVIDENCE.md`. Does not rewrite A-001…A-007 repo-only harness claims.
+
 ## 2026-07-13
 
 - Closeout: PR `#13` squash-merged to `main` as `1564c6b` after Windows CI green on `5fd7d0b` and slice advances (1: 9.6, 2: 9.6, 3: 9.5, 4: 9.6).
