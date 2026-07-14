@@ -1,5 +1,13 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-2 fixer)
+
+- Break: Clean judges failed Slice 2 must-haves — overview lab APPLIED language
+  displaced foundation “not cloud validated / AWS-Azure not implemented”
+  wording; accounts.md missing H1 typed-input owners + break-glass consequences.
+- Fix: Silo foundation vs lab claims in `overview.md`; restore accounts.md H1
+  table (emails/owners/initial role/break-glass) + blocked-change examples.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-1 PASS)
 
 - Clean no-leak multi-judge scores: **9.8 / 9.5 / 9.5** (avg **9.6**).
