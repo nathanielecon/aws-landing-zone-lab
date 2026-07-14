@@ -1,5 +1,15 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r8)
+
+- Extended `Test-JsonSchema` in `Harness.Common.psm1` to evaluate top-level
+  `allOf` entries with `if` / `then` / `else` (policy.schema.json:
+  approval.required true → gate_id `H[0-5]` + receipt_path pattern; else nulls).
+- Contract asserts: approval.required=true with null gate_id fails; 
+  approval.required=false with string gate_id fails (mutated real task policies).
+- Kept existing const/enum/type/pattern/nested behavior. Updated HARNESS.md
+  trust note. Repinned execution-bundle approval hashes after owned edits.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r7)
 
 - Deepened `Test-JsonSchema` in `Harness.Common.psm1`: fail-closed const, enum,

@@ -7,8 +7,8 @@
   "spec_approved_at": "2026-07-12",
   "approval_source": "Cursor chat: Approval granted to finish local orchestration",
   "spec_bundle_sha256": "6723155F8D76675ADD4D03468EDA1681C2D908BAE93CD512EB1DB53A20DF5053",
-  "execution_bundle_sha256": "36BB8AAB864260E97CEA941D4BCD8A78A570049CA1174E652D6899D4ABA441D5",
+  "execution_bundle_sha256": "5CA25031873E9A62B7437C91E9FBF9BF46B3E8BD9B0CA39997BE3A2F3620F8AA",
   "hash_implementation_sha256": "355A672293C178681192155CFF74F30437D542B4227D388510BF95FB813F67DB",
   "validator_implementation_sha256": "D3972A90F3B0C97602EBEAB734C02F0E425317B0935EC5FCC25DC415FE6542F5",
-  "reason": "Repinned after Slice 1 fixer r7: deepened Test-JsonSchema, CodexAdapter schema gate, validator lock fingerprint fix, Unix harness/contract shims, HARNESS.md trust note. Spec bundle unchanged; release/verify scripts remain outside execution-hash members."
+  "reason": "Repinned after Slice 1 fixer r8: Test-JsonSchema allOf if/then/else, approval gate_id contract asserts, HARNESS.md trust note. Spec bundle unchanged; release/verify scripts remain outside execution-hash members."
 }

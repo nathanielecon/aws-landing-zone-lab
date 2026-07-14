@@ -75,10 +75,11 @@ execution.
 ## Security boundary
 
 - Policy schema enforcement (`Test-JsonSchema`) is fail-closed for required
-  fields, types, enums, consts, string patterns, array `minItems`, and one
-  level of nested object `required` / `additionalProperties:false` (plus light
-  checks on object array items such as validators). It is **not** a full
-  draft-2020 validator: `allOf` / `if` / `then` are not evaluated.
+  fields, types, enums, consts, string patterns, array `minItems`, one level of
+  nested object `required` / `additionalProperties:false` (plus light checks on
+  object array items such as validators), and top-level `allOf` entries that use
+  `if` / `then` / `else` (approval.required → gate_id / receipt_path). It is
+  **not** a full draft-2020 validator.
 - Codex runs with native `workspace-write`, command network access explicitly
   disabled, web search disabled, apps disabled, user configuration ignored, and
   approval escalation disabled.

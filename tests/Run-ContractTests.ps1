@@ -424,6 +424,20 @@ try {
     $itemRequiredRejected = $false
     try { [void](Test-JsonSchema -InputObject $badValidators -SchemaPath $schemaPath -Context 'validators missing timeout') } catch { $itemRequiredRejected = $true }
     Assert-True $itemRequiredRejected 'Test-JsonSchema rejects validators item missing timeout_seconds'
+
+    # allOf if/then/else: approval.required=true requires gate_id H[0-5]; false requires nulls.
+    $approvalRequiredSrc = Join-Path $root 'project-a/harness/tasks/A-001.json'
+    $requiredNullGate = Get-Content -Raw -LiteralPath $approvalRequiredSrc | ConvertFrom-Json
+    $requiredNullGate.approval.gate_id = $null
+    $requiredNullRejected = $false
+    try { [void](Test-JsonSchema -InputObject $requiredNullGate -SchemaPath $schemaPath -Context 'approval.required true null gate_id') } catch { $requiredNullRejected = $true }
+    Assert-True $requiredNullRejected 'Test-JsonSchema rejects approval.required=true with null gate_id'
+
+    $requiredFalseStringGate = Get-Content -Raw -LiteralPath $policySrc | ConvertFrom-Json
+    $requiredFalseStringGate.approval.gate_id = 'H0'
+    $falseStringRejected = $false
+    try { [void](Test-JsonSchema -InputObject $requiredFalseStringGate -SchemaPath $schemaPath -Context 'approval.required false string gate_id') } catch { $falseStringRejected = $true }
+    Assert-True $falseStringRejected 'Test-JsonSchema rejects approval.required=false with string gate_id'
 } finally {
     Remove-Item -LiteralPath $propMutationDir -Recurse -Force -ErrorAction SilentlyContinue
 }

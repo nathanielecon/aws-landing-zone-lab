@@ -32,11 +32,11 @@ function Assert-JsonObjectContract {
 
 function Test-JsonSchema {
     <#
-      Fail-closed JSON Schema subset (not draft-2020 allOf/if-then):
-      required + additionalProperties:false, and per-property const/enum/type/
-      pattern/minItems at top-level and one nested object level. Array items
-      that are objects are checked lightly (required/additionalProperties/
-      properties const/pattern/type). Returns $true on match; throws on mismatch.
+      Fail-closed JSON Schema subset: required + additionalProperties:false,
+      per-property const/enum/type/pattern/minItems at top-level and one nested
+      object level, light object-array item checks, and top-level allOf entries
+      that use if/then/else (as in policy.schema.json approval.required →
+      gate_id/receipt_path). Returns $true on match; throws on mismatch.
     #>
     param(
         [Parameter(Mandatory)]$InputObject,
@@ -223,7 +223,41 @@ function Test-JsonSchema {
         }
     }
 
+    function Test-SchemaFragment {
+        param($Node, $NodeSchema, [string]$Path, [int]$ObjectDepth)
+        try {
+            Assert-SchemaObjectNode -Node $Node -NodeSchema $NodeSchema -Path $Path -ObjectDepth $ObjectDepth
+            return $true
+        } catch {
+            return $false
+        }
+    }
+
     Assert-SchemaObjectNode -Node $InputObject -NodeSchema $schema -Path $Context -ObjectDepth 0
+
+    if ($schema.PSObject.Properties.Name -contains 'allOf' -and $null -ne $schema.allOf) {
+        $allOfIndex = 0
+        foreach ($entry in @($schema.allOf)) {
+            $entryPath = "$Context.allOf[$allOfIndex]"
+            $entryNames = @($entry.PSObject.Properties.Name)
+            if ($entryNames -contains 'if') {
+                $ifMatches = Test-SchemaFragment -Node $InputObject -NodeSchema $entry.if -Path "$entryPath.if" -ObjectDepth 0
+                if ($ifMatches) {
+                    if ($entryNames -contains 'then' -and $null -ne $entry.then) {
+                        Assert-SchemaObjectNode -Node $InputObject -NodeSchema $entry.then -Path "$entryPath.then" -ObjectDepth 0
+                    }
+                } else {
+                    if ($entryNames -contains 'else' -and $null -ne $entry.else) {
+                        Assert-SchemaObjectNode -Node $InputObject -NodeSchema $entry.else -Path "$entryPath.else" -ObjectDepth 0
+                    }
+                }
+            } else {
+                Assert-SchemaObjectNode -Node $InputObject -NodeSchema $entry -Path $entryPath -ObjectDepth 0
+            }
+            $allOfIndex++
+        }
+    }
+
     return $true
 }
 
