@@ -1,5 +1,19 @@
 # Break/Fix Log
 
+## 2026-07-14 (FIXER — judge 8.7 → doc retense for APPLIED)
+
+- Break: Judge score **8.7** — must-haves pass, but accounts/overview/
+  pushback-and-handoff still said `PENDING_APPLY` / READY TO APPLY / “not yet
+  cloud-validated” after EVIDENCE.md was already `APPLIED`.
+- Fix: Retensed those three docs to match GHA OIDC apply run
+  [29366105164](https://github.com/nathanielecon/cloud/actions/runs/29366105164)
+  (role `project-a-lzlab-gha`). Kept honest: multi-account Orgs still **not**
+  cloud-validated; single-account identity+network+audit **is**. Noted
+  historical offline `terraform validate` green / CI plan validates lab.
+  Added orchestration lesson: dispatch bottleneck early on credentials/
+  control-plane mismatch; prefer GHA OIDC. Did **not** recreate
+  `github-oidc/` / `GitHubActionsLZLab` or chase Cursor AWS.
+
 ## 2026-07-14 (LZ lab APPLIED via GitHub OIDC CI)
 
 - Status: Apply **DONE** on run
