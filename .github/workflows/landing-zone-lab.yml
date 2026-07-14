@@ -1,4 +1,7 @@
-name: Landing Zone lab Terraform
+name: Landing Zone lab (Terraform)
+
+# Primary AWS path: GitHub OIDC → IAM role project-a-lzlab-gha → Terraform.
+# Cursor/Cloud Agents edit the repo; they do not apply AWS directly.
 
 on:
   pull_request:
@@ -38,6 +41,7 @@ concurrency:
 env:
   AWS_REGION: us-east-1
   TF_IN_AUTOMATION: '1'
+  TF_INPUT: 'false'
 
 jobs:
   plan:
@@ -52,13 +56,14 @@ jobs:
           persist-credentials: false
 
       - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@a979dc38335b12a045a39b7330fcca3e988b7b14 # v4.2.1
+        uses: aws-actions/configure-aws-credentials@a18301f325db48595b0bf65205414f377d4c4896 # v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN_LZ_LAB || 'arn:aws:iam::283077380808:role/project-a-lzlab-gha' }}
           aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-lzlab-plan-${{ github.run_id }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3fbe8889aaead795f550f058e00 # v3.1.2
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced21036225 # v3
         with:
           terraform_version: 1.15.5
           terraform_wrapper: false
@@ -79,13 +84,14 @@ jobs:
           persist-credentials: false
 
       - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@a979dc38335b12a045a39b7330fcca3e988b7b14 # v4.2.1
+        uses: aws-actions/configure-aws-credentials@a18301f325db48595b0bf65205414f377d4c4896 # v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN_LZ_LAB || 'arn:aws:iam::283077380808:role/project-a-lzlab-gha' }}
           aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-lzlab-apply-${{ github.run_id }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3fbe8889aaead795f550f058e00 # v3.1.2
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced21036225 # v3
         with:
           terraform_version: 1.15.5
           terraform_wrapper: false
@@ -95,7 +101,7 @@ jobs:
 
       - name: Upload evidence capture
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: lz-lab-evidence
           path: |
