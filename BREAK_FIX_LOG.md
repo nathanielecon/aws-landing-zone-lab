@@ -1,6 +1,20 @@
 # Break/Fix Log
 
+## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r2)
+
+- `Open-ExclusiveLock` now uses `FileShare.None` so a second open is rejected
+  on Linux and Windows (true exclusive lock).
+- `Invoke-HarnessReleaseValidation.ps1` runs `Verify-ProjectABundle.ps1` after
+  tool checks and fails closed on non-zero; in CI, terraform major.minor.patch
+  and ralphy expected-version string are fail-closed (node major mismatch is
+  warning-only unless both terraform and ralphy also mismatch).
+- Harness fixture: second `Open-ExclusiveLock` on the adapter lock path fails
+  closed; `$env:TEMP` defaults via `GetTempPath()` when unset on Linux.
+- Execution-bundle member change → approval pins repinned. Release/verify
+  scripts remain outside execution-hash members.
+
 ## 2026-07-14 (CLEAN REJUDGE slice-1 fixer)
+
 
 - Added `scripts/Invoke-HarnessReleaseValidation.ps1` (tool-version checks +
   `CI=1` / `HARNESS_CONTRACT_ONLY=1` + contract/spec/harness suites).

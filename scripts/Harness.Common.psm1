@@ -567,7 +567,7 @@ function Open-ExclusiveLock {
     $parent = Split-Path -Parent $Path
     [System.IO.Directory]::CreateDirectory($parent) | Out-Null
     try {
-        return [System.IO.File]::Open($Path, [System.IO.FileMode]::OpenOrCreate, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::Read)
+        return [System.IO.File]::Open($Path, [System.IO.FileMode]::OpenOrCreate, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
     } catch {
         throw "Another harness instance owns the lock: $Path"
     }

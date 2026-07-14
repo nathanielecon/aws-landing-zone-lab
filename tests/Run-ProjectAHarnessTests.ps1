@@ -3,6 +3,7 @@ param()
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
+if ([string]::IsNullOrWhiteSpace($env:TEMP)) { $env:TEMP = [IO.Path]::GetTempPath() }
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 Import-Module (Join-Path $root 'scripts/Harness.Common.psm1') -Force
 $passed=0
@@ -413,6 +414,9 @@ try{Write-TestPolicy $runtimeRejectRepo 'A-006' $false;& git -C $runtimeRejectRe
 
 $lockRepo=New-TestRepo 'adapter lock';$lockLocal=Join-Path $env:TEMP ('phase4-lock-'+[Guid]::NewGuid().ToString('N'))
 try{Write-TestPolicy $lockRepo 'A-006' $false;& git -C $lockRepo add project-a/harness/tasks/A-006.json;& git -C $lockRepo commit -m policy|Out-Null;Set-AdapterEnvironment $lockRepo 'A-006' $lockLocal;$lockPath=Join-Path $lockRepo '.harness/runtime/project-a/locks/A-006.lock';[IO.Directory]::CreateDirectory((Split-Path -Parent $lockPath))|Out-Null;$heldLock=[IO.File]::Open($lockPath,[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None);try{$code=Invoke-ProjectAAdapterFixture -Arguments @('exec','--json','[TASK:A-006]');Assert-True ($code -ne 0 -and -not (Test-Path -LiteralPath (Join-Path $lockRepo '.logs/calls.txt'))) 'per-task adapter lock fails closed before any model call'}finally{$heldLock.Dispose()}}finally{Clear-AdapterEnvironment;Remove-Item -LiteralPath $lockRepo -Recurse -Force;Remove-Item -LiteralPath $lockLocal -Recurse -Force -ErrorAction SilentlyContinue}
+
+$exclusiveLockRepo=New-TestRepo 'exclusive lock share';$exclusiveLockLocal=Join-Path $env:TEMP ('phase4-exclusive-lock-'+[Guid]::NewGuid().ToString('N'))
+try{$exclusiveLockPath=Join-Path $exclusiveLockRepo '.harness/runtime/project-a/locks/A-006.lock';$heldExclusive=Open-ExclusiveLock -Path $exclusiveLockPath;try{Assert-ThrowsLike { Open-ExclusiveLock -Path $exclusiveLockPath | Out-Null } 'Another harness instance owns the lock' 'Open-ExclusiveLock FileShare.None rejects a second open'}finally{$heldExclusive.Dispose()}}finally{Remove-Item -LiteralPath $exclusiveLockRepo -Recurse -Force;Remove-Item -LiteralPath $exclusiveLockLocal -Recurse -Force -ErrorAction SilentlyContinue}
 
 $dependencyRepo=New-TestRepo 'adapter dependency';$dependencyLocal=Join-Path $env:TEMP ('phase4-dependency-'+[Guid]::NewGuid().ToString('N'))
 try{Write-TestPolicy $dependencyRepo 'A-006' $false;$dependencyPolicyPath=Join-Path $dependencyRepo 'project-a/harness/tasks/A-006.json';$dependencyPolicy=Read-JsonFile -Path $dependencyPolicyPath;$dependencyPolicy.depends_on=@('A-005');Write-JsonNoBom -Path $dependencyPolicyPath -Value $dependencyPolicy;& git -C $dependencyRepo add project-a/harness/tasks/A-006.json;& git -C $dependencyRepo commit -m policy|Out-Null;Set-AdapterEnvironment $dependencyRepo 'A-006' $dependencyLocal;$code=Invoke-ProjectAAdapterFixture -Arguments @('exec','--json','[TASK:A-006]');Assert-True ($code -ne 0 -and -not (Test-Path -LiteralPath (Join-Path $dependencyRepo '.logs/calls.txt'))) 'adapter refuses an out-of-order task before any model call'}finally{Clear-AdapterEnvironment;Remove-Item -LiteralPath $dependencyRepo -Recurse -Force;Remove-Item -LiteralPath $dependencyLocal -Recurse -Force -ErrorAction SilentlyContinue}

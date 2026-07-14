@@ -3,17 +3,17 @@
   "status": "execution_approved",
   "execution_approved": true,
   "spec_bundle_sha256": "6723155F8D76675ADD4D03468EDA1681C2D908BAE93CD512EB1DB53A20DF5053",
-  "execution_bundle_sha256": "0DE97AB16DC691F9ABFEC9F9A17C0A272347A965D1615372AFEAA6471A2DDBBC",
+  "execution_bundle_sha256": "B932C6932B7C38757A371334087B6592CF228C5759C8BDC739054D9F5783B05D",
   "validator_implementation_sha256": "52217852CA9318590D40EDB54E20FA31DD10C22DB51C6A8DD8DCD5FCFEE4A267",
   "execution_hash_implementation_sha256": "AC7906A0B796C6430251A64DD70ED6FBD291786E0F42DD14FFEA9FE75E3447ED",
   "proven_with": {
     "live_models": false,
     "fake_codex_only": true,
     "cloud_credentials": false,
-    "project_a_harness_assertions": 97
+    "project_a_harness_assertions": 98
   },
   "approved_by": "user",
   "approved_at": "2026-07-14",
-  "approval_source": "Cursor cloud CLEAN REJUDGE slice-1 fixer: repin after HARNESS.md release-validation docs",
-  "reason": "Repinned the repo-only execution bundle after documenting one-command Invoke-HarnessReleaseValidation / Verify-ProjectABundle usage in HARNESS.md. New scripts remain outside execution-hash members. Deterministic gates, workspace-write, network denial, allowlists, owned commits, terminal stopping, and monitoring remain mandatory."
+  "approval_source": "Cursor cloud CLEAN REJUDGE slice-1 fixer r2: FileShare.None + release-validation verify wire-up + lock fixture",
+  "reason": "Repinned the repo-only execution bundle after Open-ExclusiveLock FileShare.None and the harness second-open lock fixture. Release/verify scripts remain outside execution-hash members. Deterministic gates, workspace-write, network denial, allowlists, owned commits, terminal stopping, and monitoring remain mandatory."
 }
