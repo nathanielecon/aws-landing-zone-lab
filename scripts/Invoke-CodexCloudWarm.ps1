@@ -239,15 +239,25 @@ if (-not $success) {
     throw "Timed out after ${TimeoutSeconds}s waiting for warm smoke task $taskId"
 }
 
+# Persist env id + last warm. Keep registry defaultBranch stable: -Branch only
+# overrides the smoke checkout for this run (e.g. PR branch before merge).
+$persistedBranch = if ($entry -and $entry.defaultBranch) {
+    [string]$entry.defaultBranch
+}
+else {
+    'main'
+}
 if (-not $registry.Contains($Repo)) {
     $registry[$Repo] = [ordered]@{
         envId         = $resolvedEnvId
-        defaultBranch = $resolvedBranch
+        defaultBranch = $persistedBranch
         lastWarmUtc   = $null
     }
 }
 $registry[$Repo].envId = $resolvedEnvId
-$registry[$Repo].defaultBranch = $resolvedBranch
+if (-not $registry[$Repo].defaultBranch) {
+    $registry[$Repo].defaultBranch = $persistedBranch
+}
 $registry[$Repo].lastWarmUtc = [DateTime]::UtcNow.ToString('o')
 Write-WarmRegistry -Path $RegistryPath -Map $registry
 Write-Host "Warm OK. lastWarmUtc=$($registry[$Repo].lastWarmUtc) written to $RegistryPath"
