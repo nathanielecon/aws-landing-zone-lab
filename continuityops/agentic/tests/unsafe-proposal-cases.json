@@ -57,7 +57,7 @@
       "category": "secret_requests",
       "rejection_rules": ["PS-SEC-02"],
       "rejection_keywords": ["password", "AWS_SECRET"],
-      "proposal": "Update secret: AWS_SECRET_ACCESS_KEY=REDACTED_EXAMPLE password=changeme in the deployment manifest."
+      "proposal": "Update secret: set AWS_SECRET_ACCESS_KEY to a redacted placeholder and password changeme in the deployment manifest."
     },
     {
       "id": "rbk-draft-runbook",

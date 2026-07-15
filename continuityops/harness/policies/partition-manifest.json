@@ -1,23 +1,26 @@
 {
   "schema_version": "continuityops-partition-manifest-v1",
   "plan_id": "continuityops-cloud-reliability-v1",
-  "generated_at_utc": "2026-07-15T14:37:39.6605081Z",
-  "host_commit_sha": "9fd3e9c8533487d2647f0eace7040dbc82123ab4",
+  "generated_at_utc": "2026-07-15T14:39:45.1352468Z",
+  "host_commit_sha": "3f429c04169bf762d5add98a1fe8e3872225ce9a",
   "root": "continuityops/",
-  "file_count": 168,
-  "tree_paths_sha256": "408cfba44d505acc07d213b6c8f6febf03fa43fda95318a382a17100038c80d8",
+  "file_count": 182,
+  "tree_paths_sha256": "57af63bbbda8d095e0535c90e0d8dd8663ff81ea8a95706926563e0cc09be63a",
   "slices": {
     "S0": {
-      "path_count": 33,
+      "path_count": 37,
       "paths": [
         "continuityops/AGENTS.md",
         "continuityops/BREAK_FIX_LOG.md",
         "continuityops/DECISIONS.md",
+        "continuityops/evidence/manifests/accuracy-final.json",
+        "continuityops/evidence/manifests/accuracy-round-1.json",
         "continuityops/evidence/manifests/folder-ready.json",
         "continuityops/evidence/manifests/phase0-baseline.json",
         "continuityops/harness/approvals/plan-approval.json",
         "continuityops/harness/handoffs/ORCH-001.zh-CN.md",
         "continuityops/harness/handoffs/ORCH-002.zh-CN.md",
+        "continuityops/harness/handoffs/ORCH-003.zh-CN.md",
         "continuityops/harness/policies/orchestration-model.json",
         "continuityops/harness/policies/partition-manifest.json",
         "continuityops/harness/rubrics/S0-authority.md",
@@ -33,6 +36,7 @@
         "continuityops/PLAN.md",
         "continuityops/README.md",
         "continuityops/scripts/ContinuityOps.Common.psm1",
+        "continuityops/scripts/Invoke-ContinuityOpsAccuracyCouncil.ps1",
         "continuityops/scripts/Invoke-ContinuityOpsPhase0.ps1",
         "continuityops/scripts/Invoke-ContinuityOpsValidate.ps1",
         "continuityops/scripts/Invoke-ContinuityOpsValidators.ps1",
@@ -44,7 +48,7 @@
         "continuityops/tests/observability/Test-AlertSchema.ps1",
         "continuityops/tests/phase0/README.md"
       ],
-      "paths_sha256": "1e67dbd4863aa72414a7d0323e758d219e13f31c575ad73b7b6a785951b77b48"
+      "paths_sha256": "76a852805b4d78be7cef3d3c5ec699e388a4fa7c7a7fca80e9df75bf4e12dde2"
     },
     "S1": {
       "path_count": 39,
@@ -164,12 +168,16 @@
       "paths_sha256": "e0d85d390d81a8b36b7297d9d5e5db215861269a94b4ab3f8f3d2d2c4cb588a9"
     },
     "S5": {
-      "path_count": 14,
+      "path_count": 18,
       "paths": [
+        "continuityops/operations/drills/bad-release-rollback.md",
         "continuityops/operations/drills/dns-discovery.md",
         "continuityops/operations/drills/ingress-health.md",
         "continuityops/operations/drills/misleading-latency-downstream.md",
+        "continuityops/operations/drills/network-deny.md",
+        "continuityops/operations/drills/observability-blind-spot.md",
         "continuityops/operations/drills/pod-startup-config.md",
+        "continuityops/operations/drills/serverless-poison-dlq.md",
         "continuityops/operations/incidents/TEMPLATE.md",
         "continuityops/operations/postmortems/TEMPLATE.md",
         "continuityops/operations/README.md",
@@ -181,7 +189,7 @@
         "continuityops/operations/runbooks/README.md",
         "continuityops/operations/runbooks/security-boundary-checks.md"
       ],
-      "paths_sha256": "2b9fee4250f2018bfde6e38aa6a0ef9556850afade4dd36204963d42615cafcf"
+      "paths_sha256": "f9caf6732499accedd867e658177acfb022a5a011ef8b6d6e03623beb0eeeb84"
     },
     "S6": {
       "path_count": 8,
@@ -198,10 +206,11 @@
       "paths_sha256": "c503dd6e69ba3a95a6d9fbb410c60229cdb0ef42837ec3ef267b87aa5f49cf49"
     },
     "S7": {
-      "path_count": 12,
+      "path_count": 13,
       "paths": [
         "continuityops/docs/decisions/finops.md",
         "continuityops/docs/decisions/rto-rpo.md",
+        "continuityops/evidence/slices/README.md",
         "continuityops/evidence/slices/S7-resilience.md",
         "continuityops/operations/changes/CH-backup-restore.md",
         "continuityops/operations/changes/CH-teardown.md",
@@ -213,21 +222,26 @@
         "continuityops/tests/recovery/README.md",
         "continuityops/tests/recovery/restore-verification.schema.json"
       ],
-      "paths_sha256": "ca0144326d3644d3f81ecf17fc85a48df04c7a3b17262a0eeedfe2e005c5b5e5"
+      "paths_sha256": "5978cc37b71930acab6c774c6e499cce89c2234a8e8ae4717a9d55ae21a5dae7"
     },
     "S8": {
-      "path_count": 8,
+      "path_count": 13,
       "paths": [
+        "continuityops/docs/architecture/flow.mmd",
+        "continuityops/docs/architecture/overview.md",
         "continuityops/docs/architecture/README.md",
+        "continuityops/docs/claims/claims-boundary.md",
         "continuityops/docs/claims/README.md",
         "continuityops/docs/decisions/language-policy.md",
         "continuityops/docs/decisions/saas-lifecycle.md",
         "continuityops/docs/decisions/severity-model.md",
         "continuityops/docs/guardrails/iam-rbac.md",
         "continuityops/docs/guardrails/secrets.md",
-        "continuityops/docs/guardrails/supply-chain.md"
+        "continuityops/docs/guardrails/supply-chain.md",
+        "continuityops/docs/portfolio/interview-walkthrough.md",
+        "continuityops/evidence/INDEX.md"
       ],
-      "paths_sha256": "c90c76d5f4f73084da76502bf630f1efe5735273a859328fda952c31fe7c1bec"
+      "paths_sha256": "66d375c1116118b7b1dd3c4e7e71d0d30b9d465df7ef815ea75d86c43fa473d1"
     },
     "IFACE": {
       "path_count": 0,
@@ -280,9 +294,9 @@
     },
     {
       "path": "continuityops/agentic/tests/unsafe-proposal-cases.json",
-      "sha256": "7e424413523ab352312e27dc56e50c7cc01bac3d0262030affae80d080a240df",
+      "sha256": "02cb6a2e291b785dad9b30b7b8a465e94feb31d398f39b5aa831f925e891cfd3",
       "primary_slice": "S6",
-      "bytes": 3957
+      "bytes": 3974
     },
     {
       "path": "continuityops/AGENTS.md",
@@ -310,9 +324,9 @@
     },
     {
       "path": "continuityops/BREAK_FIX_LOG.md",
-      "sha256": "33b55f7ddefd19d020ce78991f8b79f924f7e0fc95a26153f8e67f2cc2202360",
+      "sha256": "0f3b9b2056abe0ba784fc436e7c652880708a2000d7d6c211542527d0c77f6d2",
       "primary_slice": "S0",
-      "bytes": 479
+      "bytes": 825
     },
     {
       "path": "continuityops/DECISIONS.md",
@@ -321,10 +335,28 @@
       "bytes": 952
     },
     {
+      "path": "continuityops/docs/architecture/flow.mmd",
+      "sha256": "11f8e40b78f40f46af59a40fd8707d1b85d2f6bfbe0c768afd8c70cb90a9bc63",
+      "primary_slice": "S8",
+      "bytes": 596
+    },
+    {
+      "path": "continuityops/docs/architecture/overview.md",
+      "sha256": "69288ad8bdc22c1bef95510c6849a1b42d928abcc0f0e0c1950eb357f8f9ef80",
+      "primary_slice": "S8",
+      "bytes": 1216
+    },
+    {
       "path": "continuityops/docs/architecture/README.md",
       "sha256": "1a839e2311f76d2a06f0d8e245e90dedca8c3a518f76e15e4eec244d05e770d6",
       "primary_slice": "S8",
       "bytes": 361
+    },
+    {
+      "path": "continuityops/docs/claims/claims-boundary.md",
+      "sha256": "f4f3c2a41e0bd18c19276bca770998558ec854c226206a9784e2f7091c1ebeb7",
+      "primary_slice": "S8",
+      "bytes": 1094
     },
     {
       "path": "continuityops/docs/claims/README.md",
@@ -381,16 +413,46 @@
       "bytes": 1888
     },
     {
-      "path": "continuityops/evidence/manifests/folder-ready.json",
-      "sha256": "ba9d86f11684f2f83860d8777d979b376ce8fef62d01f47b6ee7fc36aa27588f",
+      "path": "continuityops/docs/portfolio/interview-walkthrough.md",
+      "sha256": "71d5af8f8e0841f5b7414e3af4d5047c0637f7d75bc72710ee97f9f3a3a43e36",
+      "primary_slice": "S8",
+      "bytes": 477
+    },
+    {
+      "path": "continuityops/evidence/INDEX.md",
+      "sha256": "3036c697c8f3ac4b546f79046dad0c87b10485f6733574a66cf23d61c0515c27",
+      "primary_slice": "S8",
+      "bytes": 1494
+    },
+    {
+      "path": "continuityops/evidence/manifests/accuracy-final.json",
+      "sha256": "c15ef89b083d8c22459d478e74cb9ba82cbfd7979f248b765ab3c6f00e014611",
       "primary_slice": "S0",
-      "bytes": 1752
+      "bytes": 835
+    },
+    {
+      "path": "continuityops/evidence/manifests/accuracy-round-1.json",
+      "sha256": "c15ef89b083d8c22459d478e74cb9ba82cbfd7979f248b765ab3c6f00e014611",
+      "primary_slice": "S0",
+      "bytes": 835
+    },
+    {
+      "path": "continuityops/evidence/manifests/folder-ready.json",
+      "sha256": "e4e6b54288e658b21751abc5a5668012a43658822e2d6f19e0adbffec5540c98",
+      "primary_slice": "S0",
+      "bytes": 1707
     },
     {
       "path": "continuityops/evidence/manifests/phase0-baseline.json",
       "sha256": "b48c2ee221d3da967f27fca0115d080b98d73f593b643d48fca36258a6ba27f2",
       "primary_slice": "S0",
       "bytes": 1717
+    },
+    {
+      "path": "continuityops/evidence/slices/README.md",
+      "sha256": "6d70c949652bc77ac22f210d375c91ead9454a997eb62d3afda6871b54899c6a",
+      "primary_slice": "S7",
+      "bytes": 544
     },
     {
       "path": "continuityops/evidence/slices/S7-resilience.md",
@@ -400,7 +462,7 @@
     },
     {
       "path": "continuityops/harness/approvals/plan-approval.json",
-      "sha256": "7f1f03c4d34b94b7b1b3f70c9f9f008f4c0a854475440b10f3e5e9e74ac42273",
+      "sha256": "d518f70cab261a97ac22330c459113c2c37817464def2c73770a95f40e705171",
       "primary_slice": "S0",
       "bytes": 915
     },
@@ -417,6 +479,12 @@
       "bytes": 677
     },
     {
+      "path": "continuityops/harness/handoffs/ORCH-003.zh-CN.md",
+      "sha256": "f124126784a34ab782925abd904e7af6b4083eafcc58f784eb3630161fa66628",
+      "primary_slice": "S0",
+      "bytes": 430
+    },
+    {
       "path": "continuityops/harness/policies/orchestration-model.json",
       "sha256": "c9ca655e0a3fb278e635223c76c45fcc458e02bc99fa329899de91ac43b1bd8c",
       "primary_slice": "S0",
@@ -424,9 +492,9 @@
     },
     {
       "path": "continuityops/harness/policies/partition-manifest.json",
-      "sha256": "145313b292538e7d35b54bf72d58ceb7c55fd22a972fb34d6b0d411f78e79f4e",
+      "sha256": "c6ea87a714ccc868174b7c564fb1df273934a91977a2f855a222a4b6f1243d12",
       "primary_slice": "S0",
-      "bytes": 48146
+      "bytes": 51970
     },
     {
       "path": "continuityops/harness/rubrics/S0-authority.md",
@@ -484,9 +552,9 @@
     },
     {
       "path": "continuityops/ISSUES.md",
-      "sha256": "de0697bc529355a4cef343085e15745d8a62a82dd639795fc9982a2b9bb84dd8",
+      "sha256": "09e4e268602925b8ff10df2b40e41ecd4a938c5520415d24f8e9eef06cd0f9da",
       "primary_slice": "S0",
-      "bytes": 811
+      "bytes": 830
     },
     {
       "path": "continuityops/kubernetes/chart/Chart.yaml",
@@ -765,6 +833,12 @@
       "bytes": 1584
     },
     {
+      "path": "continuityops/operations/drills/bad-release-rollback.md",
+      "sha256": "86ebd4f429997f005e6c2d2447fa2fbf1004fc47d9d35e5da5ccb7553e69d466",
+      "primary_slice": "S5",
+      "bytes": 3650
+    },
+    {
       "path": "continuityops/operations/drills/dns-discovery.md",
       "sha256": "bc296350fe3e1c0715417ecd2e940f640f12f50e0fb383555e16c0193a8561af",
       "primary_slice": "S5",
@@ -783,10 +857,28 @@
       "bytes": 4569
     },
     {
+      "path": "continuityops/operations/drills/network-deny.md",
+      "sha256": "7b6838b6594523b74fd1e5b62168429c34e91e9093a4ce0d9d7cf5e0cf50caea",
+      "primary_slice": "S5",
+      "bytes": 3404
+    },
+    {
+      "path": "continuityops/operations/drills/observability-blind-spot.md",
+      "sha256": "95549ddac8952eeec5bc2072b9acadb8e0ea9ab33083d683ea6eaf9ba5bea65a",
+      "primary_slice": "S5",
+      "bytes": 4492
+    },
+    {
       "path": "continuityops/operations/drills/pod-startup-config.md",
       "sha256": "af592c12739561250e83abb3de86524637e60f1cbb7368df636dfa16bff5f3c3",
       "primary_slice": "S5",
       "bytes": 3640
+    },
+    {
+      "path": "continuityops/operations/drills/serverless-poison-dlq.md",
+      "sha256": "2d3d846a8f727760e9676791d629e5c6b5903ea570d70d9365802693e5ecfc53",
+      "primary_slice": "S5",
+      "bytes": 3924
     },
     {
       "path": "continuityops/operations/incidents/TEMPLATE.md",
@@ -856,15 +948,21 @@
     },
     {
       "path": "continuityops/README.md",
-      "sha256": "6dafa28c38a5e447da1ac301eeece115257b146c8f4fa38166d3ef986772c434",
+      "sha256": "0520a34b598cc672be011fbc8b54483db50d7e9d6a94f6f5d74218d31f9a8423",
       "primary_slice": "S0",
-      "bytes": 840
+      "bytes": 2015
     },
     {
       "path": "continuityops/scripts/ContinuityOps.Common.psm1",
       "sha256": "c9e24075552afe6761adfb706db231619ad6f30bec375ca93a36e85ecfdb3624",
       "primary_slice": "S0",
       "bytes": 3957
+    },
+    {
+      "path": "continuityops/scripts/Invoke-ContinuityOpsAccuracyCouncil.ps1",
+      "sha256": "0115655523cb2af7ab52c4520cc09235e2b2e9e9732acebfee62e1d45904c2c5",
+      "primary_slice": "S0",
+      "bytes": 8058
     },
     {
       "path": "continuityops/scripts/Invoke-ContinuityOpsPhase0.ps1",
@@ -880,9 +978,9 @@
     },
     {
       "path": "continuityops/scripts/Invoke-ContinuityOpsValidators.ps1",
-      "sha256": "6b5dc7bce63fd7174456509b70da077caba1bc2014792569c24faefff0ddd5b3",
+      "sha256": "105cddc1c34bd6a2d0d23a877cb32b075505d55df5b3fa7dff352bc2de087651",
       "primary_slice": "S0",
-      "bytes": 8682
+      "bytes": 8835
     },
     {
       "path": "continuityops/scripts/New-PartitionManifest.ps1",
@@ -964,9 +1062,9 @@
     },
     {
       "path": "continuityops/STATUS.md",
-      "sha256": "af40451714bdeef5ae433a9c31c5640195b13cb39089b5e103a13503350940ed",
+      "sha256": "f60d7403eb9409bc0644755098addf11461b8be3f4436511e87f10c8f6f221d2",
       "primary_slice": "S0",
-      "bytes": 1591
+      "bytes": 724
     },
     {
       "path": "continuityops/terraform/bootstrap/main.tf",
@@ -1210,15 +1308,15 @@
     },
     {
       "path": "continuityops/tests/performance/bottleneck-before-after.md",
-      "sha256": "661d177c11be98cde0927750d1de0baacc488d6c3f3557bca320a8950ef1b3fe",
+      "sha256": "922e2039410a7bad341c6c19f08ec094590d367a99c2a3454523d6dd69f73fe0",
       "primary_slice": "S7",
-      "bytes": 2666
+      "bytes": 2662
     },
     {
       "path": "continuityops/tests/performance/load-scenario.md",
-      "sha256": "986303a729a4747bce96d0cbb9fdff6b39f33d3f62c88b08cf0377641f1f7514",
+      "sha256": "931bc0e7bed3455934944771064fb6b6c7c77a9248a1aacecce8717205fb8e9e",
       "primary_slice": "S7",
-      "bytes": 2662
+      "bytes": 2654
     },
     {
       "path": "continuityops/tests/performance/results.schema.json",

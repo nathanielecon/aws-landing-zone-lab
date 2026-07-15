@@ -1,21 +1,21 @@
 {
   "schema_version": "continuityops-evidence-event-v1",
   "event_id": "folder-ready",
-  "candidate_sha": "9fd3e9c8533487d2647f0eace7040dbc82123ab4",
+  "candidate_sha": "3f429c04169bf762d5add98a1fe8e3872225ce9a",
   "environment": "repo_only",
   "identity": "continuityops-validate",
-  "timestamp_utc": "2026-07-15T14:37:26.5030172Z",
+  "timestamp_utc": "2026-07-15T14:39:45.0635516Z",
   "command": "pwsh -File continuityops/scripts/Invoke-ContinuityOpsValidators.ps1",
-  "exit_code": 1,
-  "result": "fail",
-  "artifact_sha256": "3a81fe4af4374d379392a51bc1608a959e3661669b2c9de530a6b696b33f01b2",
+  "exit_code": 0,
+  "result": "pass",
+  "artifact_sha256": "c9e96f31a1a6c5ed0024f72b25b02ff08c0aa26f0b429b0894f063cf2d1ec42a",
   "slice": "S0",
   "notes": "ContinuityOps folder health validation",
   "validation": {
     "schema_version": "continuityops-validate-v1",
     "task_id": "COP-001",
-    "candidate_sha": "9fd3e9c8533487d2647f0eace7040dbc82123ab4",
-    "timestamp_utc": "2026-07-15T14:37:26.5030172Z",
+    "candidate_sha": "3f429c04169bf762d5add98a1fe8e3872225ce9a",
+    "timestamp_utc": "2026-07-15T14:39:45.0635516Z",
     "results": [
       {
         "id": "path_scope",
@@ -24,8 +24,8 @@
       },
       {
         "id": "secret_scan",
-        "status": "fail",
-        "detail": "continuityops/agentic/tests/unsafe-proposal-cases.json~aws_secret_access_key\\s*=\\s*\\S+"
+        "status": "pass",
+        "detail": "no high-confidence secrets in continuityops/"
       },
       {
         "id": "independence_lock",
@@ -35,7 +35,7 @@
       {
         "id": "partition_manifest",
         "status": "pass",
-        "detail": "files=168 tree=408cfba44d50"
+        "detail": "files=182 tree=57af63bbbda8"
       },
       {
         "id": "orchestration_model",
@@ -48,8 +48,8 @@
         "detail": "no working-tree changes under project-a/"
       }
     ],
-    "pass_count": 5,
-    "fail_count": 1,
-    "overall": "fail"
+    "pass_count": 6,
+    "fail_count": 0,
+    "overall": "pass"
   }
 }
