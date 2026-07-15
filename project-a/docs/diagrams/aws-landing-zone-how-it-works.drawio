@@ -1,0 +1,82 @@
+<mxfile host="app.diagrams.net" modified="2026-07-15T00:00:00.000Z" agent="Cursor" version="24.7.8" type="device">
+  <diagram id="project-a-lz-lab" name="Landing Zone Lab (ELI5)">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="AWS Landing Zone Lab — How It Works" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=28;fontStyle=1;fontColor=#1F2933;" vertex="1" parent="1">
+          <mxGeometry x="60" y="30" width="900" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="subtitle" value="Push code → prove identity → Terraform builds one account → evidence" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontColor=#52606D;" vertex="1" parent="1">
+          <mxGeometry x="60" y="70" width="720" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Step 1 -->
+        <mxCell id="s1" value="&lt;b&gt;1. You push code&lt;/b&gt;&lt;br&gt;GitHub Actions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3E8EE;strokeColor=#243B53;fontColor=#102A43;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="160" width="200" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow 1→2 -->
+        <mxCell id="a12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#243B53;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s1" target="s2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Step 2 -->
+        <mxCell id="s2" value="&lt;b&gt;2. GitHub proves who you are&lt;/b&gt;&lt;br&gt;OIDC trust (no long-lived keys)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F2E6;strokeColor=#18794E;fontColor=#0B3D2E;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="320" y="160" width="220" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow 2→3 -->
+        <mxCell id="a23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#243B53;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s2" target="s3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Step 3 -->
+        <mxCell id="s3" value="&lt;b&gt;3. Terraform builds the lab&lt;/b&gt;&lt;br&gt;Single AWS account" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8E8FF;strokeColor=#1D4D8F;fontColor=#102A43;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="600" y="160" width="220" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow 3→group -->
+        <mxCell id="a34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#243B53;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s3" target="live">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Live group -->
+        <mxCell id="live" value="4. Live in us-east-1 (one account)" style="swimlane;rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F7FA;strokeColor=#243B53;fontStyle=1;fontSize=14;fontColor=#102A43;startSize=36;" vertex="1" parent="1">
+          <mxGeometry x="880" y="100" width="280" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="live-id" value="&lt;b&gt;Identity&lt;/b&gt;&lt;br&gt;OIDC / workload role" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F2E6;strokeColor=#18794E;fontSize=13;" vertex="1" parent="live">
+          <mxGeometry x="20" y="50" width="240" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="live-net" value="&lt;b&gt;Private network&lt;/b&gt;&lt;br&gt;VPC + flow logs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4CE;strokeColor=#8A6D1D;fontSize=13;" vertex="1" parent="live">
+          <mxGeometry x="20" y="125" width="240" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="live-audit" value="&lt;b&gt;Audit&lt;/b&gt;&lt;br&gt;CloudTrail + KMS Log Archive" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8E8FF;strokeColor=#1D4D8F;fontSize=13;" vertex="1" parent="live">
+          <mxGeometry x="20" y="200" width="240" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow group→evidence -->
+        <mxCell id="a45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#243B53;strokeWidth=2;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="live" target="s5">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Step 5 -->
+        <mxCell id="s5" value="&lt;b&gt;5. Evidence written down&lt;/b&gt;&lt;br&gt;Docs + CI run proofs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8DCBF;strokeColor=#7C5E10;fontColor=#513C06;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="910" y="420" width="220" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- Design-only callout -->
+        <mxCell id="design" value="&lt;b&gt;Also in the repo (design only)&lt;/b&gt;&lt;br&gt;Multi-account Orgs / OU / SCP interfaces.&lt;br&gt;Member accounts were &lt;b&gt;not&lt;/b&gt; created in the live lab." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F4F8;strokeColor=#627D98;dashed=1;fontSize=13;align=left;spacingLeft=12;spacingRight=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="320" width="420" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- Caption -->
+        <mxCell id="caption" value="Multi-account Orgs/OU/SCP = design only. Live lab = one account. Cloud-validated single-account lab." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1F2933;strokeColor=#1F2933;fontColor=#FFFFFF;fontSize=13;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="520" width="1100" height="44" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

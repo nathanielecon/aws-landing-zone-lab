@@ -14,7 +14,7 @@ docs owned primarily by tasks `A-003` through `A-006`, including:
 - `project-a/docs/operations/network-failure-cases.md`, `audit-review.md`,
   `audit-troubleshooting.md`, `baseline-runbook.md`, `cost-and-teardown.md`
 - `project-a/docs/validation.md`
-- `project-a/docs/diagrams/network.svg`
+- `project-a/docs/diagrams/aws-landing-zone-network.png`
 - task policies `A-003.json` … `A-006.json`
 
 Extension points that must remain unimplemented: Transit Gateway, Network
