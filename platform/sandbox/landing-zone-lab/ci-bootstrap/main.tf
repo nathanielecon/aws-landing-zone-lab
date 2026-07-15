@@ -60,13 +60,14 @@ locals {
     Purpose     = "github-actions-oidc"
   }
 
-  # Repo-name wildcards + repository_id lock: rename-safe without widening org.
-  # Allow main, PRs, cursor/* branches, and the protected "lab" GitHub Environment.
+  # Immutable subject claims (GitHub renames after 2026-07-15):
+  #   repo:OWNER@OWNER_ID/REPO@REPO_ID:...
+  # Name-only repo:OWNER/REPO:... no longer matches. Lock IDs; wildcard repo name.
   github_sub_patterns = [
-    "repo:${var.github_organization}/*:ref:refs/heads/main",
-    "repo:${var.github_organization}/*:pull_request",
-    "repo:${var.github_organization}/*:ref:refs/heads/cursor/*",
-    "repo:${var.github_organization}/*:environment:lab",
+    "repo:${var.github_organization}@${var.github_repository_owner_id}/*@${var.github_repository_id}:ref:refs/heads/main",
+    "repo:${var.github_organization}@${var.github_repository_owner_id}/*@${var.github_repository_id}:pull_request",
+    "repo:${var.github_organization}@${var.github_repository_owner_id}/*@${var.github_repository_id}:ref:refs/heads/cursor/*",
+    "repo:${var.github_organization}@${var.github_repository_owner_id}/*@${var.github_repository_id}:environment:lab",
   ]
 }
 
