@@ -4,6 +4,8 @@
 *.log
 *.jsonl
 .codex-last-message-*
+scripts/cursor-cloud-worker/node_modules/
+*.gzb64
 **/.terraform/
 **/*.tfstate
 **/*.tfstate.*
