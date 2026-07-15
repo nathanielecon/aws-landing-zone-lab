@@ -7,7 +7,7 @@
   "floor": 9.98,
   "target_average": 9.5,
   "judge_floor": 9.0,
-  "merge_ready": true,
+  "merge_ready": false,
   "judges": [
     {
       "judge_id": "J1",
@@ -37,5 +37,7 @@
   "failing_checks": [],
   "must_failures": [],
   "check_count": 23,
-  "pass_count": 23
+  "pass_count": 23,
+  "retracted": true,
+  "retraction_reason": "Judge prompts leaked numeric pass bars; invalid for certification."
 }
