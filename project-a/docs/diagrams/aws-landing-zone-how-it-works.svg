@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="t d">
-  <title id="t">Project A  AWS Landing Zone Lab</title>
+  <title id="t">AWS Landing Zone Lab — How It Works</title>
   <desc id="d">Plain-English flow: push code, OIDC trust, Terraform builds one account, live identity network and audit, then evidence. Multi-account Orgs remain design-only.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
@@ -9,8 +9,8 @@
   <rect width="1200" height="520" fill="#EEF2F6"/>
   <rect x="24" y="24" width="1152" height="472" rx="8" fill="#FFFFFF" stroke="#243B53" stroke-width="2"/>
 
-  <text x="56" y="70" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#1F2933">Project A  AWS Landing Zone Lab</text>
-  <text x="56" y="100" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="16" fill="#52606D">What got built, in plain English</text>
+  <text x="56" y="70" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#1F2933">AWS Landing Zone Lab — How It Works</text>
+  <text x="56" y="100" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="16" fill="#52606D">Push code → prove identity → Terraform builds one account → evidence</text>
 
   <!-- 1 -->
   <rect x="56" y="140" width="170" height="96" rx="12" fill="#E3E8EE" stroke="#243B53" stroke-width="2"/>
