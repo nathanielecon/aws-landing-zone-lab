@@ -26,7 +26,7 @@
       "content_sha256": "9E7C04CDDB5F2A1EA506E2268C2E964AB487AB06EF438C6A5243DADB87B5D4ED"
     },
     {
-      "path": "project-a/docs/diagrams/platform.svg",
+      "path": "project-a/docs/diagrams/aws-landing-zone-architecture.png",
       "status": "present",
       "git_status": "untracked",
       "old_mode": "000000",

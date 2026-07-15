@@ -89,8 +89,8 @@ Zero-orphan reviewer path: README → architecture → evidence → review.
 - Pushback and handoff: [`docs/review/pushback-and-handoff.md`](../review/pushback-and-handoff.md)
 - Azure Government readiness (translation-only):
   [`docs/azure-government/readiness.md`](../azure-government/readiness.md)
-- One figure (architecture + how it works + network): [`docs/diagrams/aws-landing-zone-lab.png`](../diagrams/aws-landing-zone-lab.png) · [`.drawio`](../diagrams/aws-landing-zone-lab.drawio) · [`.svg`](../diagrams/aws-landing-zone-lab.svg)
-- Section sources: [`architecture`](../diagrams/aws-landing-zone-architecture.drawio) · [`how-it-works`](../diagrams/aws-landing-zone-how-it-works.drawio) · [`network.svg`](../diagrams/network.svg) · [`platform.svg`](../diagrams/platform.svg)
+- Image2 diagrams: [`aws-landing-zone-lab.png`](../diagrams/aws-landing-zone-lab.png) · [`architecture`](../diagrams/aws-landing-zone-architecture.png) · [`how-it-works`](../diagrams/aws-landing-zone-how-it-works.png) · [`network`](../diagrams/aws-landing-zone-network.png)
+- Editable draw.io: [`lab`](../diagrams/aws-landing-zone-lab.drawio) · [`architecture`](../diagrams/aws-landing-zone-architecture.drawio) · [`how-it-works`](../diagrams/aws-landing-zone-how-it-works.drawio)
 - Graphify navigation aid (not a validation substitute):
   [`graphify-out/GRAPH_REPORT.md`](../../graphify-out/GRAPH_REPORT.md)
 - Fresh-clone CI-parity gate:

@@ -1,19 +1,31 @@
 # AWS Landing Zone Lab (`project-a/`)
 
-Terraform modules, CI-gated apply, and written evidence for an AWS Landing Zone design plus a single-account live lab.
+Terraform modules, CI-gated apply, and written evidence for an AWS Landing Zone design plus a **cloud-validated** single-account live lab.
 
-## The figure (architecture · how it works · network)
+## Diagrams
 
 <p align="center">
-  <img src="docs/diagrams/aws-landing-zone-lab.png" alt="AWS Landing Zone Lab — architecture, how it works, and private network in one figure" width="100%">
+  <img src="docs/diagrams/aws-landing-zone-lab.png" alt="AWS Landing Zone Lab — full poster" width="100%">
 </p>
 
 <p align="center">
-  <a href="docs/diagrams/aws-landing-zone-lab.drawio">draw.io</a>
+  <img src="docs/diagrams/aws-landing-zone-architecture.png" alt="AWS Landing Zone Architecture" width="100%">
+</p>
+
+<p align="center">
+  <img src="docs/diagrams/aws-landing-zone-how-it-works.png" alt="AWS Landing Zone Lab — How It Works" width="100%">
+</p>
+
+<p align="center">
+  <img src="docs/diagrams/aws-landing-zone-network.png" alt="AWS Landing Zone — Private Network" width="100%">
+</p>
+
+<p align="center">
+  <a href="docs/diagrams/aws-landing-zone-lab.drawio">lab.drawio</a>
   ·
-  <a href="docs/diagrams/aws-landing-zone-lab.svg">SVG</a>
+  <a href="docs/diagrams/aws-landing-zone-architecture.drawio">architecture.drawio</a>
   ·
-  <a href="docs/diagrams/network.svg">network.svg (panel C source)</a>
+  <a href="docs/diagrams/aws-landing-zone-how-it-works.drawio">how-it-works.drawio</a>
 </p>
 
 Most of this folder is a **repo-only** multi-account platform contract: inspectable Terraform, docs, harness gates, and A-001…A-007 evidence that is **not** cloud-validated. Azure Government stays translation-only.
@@ -55,5 +67,6 @@ pwsh -NoLogo -NoProfile -File ../scripts/Invoke-HarnessReleaseValidation.ps1
 Details: [HARNESS.md](HARNESS.md).
 
 This folder proves junior-to-mid infrastructure design work plus an honest
-single-account live lab. It does **not** prove production readiness, senior
-ownership, enterprise operations, or multi-account cloud validation.
+cloud-validated single-account live lab. It does **not** prove production
+deployment, senior ownership, enterprise operations, or multi-account cloud
+validation. Avoid unsupported claims of production readiness.

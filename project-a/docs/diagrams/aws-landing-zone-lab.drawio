@@ -92,7 +92,7 @@
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
 
-        <mxCell id="caption" value="Not production. Not multi-account live. Honest single-account lab via Terraform + GitHub OIDC." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1F2933;fontColor=#FFFFFF;fontSize=13;align=center;" vertex="1" parent="1">
+        <mxCell id="caption" value="Cloud-validated lab (single account). Orgs/OU/SCP = design only." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1F2933;fontColor=#FFFFFF;fontSize=13;align=center;" vertex="1" parent="1">
           <mxGeometry x="40" y="800" width="880" height="44" as="geometry"/>
         </mxCell>
       </root>
