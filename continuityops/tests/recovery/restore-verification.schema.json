@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "continuityops-restore-verification-v1",
+  "title": "ContinuityOps restore verification record",
+  "description": "Evidence artifact for recovery-lab backup/restore drills. Synthetic data only.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "verification_id",
+    "candidate_sha",
+    "environment",
+    "change_id",
+    "scenario",
+    "started_at_utc",
+    "completed_at_utc",
+    "result",
+    "components",
+    "rto_rpo",
+    "synthetic_data_label"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "continuityops-restore-verification-v1"
+    },
+    "verification_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique id, e.g. rv-2026-07-15-001"
+    },
+    "candidate_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "environment": {
+      "enum": ["recovery-lab", "staging", "local", "repo_only"]
+    },
+    "change_id": {
+      "type": "string",
+      "description": "Linked change record, e.g. CH-backup-restore"
+    },
+    "scenario": {
+      "enum": [
+        "helm_rollback",
+        "queue_redrive",
+        "full_rebuild",
+        "kubernetes_drill",
+        "teardown_complete"
+      ]
+    },
+    "started_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "result": {
+      "enum": ["pass", "fail", "blocked", "skipped"]
+    },
+    "synthetic_data_label": {
+      "const": true,
+      "description": "Must be true — lab uses synthetic drill data only"
+    },
+    "rto_rpo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rto_minutes_measured", "rto_minutes_target", "rpo_minutes_measured", "rpo_minutes_target"],
+      "properties": {
+        "rto_minutes_measured": {
+          "type": "number",
+          "minimum": 0
+        },
+        "rto_minutes_target": {
+          "type": "number",
+          "minimum": 0
+        },
+        "rpo_minutes_measured": {
+          "type": "number",
+          "minimum": 0
+        },
+        "rpo_minutes_target": {
+          "type": "number",
+          "minimum": 0
+        },
+        "rto_met": {
+          "type": "boolean"
+        },
+        "rpo_met": {
+          "type": "boolean"
+        }
+      }
+    },
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "check", "status"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "eks_workloads",
+              "eks_control_plane",
+              "lambda_worker",
+              "sqs_primary",
+              "sqs_dlq",
+              "terraform_state",
+              "cloudwatch_logs",
+              "vpc_network",
+              "synthetic_tenant_metadata"
+            ]
+          },
+          "check": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": ["pass", "fail", "skipped"]
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "checklist": {
+      "type": "array",
+      "description": "Optional mirror of CH-backup-restore verification rows",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "passed"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99
+          },
+          "description": {
+            "type": "string"
+          },
+          "passed": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "evidence_links": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Relative repo paths or redacted object-storage URIs without credentials"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

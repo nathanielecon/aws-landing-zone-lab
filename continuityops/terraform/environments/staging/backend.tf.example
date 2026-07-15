@@ -1,0 +1,12 @@
+# Copy to backend.tf and fill placeholders before remote state apply.
+# Do not commit real bucket names or account-specific ARNs with secrets.
+
+terraform {
+  backend "s3" {
+    bucket         = "REPLACE_ME-continuityops-terraform-state"
+    key            = "staging/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "REPLACE_ME-continuityops-terraform-locks"
+    encrypt        = true
+  }
+}

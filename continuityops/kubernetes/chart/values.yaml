@@ -1,9 +1,60 @@
-# ContinuityOps lab values — image digest filled in Stage 1.
+# ContinuityOps lab values — replace image.digest before any live deploy.
+# Lab images are ContinuityOps-owned artifacts, not Project A/C production.
+
+replicaCount: 2
+
 image:
   repository: ghcr.io/continuityops/lab-app
+  # Immutable pin required; admission policies reject tag-only references.
   digest: sha256:PENDING_BUILD
   pullPolicy: IfNotPresent
-replicaCount: 2
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 10001
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 8080
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: lab.continuityops.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
 resources:
   requests:
     cpu: 50m
@@ -11,3 +62,105 @@ resources:
   limits:
     cpu: 250m
     memory: 256Mi
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 2
+  failureThreshold: 3
+
+startupProbe:
+  enabled: true
+  httpGet:
+    path: /healthz
+    port: http
+  failureThreshold: 12
+  periodSeconds: 5
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: ScheduleAnyway
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: DoNotSchedule
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+  # maxUnavailable: 1
+
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+  # Allow traffic from same namespace and ingress controller (when enabled).
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8080
+  dns:
+    namespaceSelector: {}
+    podSelector:
+      matchLabels:
+        k8s-app: kube-dns
+    ports:
+      - protocol: UDP
+        port: 53
+      - protocol: TCP
+        port: 53
+  # Default deny egress except DNS and explicit app allowlist below.
+  egressAllowlist:
+    - cidr: 10.0.0.0/8
+      port: 443
+      description: lab upstream HTTPS (replace per environment)
+    - cidr: 172.20.0.0/16
+      port: 443
+      description: in-cluster service mesh / API gateway placeholder
+
+config:
+  LOG_LEVEL: info
+  APP_ENV: lab
+  HTTP_PORT: "8080"
+
+secret:
+  # Reference an existing Secret by name; chart does not ship real credentials.
+  create: false
+  secretName: continuityops-lab-secrets
+  # Keys expected by the workload; values must be supplied out-of-band.
+  keys:
+    - API_TOKEN
+
+extraEnv: []
+extraVolumeMounts: []
+extraVolumes: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+tests:
+  connection:
+    enabled: true

@@ -1,0 +1,183 @@
+{
+  "description": "USE-style Kubernetes pod and node utilization for ContinuityOps lab chart. Placeholder metrics; wire to Container Insights or Prometheus.",
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "title": "K8s chart",
+      "type": "link",
+      "url": "../../kubernetes/chart/README.md"
+    }
+  ],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Utilization (pods)",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "CPU usage vs requests for continuityops-lab-app pods",
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "max": 1 }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 1 },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"continuityops\",pod=~\"continuityops-lab.*\"}[5m])) / sum(kube_pod_container_resource_requests{namespace=\"continuityops\",resource=\"cpu\"})",
+          "legendFormat": "cpu_util_vs_request",
+          "refId": "A"
+        }
+      ],
+      "title": "Pod CPU utilization vs request",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Memory working set vs limits",
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "max": 1 }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 1 },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "sum(container_memory_working_set_bytes{namespace=\"continuityops\",pod=~\"continuityops-lab.*\"}) / sum(kube_pod_container_resource_limits{namespace=\"continuityops\",resource=\"memory\"})",
+          "legendFormat": "mem_util_vs_limit",
+          "refId": "A"
+        }
+      ],
+      "title": "Pod memory utilization vs limit",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 1 },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "kube_pod_status_ready{namespace=\"continuityops\",condition=\"true\",pod=~\"continuityops-lab.*\"}",
+          "legendFormat": "{{pod}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Pod ready",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "id": 5,
+      "title": "Saturation",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Pods throttled or waiting on CPU",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 10 },
+      "id": 6,
+      "targets": [
+        {
+          "expr": "sum(increase(container_cpu_cfs_throttled_periods_total{namespace=\"continuityops\"}[5m]))",
+          "legendFormat": "throttled_periods",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU throttling (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 10 },
+      "id": 7,
+      "targets": [
+        {
+          "expr": "sum(kube_pod_status_phase{namespace=\"continuityops\",phase=\"Pending\"})",
+          "legendFormat": "pending_pods",
+          "refId": "A"
+        }
+      ],
+      "title": "Pending pods",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
+      "id": 8,
+      "title": "Errors (kube)",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 19 },
+      "id": 9,
+      "targets": [
+        {
+          "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"continuityops\"}[1h]))",
+          "legendFormat": "restarts_1h",
+          "refId": "A"
+        }
+      ],
+      "title": "Container restarts (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 19 },
+      "id": 10,
+      "targets": [
+        {
+          "expr": "sum(kube_pod_status_phase{namespace=\"continuityops\",phase=\"Failed\"})",
+          "legendFormat": "failed_pods",
+          "refId": "A"
+        }
+      ],
+      "title": "Failed pods",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 19 },
+      "id": 11,
+      "targets": [
+        {
+          "expr": "sum(kube_node_status_condition{condition=\"MemoryPressure\",status=\"true\"})",
+          "legendFormat": "nodes_mem_pressure",
+          "refId": "A"
+        }
+      ],
+      "title": "Nodes under memory pressure",
+      "type": "stat"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "tags": ["continuityops", "s4", "use", "kubernetes"],
+  "templating": {
+    "list": [
+      {
+        "current": { "text": "Prometheus", "value": "prometheus" },
+        "label": "Datasource",
+        "name": "datasource",
+        "query": "prometheus",
+        "type": "datasource"
+      },
+      {
+        "current": { "text": "continuityops", "value": "continuityops" },
+        "label": "Namespace",
+        "name": "namespace",
+        "query": "continuityops",
+        "type": "constant"
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "utc",
+  "title": "ContinuityOps — Kubernetes USE",
+  "uid": "co-k8s-use",
+  "version": 1
+}

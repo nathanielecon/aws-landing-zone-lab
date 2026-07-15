@@ -1,12 +1,22 @@
 # Workflow sources for ContinuityOps
 
 GitHub Actions only loads workflows from the repository root
-`.github/workflows/`. The ContinuityOps validate workflow is therefore
-published at:
+`.github/workflows/`. ContinuityOps workflows are therefore published at:
 
-`../../.github/workflows/continuityops-validate.yml`
+| Purpose | Repo-root path |
+|---------|----------------|
+| Validate (offline contract) | `.github/workflows/continuityops-validate.yml` |
+| Plan/apply (draft — promote when OIDC is wired) | See `continuityops-plan.draft.yml` in this directory |
 
-(from repo root: `.github/workflows/continuityops-validate.yml`)
+## Draft vs published
 
-This directory retains ContinuityOps-owned workflow drafts for Stage 1
-delivery/apply jobs as they are built.
+Files in `continuityops/.github/workflows/` are **drafts** owned by the
+ContinuityOps partition. Copy or adapt them to the repo root when OIDC roles
+and backend placeholders are approved. Do not store secrets or account IDs in
+drafts — use `REPLACE_ME` variables and GitHub environment configuration.
+
+## Stage 1 delivery
+
+- `continuityops-plan.draft.yml` — plan-only Terraform for staging/recovery-lab
+  using GitHub OIDC `role-to-assume` placeholders.
+- Apply jobs remain blocked until human approval and backend bootstrap complete.

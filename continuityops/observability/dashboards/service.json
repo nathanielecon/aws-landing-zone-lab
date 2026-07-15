@@ -1,0 +1,241 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "RED metrics for ContinuityOps lab HTTP service (ingress → k8s app). CloudWatch metric math or Grafana Prometheus/OTel datasource.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "title": "SLO catalog",
+      "type": "link",
+      "url": "../slo-catalog.json"
+    }
+  ],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Rate",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "description": "Request rate (successful + failed) per second",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "reqps"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+      "id": 2,
+      "targets": [
+        {
+          "alias": "http_requests_total",
+          "dimensions": { "Service": "continuityops-lab-app" },
+          "metricName": "http_server_request_duration_count",
+          "namespace": "ContinuityOps/Lab",
+          "period": "60",
+          "refId": "A",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "Request rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "description": "Requests per route (placeholder dimension Route)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+      "id": 3,
+      "targets": [
+        {
+          "alias": "by_route",
+          "dimensions": { "Route": "*" },
+          "metricName": "http_server_request_duration_count",
+          "namespace": "ContinuityOps/Lab",
+          "period": "60",
+          "refId": "A",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "Request rate by route",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "id": 4,
+      "title": "Errors",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "description": "5xx error rate as fraction of total requests",
+      "fieldConfig": {
+        "defaults": {
+          "max": 1,
+          "min": 0,
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 10 },
+      "id": 5,
+      "targets": [
+        {
+          "alias": "error_ratio",
+          "expression": "errors / requests",
+          "id": "e1",
+          "metricName": "http_server_request_duration_count",
+          "namespace": "ContinuityOps/Lab",
+          "period": "300",
+          "refId": "A",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "Error ratio (5xx)",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 10 },
+      "id": 6,
+      "targets": [
+        {
+          "alias": "5xx_count",
+          "dimensions": { "http_status_code": "5xx" },
+          "metricName": "http_server_request_duration_count",
+          "namespace": "ContinuityOps/Lab",
+          "period": "60",
+          "refId": "A",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "5xx count",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 10 },
+      "id": 7,
+      "targets": [
+        {
+          "alias": "4xx_count",
+          "dimensions": { "http_status_code": "4xx" },
+          "metricName": "http_server_request_duration_count",
+          "namespace": "ContinuityOps/Lab",
+          "period": "60",
+          "refId": "A",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "4xx count",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
+      "id": 8,
+      "title": "Duration",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "description": "p50 / p95 / p99 latency from histogram or CloudWatch EMF",
+      "fieldConfig": {
+        "defaults": { "unit": "ms" }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 19 },
+      "id": 9,
+      "targets": [
+        {
+          "alias": "p50",
+          "metricName": "http_server_request_duration",
+          "namespace": "ContinuityOps/Lab",
+          "period": "60",
+          "refId": "A",
+          "statistic": "p50"
+        },
+        {
+          "alias": "p95",
+          "metricName": "http_server_request_duration",
+          "namespace": "ContinuityOps/Lab",
+          "period": "60",
+          "refId": "B",
+          "statistic": "p95"
+        },
+        {
+          "alias": "p99",
+          "metricName": "http_server_request_duration",
+          "namespace": "ContinuityOps/Lab",
+          "period": "60",
+          "refId": "C",
+          "statistic": "p99"
+        }
+      ],
+      "title": "Latency percentiles",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "description": "SLO line from slo-catalog.json latency_p95 objective (500 ms)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 19 },
+      "id": 10,
+      "targets": [
+        {
+          "alias": "p95_vs_slo",
+          "metricName": "http_server_request_duration",
+          "namespace": "ContinuityOps/Lab",
+          "period": "300",
+          "refId": "A",
+          "statistic": "p95"
+        }
+      ],
+      "title": "p95 vs SLO (500 ms)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["continuityops", "s4", "red", "service"],
+  "templating": {
+    "list": [
+      {
+        "current": { "text": "CloudWatch", "value": "cloudwatch" },
+        "hide": 0,
+        "label": "Datasource",
+        "name": "datasource",
+        "query": "cloudwatch",
+        "type": "datasource"
+      },
+      {
+        "current": { "text": "continuityops-lab", "value": "continuityops-lab" },
+        "hide": 0,
+        "label": "Environment",
+        "name": "environment",
+        "query": "staging,recovery-lab",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "ContinuityOps — Service RED",
+  "uid": "co-service-red",
+  "version": 1
+}

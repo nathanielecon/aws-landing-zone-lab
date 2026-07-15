@@ -1,0 +1,76 @@
+{
+  "schema_version": "continuityops-mutation-policy-v1",
+  "plan_id": "continuityops-cloud-reliability-v1",
+  "default_write": false,
+  "description": "Product control: agents gather evidence and propose remediation only. Mutation-capable jobs require explicit human approval before any write, deploy, delete, or infrastructure change.",
+  "build_posture": {
+    "human_gates_enforced_during_build": false,
+    "documented_as_product_control": true,
+    "note": "ContinuityOps build orchestration advances without H4 receipts. This policy still governs runtime agent behavior and recruiter-facing safety design."
+  },
+  "read_only_defaults": {
+    "allowed_actions": [
+      "read_logs",
+      "read_metrics",
+      "read_traces",
+      "read_runbooks",
+      "read_configuration",
+      "correlate_evidence",
+      "draft_remediation_proposal"
+    ],
+    "denied_by_default": [
+      "write_files",
+      "apply_terraform",
+      "kubectl_apply",
+      "kubectl_delete",
+      "helm_upgrade",
+      "lambda_publish",
+      "sqs_purge",
+      "iam_policy_attach",
+      "secret_read",
+      "secret_write",
+      "shell_exec_on_hosts",
+      "network_rule_change"
+    ]
+  },
+  "mutation_capable_jobs": {
+    "requires_human_approval": true,
+    "approval_gate_id": "H4",
+    "job_kinds": [
+      "infrastructure_apply",
+      "kubernetes_rollout",
+      "kubernetes_scale",
+      "runbook_mutation_step",
+      "database_failover",
+      "traffic_shift",
+      "credential_rotation",
+      "queue_replay_with_side_effects",
+      "host_remediation_exec"
+    ],
+    "approval_requirements": [
+      "linked_incident_or_change_record",
+      "proposal_reviewed_by_on_call_or_ic",
+      "blast_radius_acknowledged",
+      "rollback_path_documented",
+      "evidence_bundle_attached"
+    ]
+  },
+  "proposal_only_mode": {
+    "enabled": true,
+    "worker_must_not_execute_mutations": true,
+    "output_artifacts": [
+      "evidence_summary",
+      "hypothesis_with_confidence",
+      "remediation_proposal",
+      "rollback_plan",
+      "escalation_recommendation"
+    ]
+  },
+  "rejection_signals": [
+    "unapproved_mutation",
+    "bypass_human_gate",
+    "execute_without_receipt",
+    "disable_safety_check",
+    "force_apply"
+  ]
+}

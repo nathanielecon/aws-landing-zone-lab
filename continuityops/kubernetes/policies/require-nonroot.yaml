@@ -1,0 +1,38 @@
+# Kyverno policy example — require non-root security context
+#
+#   kubectl apply -f continuityops/kubernetes/policies/require-nonroot.yaml
+#
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: continuityops-require-nonroot
+  annotations:
+    policies.kyverno.io/title: Require runAsNonRoot
+    policies.kyverno.io/category: ContinuityOps
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/description: >-
+      Containers must set securityContext.runAsNonRoot=true and pod-level
+      securityContext.runAsNonRoot=true.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: pod-run-as-non-root
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: >-
+          Pod and all containers must run as non-root (runAsNonRoot: true).
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: true
+            containers:
+              - securityContext:
+                  runAsNonRoot: true
+            =(initContainers):
+              - securityContext:
+                  runAsNonRoot: true

@@ -1,18 +1,98 @@
 {
   "service": "continuityops-lab",
+  "version": "0.2.0",
+  "status": "catalog_with_burn_rates",
+  "window": "28d",
+  "error_budget_policy": {
+    "notes": "Error budget = allowed bad events over the rolling window. Burn rate = (current error rate) / (error budget per hour). Multi-window burn alerts align with Google SRE Chapters 5 and 11.",
+    "availability_budget_fraction": 0.01,
+    "latency_budget_fraction": 0.05
+  },
   "slos": [
     {
       "name": "availability",
       "sli": "successful_requests / total_requests",
       "objective": 0.99,
-      "window": "28d"
+      "window": "28d",
+      "error_budget": {
+        "allowed_unavailability_fraction": 0.01,
+        "allowed_bad_minutes_per_28d": 403.2,
+        "notes": "1% of requests may fail over 28d (~403 minutes of full outage equivalent)."
+      },
+      "burn_rate_alerts": {
+        "fast": {
+          "window": "1h",
+          "burn_rate_threshold": 14.4,
+          "page": true,
+          "notes": "Consumes ~2% of monthly budget in 1h if sustained; maps to alerts.yaml slo-availability-fast-burn."
+        },
+        "slow": {
+          "window": "6h",
+          "burn_rate_threshold": 6,
+          "page": false,
+          "ticket": true,
+          "notes": "Consumes ~5% of monthly budget in 6h; maps to slo-availability-slow-burn."
+        }
+      },
+      "recovery_target": {
+        "burn_rate_below": 6,
+        "for": "15m",
+        "notes": "Alert resolves when 1h burn rate drops at or below 6x for 15 minutes."
+      }
     },
     {
       "name": "latency_p95",
       "sli": "http_request_duration_p95",
       "objective_ms": 500,
-      "window": "28d"
+      "window": "28d",
+      "error_budget": {
+        "allowed_slow_request_fraction": 0.05,
+        "notes": "Up to 5% of requests may exceed 500 ms p95 bucket over 28d (histogram SLI)."
+      },
+      "burn_rate_alerts": {
+        "fast": {
+          "window": "1h",
+          "burn_rate_threshold": 10,
+          "page": false,
+          "ticket": true,
+          "notes": "Latency budget burn; wire to http-latency-p95-breach alert."
+        }
+      },
+      "recovery_target": {
+        "p95_ms_below": 450,
+        "for": "15m"
+      }
+    },
+    {
+      "name": "worker_success",
+      "sli": "lambda_successful_invocations / lambda_invocations",
+      "objective": 0.995,
+      "window": "28d",
+      "error_budget": {
+        "allowed_failure_fraction": 0.005,
+        "notes": "Async path; excludes poison messages intentionally failed to DLQ after max receives."
+      },
+      "burn_rate_alerts": {
+        "fast": {
+          "window": "1h",
+          "burn_rate_threshold": 8,
+          "page": true,
+          "notes": "Pairs with lambda-error-rate and sqs-dlq-depth alerts."
+        }
+      },
+      "recovery_target": {
+        "error_ratio_below": 0.01,
+        "for": "15m"
+      }
     }
   ],
-  "status": "scaffold"
+  "dashboards": [
+    "continuityops/observability/dashboards/service.json",
+    "continuityops/observability/dashboards/kubernetes.json",
+    "continuityops/observability/dashboards/serverless.json"
+  ],
+  "alerts": "continuityops/observability/alerts/alerts.yaml",
+  "related_decisions": [
+    "continuityops/docs/decisions/severity-model.md"
+  ]
 }

@@ -1,0 +1,14 @@
+{
+  "name": "continuityops-event-worker",
+  "version": "0.1.0",
+  "description": "SQS-triggered ContinuityOps event worker (lab scaffold)",
+  "type": "module",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test ../../tests/*.test.js"
+  },
+  "private": true
+}

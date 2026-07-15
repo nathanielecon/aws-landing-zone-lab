@@ -1,0 +1,67 @@
+# Draft — promote to repo root .github/workflows/ when OIDC is configured.
+# Plan only. No secrets. No apply in this draft.
+
+name: continuityops-terraform-plan
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Terraform environment to plan
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - recovery-lab
+  pull_request:
+    paths:
+      - "continuityops/terraform/**"
+      - "continuityops/.github/workflows/continuityops-plan.draft.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  TF_IN_AUTOMATION: "true"
+  AWS_REGION: us-east-1
+
+jobs:
+  plan:
+    name: Terraform plan (${{ github.event.inputs.environment || 'staging' }})
+    runs-on: ubuntu-latest
+    environment: continuityops-${{ github.event.inputs.environment || 'staging' }}
+
+    defaults:
+      run:
+        working-directory: continuityops/terraform/environments/${{ github.event.inputs.environment || 'staging' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::REPLACE_ME:role/continuityops-gha-plan
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.7"
+
+      - name: Terraform fmt check
+        run: terraform fmt -check -recursive ../../..
+
+      - name: Terraform init (local backend for plan draft)
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform plan
+        run: terraform plan -input=false -no-color
+        env:
+          TF_VAR_aws_account_id: REPLACE_ME

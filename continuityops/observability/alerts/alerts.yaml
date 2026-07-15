@@ -1,0 +1,246 @@
+# ContinuityOps alert catalog (S4)
+# Actionable alerts: owner, severity, runbook, dedupe, recovery. No secrets.
+
+version: "1"
+service: continuityops-lab
+defaults:
+  evaluation_interval: 1m
+  notification_channel: continuityops-oncall-pager
+
+alerts:
+  - id: slo-availability-fast-burn
+    name: Availability SLO fast burn (1h)
+    description: >
+      Error budget is burning faster than the 1h fast-burn threshold (14.4x).
+      Investigate 5xx rate on ingress and app pods before customer impact widens.
+    owner: continuityops-platform-oncall
+    severity: SEV-2
+    runbook: continuityops/operations/runbooks/README.md
+    dedupe:
+      key: "{{ alert_id }}:{{ environment }}"
+      window: 1h
+      group_by: [environment, service]
+    condition:
+      metric: slo_error_budget_burn_rate
+      slo: availability
+      window: 1h
+      comparator: ">"
+      threshold: 14.4
+    recovery_condition:
+      metric: slo_error_budget_burn_rate
+      slo: availability
+      window: 1h
+      comparator: "<="
+      threshold: 6
+      for: 15m
+    labels:
+      slice: S4
+      tier: slo
+
+  - id: slo-availability-slow-burn
+    name: Availability SLO slow burn (6h)
+    description: >
+      Sustained elevated error rate consuming the 28d error budget. Ticket if not
+      mitigated within the response window.
+    owner: continuityops-platform-oncall
+    severity: SEV-3
+    runbook: continuityops/observability/slo-catalog.json
+    dedupe:
+      key: "{{ alert_id }}:{{ environment }}"
+      window: 6h
+      group_by: [environment]
+    condition:
+      metric: slo_error_budget_burn_rate
+      slo: availability
+      window: 6h
+      comparator: ">"
+      threshold: 6
+    recovery_condition:
+      metric: slo_error_budget_burn_rate
+      slo: availability
+      window: 6h
+      comparator: "<="
+      threshold: 3
+      for: 30m
+    labels:
+      slice: S4
+      tier: slo
+
+  - id: http-latency-p95-breach
+    name: HTTP latency p95 above SLO
+    description: >
+      p95 request latency exceeds 500 ms objective for 10 minutes. Check pod CPU,
+      saturation, and downstream queue publish latency.
+    owner: continuityops-k8s-owner
+    severity: SEV-3
+    runbook: continuityops/kubernetes/scenarios/resource-pressure.md
+    dedupe:
+      key: "{{ alert_id }}:{{ route }}"
+      window: 30m
+      group_by: [environment, route]
+    condition:
+      metric: http_server_request_duration
+      statistic: p95
+      comparator: ">"
+      threshold_ms: 500
+      for: 10m
+    recovery_condition:
+      metric: http_server_request_duration
+      statistic: p95
+      comparator: "<="
+      threshold_ms: 450
+      for: 15m
+    labels:
+      slice: S4
+      dashboard: continuityops/observability/dashboards/service.json
+
+  - id: sqs-dlq-depth
+    name: DLQ messages visible
+    description: >
+      continuityops-events-dlq has visible messages for 5 minutes. Sample messages
+      for correlation_id before redrive or replay.
+    owner: continuityops-serverless-owner
+    severity: SEV-2
+    runbook: continuityops/serverless/infra/sqs-dlq.md
+    dedupe:
+      key: "{{ alert_id }}:{{ queue_name }}"
+      window: 2h
+      group_by: [environment, queue_name]
+    condition:
+      metric: AWS/SQS ApproximateNumberOfMessagesVisible
+      dimensions:
+        QueueName: continuityops-events-dlq
+      comparator: ">"
+      threshold: 0
+      for: 5m
+    recovery_condition:
+      metric: AWS/SQS ApproximateNumberOfMessagesVisible
+      dimensions:
+        QueueName: continuityops-events-dlq
+      comparator: "=="
+      threshold: 0
+      for: 10m
+    labels:
+      slice: S3
+      dashboard: continuityops/observability/dashboards/serverless.json
+
+  - id: sqs-backlog-age
+    name: SQS oldest message age high
+    description: >
+      Primary queue backlog is aging beyond 10 minutes. Worker may be throttled,
+      failing, or under-provisioned.
+    owner: continuityops-serverless-owner
+    severity: SEV-3
+    runbook: continuityops/serverless/infra/sqs-dlq.md
+    dedupe:
+      key: "{{ alert_id }}:{{ queue_name }}"
+      window: 1h
+      group_by: [environment, queue_name]
+    condition:
+      metric: AWS/SQS ApproximateAgeOfOldestMessage
+      dimensions:
+        QueueName: continuityops-events
+      comparator: ">"
+      threshold_seconds: 600
+      for: 10m
+    recovery_condition:
+      metric: AWS/SQS ApproximateAgeOfOldestMessage
+      dimensions:
+        QueueName: continuityops-events
+      comparator: "<="
+      threshold_seconds: 300
+      for: 15m
+    labels:
+      slice: S3
+      dashboard: continuityops/observability/dashboards/serverless.json
+
+  - id: lambda-error-rate
+    name: Lambda worker error rate elevated
+    description: >
+      continuityops-event-worker Errors/Invocations ratio above 5% for 5 minutes.
+      Correlate with correlation_id in structured logs.
+    owner: continuityops-serverless-owner
+    severity: SEV-2
+    runbook: continuityops/serverless/infra/sqs-dlq.md
+    dedupe:
+      key: "{{ alert_id }}:{{ function_name }}"
+      window: 1h
+      group_by: [environment, function_name]
+    condition:
+      expression: errors / invocations
+      comparator: ">"
+      threshold: 0.05
+      for: 5m
+      metrics:
+        errors:
+          namespace: AWS/Lambda
+          metric: Errors
+          dimensions:
+            FunctionName: continuityops-event-worker
+        invocations:
+          namespace: AWS/Lambda
+          metric: Invocations
+          dimensions:
+            FunctionName: continuityops-event-worker
+    recovery_condition:
+      expression: errors / invocations
+      comparator: "<="
+      threshold: 0.01
+      for: 15m
+    labels:
+      slice: S3
+      dashboard: continuityops/observability/dashboards/serverless.json
+
+  - id: k8s-pod-not-ready
+    name: Lab app pods not ready
+    description: >
+      Fewer than expected ready replicas for continuityops-lab deployment for 5 minutes.
+    owner: continuityops-k8s-owner
+    severity: SEV-2
+    runbook: continuityops/kubernetes/scenarios/readiness-fail.md
+    dedupe:
+      key: "{{ alert_id }}:{{ deployment }}"
+      window: 30m
+      group_by: [environment, deployment]
+    condition:
+      metric: kube_deployment_status_replicas_ready
+      comparator: "<"
+      threshold: 2
+      for: 5m
+      labels:
+        deployment: continuityops-lab
+    recovery_condition:
+      metric: kube_deployment_status_replicas_ready
+      comparator: ">="
+      threshold: 2
+      for: 10m
+    labels:
+      slice: S2
+      dashboard: continuityops/observability/dashboards/kubernetes.json
+
+  - id: k8s-restart-storm
+    name: Container restart storm
+    description: >
+      More than 3 restarts in 15 minutes across continuityops namespace pods.
+    owner: continuityops-k8s-owner
+    severity: SEV-3
+    runbook: continuityops/kubernetes/scenarios/crashloop.md
+    dedupe:
+      key: "{{ alert_id }}:{{ namespace }}"
+      window: 1h
+      group_by: [environment, namespace]
+    condition:
+      metric: kube_pod_container_status_restarts_total
+      increase_window: 15m
+      comparator: ">"
+      threshold: 3
+      for: 5m
+    recovery_condition:
+      metric: kube_pod_container_status_restarts_total
+      increase_window: 15m
+      comparator: "=="
+      threshold: 0
+      for: 15m
+    labels:
+      slice: S2
+      dashboard: continuityops/observability/dashboards/kubernetes.json

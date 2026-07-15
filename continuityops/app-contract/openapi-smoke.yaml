@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  title: ContinuityOps Lab App — Smoke Contract
+  description: |
+    Minimal HTTP surface for ContinuityOps Stage 1 lab validation.
+    Synthetic data only. Not a production Project C API.
+  version: 0.1.0-s1
+  contact:
+    name: ContinuityOps Lab
+
+servers:
+  - url: http://localhost:8080
+    description: Local dev / port-forward
+  - url: https://staging.continuityops.lab
+    description: Staging lab placeholder (replace host before apply)
+
+paths:
+  /healthz:
+    get:
+      operationId: getHealthz
+      summary: Liveness probe
+      description: Returns 200 when the process is alive.
+      tags: [Probes]
+      responses:
+        "200":
+          description: Process is alive
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /readyz:
+    get:
+      operationId: getReadyz
+      summary: Readiness probe
+      description: Returns 200 when dependencies required for traffic are ready.
+      tags: [Probes]
+      responses:
+        "200":
+          description: Ready to serve traffic
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: Not ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /version:
+    get:
+      operationId: getVersion
+      summary: Build and release metadata
+      tags: [Metadata]
+      responses:
+        "200":
+          description: Version payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionResponse"
+
+  /api/smoke:
+    get:
+      operationId: getApiSmoke
+      summary: Business-path smoke check
+      description: Lightweight synthetic check that core app wiring responds.
+      tags: [Smoke]
+      responses:
+        "200":
+          description: Smoke path OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SmokeResponse"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded, unavailable]
+        timestamp:
+          type: string
+          format: date-time
+
+    VersionResponse:
+      type: object
+      required: [version, source]
+      properties:
+        version:
+          type: string
+          example: "0.1.0-s1"
+        source:
+          type: string
+          example: continuityops-lab
+        image_digest:
+          type: string
+          example: sha256:PENDING_BUILD
+
+    SmokeResponse:
+      type: object
+      required: [ok, check]
+      properties:
+        ok:
+          type: boolean
+          example: true
+        check:
+          type: string
+          example: business_smoke
+        message:
+          type: string
+          example: synthetic lab response
