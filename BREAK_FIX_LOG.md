@@ -1,5 +1,18 @@
 # Break/Fix Log
 
+## 2026-07-15 (OIDC trust restored via CloudShell)
+
+- Operator ran first CloudShell paste (name-only `repo:nathanielecon/*` subs).
+  Trust JSON applied, but GHA plan `29452275836` still failed OIDC.
+- Root cause: GitHub renames on/after **2026-07-15** switch to **immutable
+  subject claims** (`repo:OWNER@OWNER_ID/REPO@REPO_ID:...`). Name-only subs no
+  longer match. Expected PR sub:
+  `repo:nathanielecon@177059064/aws-landing-zone-lab@1296742987:pull_request`.
+- Fix: re-run CloudShell with immutable-sub trust
+  (`repo:nathanielecon@177059064/*@1296742987:...`) via updated
+  `fix-oidc-trust-cloudshell.sh` / `ci-bootstrap`. Then confirm GHA plan OIDC
+  green; optional `ci-bootstrap` re-apply so TF state matches live trust.
+
 ## 2026-07-15 (OIDC broken after GitHub rename cloud → aws-landing-zone-lab)
 
 - Break: Renamed `nathanielecon/cloud` → `nathanielecon/aws-landing-zone-lab`.
