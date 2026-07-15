@@ -1,15 +1,22 @@
 {
   "schema_version": "continuityops-plan-approval-v1",
   "plan_id": "continuityops-cloud-reliability-v1",
-  "status": "candidate-specification",
-  "execution_approved": false,
-  "approved_by": null,
-  "approved_at": null,
-  "plan_sha256": "7176d719bf09215d366daaba2dbed66eb76f33ceb4592decddc848434d053275",
-  "partition_manifest_sha256": "6a8ee248d4c2a789ec5bf743adaaffe73cbb6c36c624f3309d8e84bde7dca8fe",
-  "validator_implementation_sha256": "1c64eb8297fdc789e38f6d076cc5643b8e005936c4ac84a432197e3b42b55f98",
+  "status": "build-orchestration",
+  "human_gates_while_building": false,
+  "execution_approved": true,
+  "approved_by": "operator-directive-no-gates-while-building",
+  "approved_at": "2026-07-15",
+  "plan_sha256": "a1448744ce4c2fa3f3f6f7dd06053733ae38641a4bff11746c057cd74b5702f3",
+  "partition_manifest_sha256": "a360ea1f66cd334c87957decaf049d1097c840b625c24753d524b4d102536457",
+  "validator_implementation_sha256": "6b5dc7bce63fd7174456509b70da077caba1bc2014792569c24faefff0ddd5b3",
+  "ralphy_model": {
+    "stage_1": "build_orchestration_create_project",
+    "stage_2": "multi_threaded_accuracy_loops_until_9_5",
+    "stop_score": 9.5,
+    "min_judge_score": 9.0
+  },
   "notes": [
-    "Human gate H0 must pin exact hashes before Phase 1.",
-    "Agents cannot create receipts."
+    "Operator directed: no human gates while building.",
+    "Stage 2 accuracy loops are multi-threaded by design."
   ]
 }

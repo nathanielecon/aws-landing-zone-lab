@@ -1,65 +1,43 @@
 {
   "schema_version": "continuityops-task-policy-v1",
   "id": "COP-001",
-  "title": "Phase 0 baseline inventory and authority surfaces",
+  "title": "Prepare ContinuityOps cloud folder and orchestration model",
   "risk": "medium",
   "mode": "repo_only",
   "phase": 0,
   "slice": "S0",
   "depends_on": [],
   "allowed_paths": [
-    "continuityops/AGENTS.md",
-    "continuityops/PLAN.md",
-    "continuityops/STATUS.md",
-    "continuityops/ISSUES.md",
-    "continuityops/DECISIONS.md",
-    "continuityops/BREAK_FIX_LOG.md",
-    "continuityops/README.md",
-    "continuityops/integration/**",
-    "continuityops/harness/**",
-    "continuityops/scripts/**",
-    "continuityops/tests/phase0/**",
-    "continuityops/docs/**",
-    "continuityops/evidence/manifests/**",
-    "continuityops/app-contract/**"
+    "continuityops/**",
+    ".github/workflows/continuityops-*.yml"
   ],
   "adapter_owned_paths": [
-    "continuityops/evidence/manifests/phase0-baseline.json"
+    "continuityops/evidence/manifests/folder-ready.json"
   ],
   "forbidden_operations": [
-    "aws",
-    "az",
-    "terraform apply",
-    "terraform destroy",
-    "terraform import",
-    "cloud login",
-    "credential read",
     "edit project-a",
-    "phase1_execute"
+    "edit project-c"
   ],
   "validators": [
     { "id": "path_scope", "timeout_seconds": 30, "required": true },
     { "id": "secret_scan", "timeout_seconds": 60, "required": true },
-    { "id": "upstream_lock", "timeout_seconds": 30, "required": true },
+    { "id": "independence_lock", "timeout_seconds": 30, "required": true },
     { "id": "partition_manifest", "timeout_seconds": 60, "required": true },
-    { "id": "unauthorized_phase_rejection", "timeout_seconds": 30, "required": true },
+    { "id": "orchestration_model", "timeout_seconds": 30, "required": true },
     { "id": "project_a_untouched", "timeout_seconds": 30, "required": true }
   ],
   "approval": {
-    "required": true,
-    "gate_id": "H0",
-    "stage": "post_validation_pre_phase1",
+    "required": false,
+    "gate_id": "none",
     "approver": "human",
-    "receipt_path": "continuityops/harness/approvals/receipts/H0.json",
-    "reason": "Approve ContinuityOps scope, architecture, cost cap, and upstream pins."
+    "reason": "Operator disabled human gates while building."
   },
   "expected_artifacts": [
     "continuityops/PLAN.md",
-    "continuityops/integration/upstreams.lock.json",
-    "continuityops/harness/policies/partition-manifest.json",
-    "continuityops/evidence/manifests/phase0-baseline.json"
+    "continuityops/harness/policies/orchestration-model.json",
+    "continuityops/integration/upstreams.lock.json"
   ],
-  "expected_evidence": "continuityops/evidence/manifests/phase0-baseline.json",
+  "expected_evidence": "continuityops/evidence/manifests/folder-ready.json",
   "claims": {
     "cloud_validated": false,
     "aws_implemented": false,

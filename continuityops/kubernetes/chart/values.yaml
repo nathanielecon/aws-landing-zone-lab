@@ -1,0 +1,13 @@
+# ContinuityOps lab values — image digest filled in Stage 1.
+image:
+  repository: ghcr.io/continuityops/lab-app
+  digest: sha256:PENDING_BUILD
+  pullPolicy: IfNotPresent
+replicaCount: 2
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi

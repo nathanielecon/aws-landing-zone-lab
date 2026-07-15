@@ -1,4 +1,4 @@
-# ContinuityOps bootstrap (S1)
+# ContinuityOps Terraform bootstrap
 
-Remote state bootstrap for ContinuityOps environments. Separated from Project A
-state. No backend credentials are stored in-repo.
+Remote state and backend configuration for ContinuityOps environments.
+Separated from Project A state. No credentials stored in-repo.

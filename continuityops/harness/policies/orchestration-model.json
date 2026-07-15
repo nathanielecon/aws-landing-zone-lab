@@ -1,0 +1,36 @@
+{
+  "schema_version": "continuityops-orchestration-v1",
+  "plan_id": "continuityops-cloud-reliability-v1",
+  "stages": [
+    {
+      "id": "stage_1_build",
+      "name": "Create project via orchestration",
+      "mode": "build",
+      "concurrency": {
+        "max_disjoint_streams": 3,
+        "sequential_within_stream": true
+      },
+      "scope": "continuityops/",
+      "forbid_paths": ["project-a/", "../"],
+      "human_gates": false,
+      "exit_when": "project_complete"
+    },
+    {
+      "id": "stage_2_accuracy",
+      "name": "Multi-threaded accuracy / no-error loops",
+      "mode": "accuracy",
+      "concurrency": {
+        "multi_threaded": true,
+        "loop": "judge_nix_fix_revalidate_rescore"
+      },
+      "scope": "continuityops/",
+      "human_gates": false,
+      "start_when": "stage_1_complete",
+      "stop_when": {
+        "council_average_min": 9.5,
+        "judge_floor_min": 9.0,
+        "all_must_haves_pass": true
+      }
+    }
+  ]
+}

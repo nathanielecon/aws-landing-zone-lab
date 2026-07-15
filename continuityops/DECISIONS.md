@@ -1,41 +1,30 @@
 # ContinuityOps decisions
 
-## D-COP-001 — Host ContinuityOps beside Project A without editing A
+## D-COP-001 — Own folder only; no Project A/C edits
 
 - **Date:** 2026-07-15
 - **Status:** accepted
-- **Decision:** Place ContinuityOps under `continuityops/` in
-  `nathanielecon/cloud`. Project A remains independently complete. No
-  ContinuityOps task may modify `project-a/`.
-- **Consequences:** Missing Project A exports become ContinuityOps-side
-  adapters or recorded integration gaps.
+- **Decision:** ContinuityOps is confined to `continuityops/`. Never modify
+  `project-a/` or Project C. Lab artifacts are ContinuityOps-owned.
 
-## D-COP-002 — Grok is the default ContinuityOps orchestrator
+## D-COP-002 — Grok lead orchestrator
 
 - **Date:** 2026-07-15
 - **Status:** accepted
-- **Decision:** Ignore Sonnet/Opus supervisor language for this delivery
-  track. Grok 4.5 High Fast is the lead orchestrator, judge, nixer, fixer,
-  and bottleneck reasoning model. Codex `/fast` implements bounded tasks.
-- **Consequences:** Worker handoffs remain Simplified Chinese; recruiter
-  artifacts remain English.
+- **Decision:** Grok 4.5 High Fast is the ContinuityOps orchestrator.
 
-## D-COP-003 — Candidate specification, not verified completion
+## D-COP-003 — No human gates while building
 
 - **Date:** 2026-07-15
 - **Status:** accepted
-- **Decision:** Existing or newly scaffolded files are candidates. Only
-  judge-council certification against a candidate SHA and evidence
-  manifest counts as verified.
-- **Consequences:** Phase 0 must inventory, partition, freeze rubrics, and
-  pin hashes before Phase 1 authorization.
+- **Decision:** Build and accuracy loops do not wait on H0–H6 receipts.
+  Product docs may still describe human-gated mutation as a designed control.
 
-## D-COP-004 — Project C digest explicitly unavailable at bootstrap
+## D-COP-004 — Two-stage Ralphy model
 
 - **Date:** 2026-07-15
 - **Status:** accepted
-- **Decision:** Until Project C export evidence is reachable, pin
-  `image_digest` as `REQUIRED_OR_EXPLICITLY_UNAVAILABLE` and open
-  OPEN-COP-001.
-- **Consequences:** Kubernetes/runtime claims cannot assert Project C
-  production release provenance.
+- **Decision:**
+  1. Stage 1: create the project via orchestration.
+  2. Stage 2: after project complete, multi-threaded accuracy/no-error Ralphy
+     loops until council score ≥ 9.5.

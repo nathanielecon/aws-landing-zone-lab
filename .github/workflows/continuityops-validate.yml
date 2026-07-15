@@ -1,0 +1,20 @@
+name: continuityops-validate
+on:
+  pull_request:
+    paths:
+      - 'continuityops/**'
+      - '.github/workflows/continuityops-validate.yml'
+  push:
+    paths:
+      - 'continuityops/**'
+      - '.github/workflows/continuityops-validate.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ContinuityOps folder validate
+        shell: pwsh
+        run: pwsh -NoLogo -NoProfile -File continuityops/scripts/Invoke-ContinuityOpsValidate.ps1
