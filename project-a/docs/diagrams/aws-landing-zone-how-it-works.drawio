@@ -6,11 +6,11 @@
         <mxCell id="1" parent="0"/>
 
         <!-- Title -->
-        <mxCell id="title" value="Project A — AWS Landing Zone Lab" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=28;fontStyle=1;fontColor=#1F2933;" vertex="1" parent="1">
-          <mxGeometry x="60" y="30" width="720" height="40" as="geometry"/>
+        <mxCell id="title" value="AWS Landing Zone Lab — How It Works" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=28;fontStyle=1;fontColor=#1F2933;" vertex="1" parent="1">
+          <mxGeometry x="60" y="30" width="900" height="40" as="geometry"/>
         </mxCell>
-        <mxCell id="subtitle" value="What got built, in plain English" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontColor=#52606D;" vertex="1" parent="1">
-          <mxGeometry x="60" y="70" width="480" height="30" as="geometry"/>
+        <mxCell id="subtitle" value="Push code → prove identity → Terraform builds one account → evidence" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontColor=#52606D;" vertex="1" parent="1">
+          <mxGeometry x="60" y="70" width="720" height="30" as="geometry"/>
         </mxCell>
 
         <!-- Step 1 -->
