@@ -1,0 +1,14 @@
+{
+  "tasks": [
+    {
+      "title": "[TASK:S-001] Create the Terra smoke fixture",
+      "completed": false,
+      "description": "Create smoke/terra.txt as UTF-8 without BOM. Its bytes must be exactly TERRA_SMOKE_OK followed by one LF. Do not change any other tracked path and do not commit."
+    },
+    {
+      "title": "[TASK:S-002] Prove forced Terra-to-Sol takeover",
+      "completed": false,
+      "description": "For the Terra phase, create smoke/takeover.txt as UTF-8 without BOM containing exactly TERRA_INITIAL_OK followed by one LF. Do not change any other tracked path and do not commit. The harness will validate and may provide takeover instructions."
+    }
+  ]
+}
