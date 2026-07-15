@@ -1,5 +1,13 @@
 # Break/Fix Log
 
+## 2026-07-15 (OIDC trust restored via CloudShell)
+
+- Operator ran `fix-oidc-trust-cloudshell.sh` in AWS CloudShell (account
+  `283077380808`). Live trust on `project-a-lzlab-gha` now pins
+  `repository_id=1296742987`, `repository_owner_id=177059064`, and
+  `repo:nathanielecon/*` sub patterns. Next: confirm GHA plan OIDC step green;
+  optional `ci-bootstrap` re-apply so TF state matches live trust.
+
 ## 2026-07-15 (OIDC broken after GitHub rename cloud → aws-landing-zone-lab)
 
 - Break: Renamed `nathanielecon/cloud` → `nathanielecon/aws-landing-zone-lab`.
