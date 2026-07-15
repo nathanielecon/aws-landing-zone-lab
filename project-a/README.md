@@ -2,32 +2,18 @@
 
 Terraform modules, CI-gated apply, and written evidence for an AWS Landing Zone design plus a single-account live lab.
 
-## Architecture
+## The figure (architecture · how it works · network)
 
 <p align="center">
-  <img src="docs/diagrams/aws-landing-zone-architecture.png" alt="AWS Landing Zone Architecture" width="100%">
+  <img src="docs/diagrams/aws-landing-zone-lab.png" alt="AWS Landing Zone Lab — architecture, how it works, and private network in one figure" width="100%">
 </p>
 
 <p align="center">
-  <a href="docs/diagrams/aws-landing-zone-architecture.drawio">draw.io</a>
+  <a href="docs/diagrams/aws-landing-zone-lab.drawio">draw.io</a>
   ·
-  <a href="docs/diagrams/aws-landing-zone-architecture.svg">SVG</a>
+  <a href="docs/diagrams/aws-landing-zone-lab.svg">SVG</a>
   ·
-  <a href="docs/diagrams/platform.svg">legacy platform SVG</a>
-  ·
-  <a href="docs/diagrams/network.svg">network SVG</a>
-</p>
-
-## How the live lab works
-
-<p align="center">
-  <img src="docs/diagrams/aws-landing-zone-how-it-works.png" alt="AWS Landing Zone Lab — How It Works" width="100%">
-</p>
-
-<p align="center">
-  <a href="docs/diagrams/aws-landing-zone-how-it-works.drawio">draw.io</a>
-  ·
-  <a href="docs/diagrams/aws-landing-zone-how-it-works.svg">SVG</a>
+  <a href="docs/diagrams/network.svg">network.svg (panel C source)</a>
 </p>
 
 Most of this folder is a **repo-only** multi-account platform contract: inspectable Terraform, docs, harness gates, and A-001…A-007 evidence that is **not** cloud-validated. Azure Government stays translation-only.

@@ -1,0 +1,101 @@
+<mxfile host="app.diagrams.net" modified="2026-07-15T12:15:00.000Z" agent="Cursor" version="24.7.8" type="device">
+  <diagram id="aws-lz-lab-one-figure" name="AWS Landing Zone Lab (one figure)">
+    <mxGraphModel dx="1200" dy="1600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="AWS Landing Zone Lab" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=28;fontStyle=1;fontColor=#1F2933;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="700" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub" value="Architecture · How it works · Private network" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=14;fontColor=#52606D;" vertex="1" parent="1">
+          <mxGeometry x="40" y="56" width="600" height="24" as="geometry"/>
+        </mxCell>
+
+        <!-- A -->
+        <mxCell id="a-label" value="A. Architecture (platform contract)" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="400" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="a1" value="&lt;b&gt;1. Bootstrap&lt;/b&gt;&lt;br&gt;State / secrets" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9E2EC;strokeColor=#243B53;" vertex="1" parent="1">
+          <mxGeometry x="40" y="130" width="150" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="a2" value="&lt;b&gt;2. Organization&lt;/b&gt;&lt;br&gt;Accounts / OUs / SCPs (design)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8DCBF;strokeColor=#7C5E10;" vertex="1" parent="1">
+          <mxGeometry x="230" y="130" width="170" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="a3" value="&lt;b&gt;3. Identity&lt;/b&gt;&lt;br&gt;IAM + OIDC trust" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F2E6;strokeColor=#18794E;" vertex="1" parent="1">
+          <mxGeometry x="440" y="130" width="150" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="a4" value="&lt;b&gt;4. Network&lt;/b&gt;&lt;br&gt;Private VPC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9D6BF;strokeColor=#8D2B0B;" vertex="1" parent="1">
+          <mxGeometry x="40" y="230" width="150" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="a5" value="&lt;b&gt;5. Audit&lt;/b&gt;&lt;br&gt;CloudTrail / Config / KMS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8E8FF;strokeColor=#1D4D8F;" vertex="1" parent="1">
+          <mxGeometry x="230" y="230" width="170" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="a6" value="&lt;b&gt;6. Validation&lt;/b&gt;&lt;br&gt;Tests, claims" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFE3FF;strokeColor=#653CAD;" vertex="1" parent="1">
+          <mxGeometry x="440" y="230" width="150" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="alive" value="&lt;b&gt;Live lab (one account)&lt;/b&gt;&lt;br&gt;✓ Identity&lt;br&gt;✓ Private network&lt;br&gt;✓ Audit&lt;br&gt;Orgs members = design only" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F4F8;strokeColor=#627D98;dashed=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="640" y="130" width="220" height="170" as="geometry"/>
+        </mxCell>
+        <mxCell id="e12" style="endArrow=block;html=1;strokeColor=#243B53;strokeWidth=2;" edge="1" parent="1" source="a1" target="a2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e23" style="endArrow=block;html=1;strokeColor=#243B53;strokeWidth=2;" edge="1" parent="1" source="a2" target="a3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e45" style="endArrow=block;html=1;strokeColor=#243B53;strokeWidth=2;" edge="1" parent="1" source="a4" target="a5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e56" style="endArrow=block;html=1;strokeColor=#243B53;strokeWidth=2;" edge="1" parent="1" source="a5" target="a6"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- B -->
+        <mxCell id="b-label" value="B. How the live lab works" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="340" width="400" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="b1" value="&lt;b&gt;1. Push code&lt;/b&gt;&lt;br&gt;GitHub Actions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3E8EE;strokeColor=#243B53;" vertex="1" parent="1">
+          <mxGeometry x="40" y="380" width="130" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="b2" value="&lt;b&gt;2. Prove identity&lt;/b&gt;&lt;br&gt;OIDC (no static keys)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F2E6;strokeColor=#18794E;" vertex="1" parent="1">
+          <mxGeometry x="200" y="380" width="140" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="b3" value="&lt;b&gt;3. Terraform&lt;/b&gt;&lt;br&gt;single AWS account" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8E8FF;strokeColor=#1D4D8F;" vertex="1" parent="1">
+          <mxGeometry x="370" y="380" width="140" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="b4" value="&lt;b&gt;4. Live us-east-1&lt;/b&gt;&lt;br&gt;Identity · Network · Audit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F7FA;strokeColor=#243B53;" vertex="1" parent="1">
+          <mxGeometry x="540" y="380" width="160" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="b5" value="&lt;b&gt;5. Evidence&lt;/b&gt;&lt;br&gt;docs + CI proofs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8DCBF;strokeColor=#7C5E10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="380" width="130" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="eb12" style="endArrow=block;html=1;strokeColor=#243B53;strokeWidth=2;" edge="1" parent="1" source="b1" target="b2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eb23" style="endArrow=block;html=1;strokeColor=#243B53;strokeWidth=2;" edge="1" parent="1" source="b2" target="b3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eb34" style="endArrow=block;html=1;strokeColor=#243B53;strokeWidth=2;" edge="1" parent="1" source="b3" target="b4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eb45" style="endArrow=block;html=1;strokeColor=#243B53;strokeWidth=2;" edge="1" parent="1" source="b4" target="b5"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- C Network -->
+        <mxCell id="c-label" value="C. Private network detail" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="500" width="400" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="vpc" value="Network account · VPC (RFC 1918)" style="swimlane;rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FB;strokeColor=#205493;startSize=30;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="540" width="560" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="suba" value="&lt;b&gt;Private subnet A&lt;/b&gt;&lt;br&gt;No public IPs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F2E6;strokeColor=#18794E;" vertex="1" parent="vpc">
+          <mxGeometry x="20" y="50" width="240" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="subb" value="&lt;b&gt;Private subnet B&lt;/b&gt;&lt;br&gt;No default route" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F2E6;strokeColor=#18794E;" vertex="1" parent="vpc">
+          <mxGeometry x="290" y="50" width="240" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="sg" value="Default-deny SG (ingress/egress empty). No internet, NAT, peering, TGW, or cross-account route." style="text;html=1;align=left;fontSize=11;fontColor=#8B0000;" vertex="1" parent="vpc">
+          <mxGeometry x="20" y="150" width="510" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="sec" value="&lt;b&gt;Security Tooling&lt;/b&gt;&lt;br&gt;trail / Config path" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8E8FF;strokeColor=#1D4D8F;" vertex="1" parent="1">
+          <mxGeometry x="660" y="540" width="160" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="arch" value="&lt;b&gt;Log Archive&lt;/b&gt;&lt;br&gt;owns protected S3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4CE;strokeColor=#8A6D1D;" vertex="1" parent="1">
+          <mxGeometry x="660" y="640" width="160" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="flow" value="Flow Logs" style="endArrow=block;html=1;strokeColor=#205493;strokeWidth=2;fontSize=11;" edge="1" parent="1" source="vpc" target="arch">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="caption" value="Not production. Not multi-account live. Honest single-account lab via Terraform + GitHub OIDC." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1F2933;fontColor=#FFFFFF;fontSize=13;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="800" width="880" height="44" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
