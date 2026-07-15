@@ -73,7 +73,7 @@
         </mxCell>
 
         <!-- Caption -->
-        <mxCell id="caption" value="Multi-account Orgs/OU/SCP = design only. Live lab = one account. No production claim." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1F2933;strokeColor=#1F2933;fontColor=#FFFFFF;fontSize=13;align=center;verticalAlign=middle;" vertex="1" parent="1">
+        <mxCell id="caption" value="Multi-account Orgs/OU/SCP = design only. Live lab = one account. Cloud-validated single-account lab." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1F2933;strokeColor=#1F2933;fontColor=#FFFFFF;fontSize=13;align=center;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="60" y="520" width="1100" height="44" as="geometry"/>
         </mxCell>
       </root>

@@ -38,7 +38,7 @@ plus an honest single-account live lab applied through GitHub OIDC CI.
 ## Handoff notes
 
 Point reviewers to the [evidence index](../../evidence-index.md), the
-[platform diagram](../diagrams/platform.svg), the
+[architecture diagram](../diagrams/aws-landing-zone-architecture.png), the
 [claims boundary](../portfolio/claims-boundary.md), and the
 [Azure Government readiness](../azure-government/readiness.md) note
 (translation-only). Stop and escalate if anyone asks for unsupported
