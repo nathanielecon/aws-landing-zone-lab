@@ -1,21 +1,29 @@
 {
   "schema_version": "continuityops-postbuild-partition-v1",
-  "generated_at_utc": "2026-07-15T14:50:59.7891347Z",
-  "candidate_sha": "90ba9818c1911d43c31cc0c87c9111f6bb87e29c",
+  "generated_at_utc": "2026-07-15T14:51:46.9777371Z",
+  "candidate_sha": "3648fc215646de36a317b14dccc79cb2456e0dbf",
   "root": "continuityops/",
-  "file_count": 202,
+  "file_count": 214,
   "partitions": {
     "P_authority": {
       "id": "P_authority",
       "title": "Authority, harness, orchestration",
       "paths": [
         "continuityops/AGENTS.md",
+        "continuityops/app/.dockerignore",
+        "continuityops/app/build/continuityops-lab-app.tar",
+        "continuityops/app/Dockerfile",
+        "continuityops/app/index.js",
+        "continuityops/app/package.json",
         "continuityops/BREAK_FIX_LOG.md",
         "continuityops/DECISIONS.md",
         "continuityops/evidence/manifests/accuracy-final.json",
         "continuityops/evidence/manifests/accuracy-round-1.json",
+        "continuityops/evidence/manifests/deterministic-checks.json",
         "continuityops/evidence/manifests/folder-ready.json",
+        "continuityops/evidence/manifests/fresh-judge-J1.json",
         "continuityops/evidence/manifests/fresh-judge-J2.json",
+        "continuityops/evidence/manifests/fresh-judge-J3.json",
         "continuityops/evidence/manifests/phase0-baseline.json",
         "continuityops/harness/approvals/plan-approval.json",
         "continuityops/harness/handoffs/ORCH-001.zh-CN.md",
@@ -25,6 +33,7 @@
         "continuityops/harness/policies/partition-manifest.json",
         "continuityops/harness/policies/postbuild-partition-manifest.json",
         "continuityops/harness/policies/postbuild-partition-notes.md",
+        "continuityops/harness/rubrics/JUDGE_PROMPT_NO_THRESHOLD.md",
         "continuityops/harness/rubrics/S0-authority.md",
         "continuityops/harness/rubrics/S1-foundation.md",
         "continuityops/harness/rubrics/S2-S8-stubs.md",
@@ -39,17 +48,19 @@
         "continuityops/README.md",
         "continuityops/scripts/ContinuityOps.Common.psm1",
         "continuityops/scripts/Invoke-ContinuityOpsAccuracyCouncil.ps1",
+        "continuityops/scripts/Invoke-ContinuityOpsDeterministicChecks.ps1",
         "continuityops/scripts/Invoke-ContinuityOpsPhase0.ps1",
         "continuityops/scripts/Invoke-ContinuityOpsValidate.ps1",
         "continuityops/scripts/Invoke-ContinuityOpsValidators.ps1",
+        "continuityops/scripts/Invoke-FreshCouncilAggregate.ps1",
         "continuityops/scripts/New-PartitionManifest.ps1",
         "continuityops/scripts/New-PostbuildPartitionManifest.ps1",
         "continuityops/scripts/Show-ContinuityOpsOrchestration.ps1",
         "continuityops/STATUS.md",
         "continuityops/tests/phase0/README.md"
       ],
-      "path_count": 38,
-      "paths_sha256": "72a488a98504c57376dc6c3165771c28f54ea8722cb2ac2ade266960c529e423"
+      "path_count": 49,
+      "paths_sha256": "bff954fc6aa9543ad22292f1c71f3eb90f7b027b643895e05f93f27cf006acaf"
     },
     "P_foundation": {
       "id": "P_foundation",
@@ -274,15 +285,16 @@
         "continuityops/docs/decisions/severity-model.md",
         "continuityops/docs/portfolio/interview-walkthrough.md",
         "continuityops/evidence/events/.gitkeep",
+        "continuityops/evidence/events/restore-verification-lab.json",
         "continuityops/evidence/INDEX.md"
       ],
-      "path_count": 10,
-      "paths_sha256": "c50ba5b1b6700f1715d575ce48af8029896f8aa5c001201fc9a732fbb51f0ccc"
+      "path_count": 11,
+      "paths_sha256": "803db878bcbba487358208c1c60fc2fe8ce44cf4bcd955a212a1454c961ff7ce"
     }
   },
   "notes": [
     "Logical post-build partition by operational capability, independent of construction-stream ownership.",
     "Coverage is every git-tracked path under continuityops/ excluding .terraform/, plus self-describing postbuild policy/script artifacts.",
-    "This manifest does not score quality and does not embed numeric pass thresholds."
+    "This manifest does not score quality."
   ]
 }
