@@ -1,9 +1,9 @@
 {
   "schema_version": "continuityops-app-contract-v1",
-  "status": "lab-ready",
+  "status": "lab_packaged",
   "source": "continuityops-lab",
   "image_repository": "ghcr.io/continuityops/lab-app",
-  "image_digest": "sha256:PENDING_BUILD",
+  "image_digest": "sha256:525366446236834ef25125fb3bc639ca1f91522e84f3625788b5648603a3e00f",
   "version": "0.1.0-s1",
   "openapi_spec": "openapi-smoke.yaml",
   "endpoints": {
@@ -46,7 +46,7 @@
   },
   "notes": [
     "ContinuityOps-owned lab artifact — not a Project C production release.",
-    "Digest filled when Stage 1 builds the container image.",
+    "image_digest is a ContinuityOps lab content digest (sha256 of app/build/continuityops-lab-app.tar) pending registry push; Docker daemon was unavailable in this build environment.",
     "OpenAPI smoke spec defines recruiter-facing HTTP contract checks."
   ]
 }

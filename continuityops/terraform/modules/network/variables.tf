@@ -37,3 +37,32 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "eks_cluster_name" {
+  description = "EKS cluster name for kubernetes.io/cluster/<name> subnet tags. Leave empty to skip cluster tags."
+  type        = string
+  default     = ""
+}
+
+variable "eks_cluster_tag_value" {
+  description = "Value for kubernetes.io/cluster/<name> tag: shared or owned."
+  type        = string
+  default     = "shared"
+
+  validation {
+    condition     = contains(["shared", "owned"], var.eks_cluster_tag_value)
+    error_message = "eks_cluster_tag_value must be shared or owned."
+  }
+}
+
+variable "public_subnet_tags" {
+  description = "Optional extra tags applied to public subnets (merged after ELB role tags)."
+  type        = map(string)
+  default     = {}
+}
+
+variable "private_subnet_tags" {
+  description = "Optional extra tags applied to private subnets (merged after internal ELB role tags)."
+  type        = map(string)
+  default     = {}
+}

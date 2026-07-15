@@ -1,9 +1,9 @@
 {
   "schema_version": "continuityops-postbuild-partition-v1",
-  "generated_at_utc": "2026-07-15T14:46:47.1514946Z",
-  "candidate_sha": "8bcb5c460a978939e697e9a9ecacc0508b80e261",
+  "generated_at_utc": "2026-07-15T14:50:59.7891347Z",
+  "candidate_sha": "90ba9818c1911d43c31cc0c87c9111f6bb87e29c",
   "root": "continuityops/",
-  "file_count": 201,
+  "file_count": 202,
   "partitions": {
     "P_authority": {
       "id": "P_authority",
@@ -15,6 +15,7 @@
         "continuityops/evidence/manifests/accuracy-final.json",
         "continuityops/evidence/manifests/accuracy-round-1.json",
         "continuityops/evidence/manifests/folder-ready.json",
+        "continuityops/evidence/manifests/fresh-judge-J2.json",
         "continuityops/evidence/manifests/phase0-baseline.json",
         "continuityops/harness/approvals/plan-approval.json",
         "continuityops/harness/handoffs/ORCH-001.zh-CN.md",
@@ -47,8 +48,8 @@
         "continuityops/STATUS.md",
         "continuityops/tests/phase0/README.md"
       ],
-      "path_count": 37,
-      "paths_sha256": "0faee6e523efa6372ff21888f91574d85014a5d67723e897705fa3eb4e256982"
+      "path_count": 38,
+      "paths_sha256": "72a488a98504c57376dc6c3165771c28f54ea8722cb2ac2ade266960c529e423"
     },
     "P_foundation": {
       "id": "P_foundation",

@@ -32,14 +32,15 @@ live drill explicitly replaces placeholders and binds candidate SHA.
 | Synthetic baseline | [tests/performance/baseline-results.json](../../tests/performance/baseline-results.json) | **Synthetic** reference numbers |
 | Bottleneck story | [tests/performance/bottleneck-before-after.md](../../tests/performance/bottleneck-before-after.md) | CPU throttling remediation narrative |
 
-## Evidence events (stub)
+## Evidence events
 
-Populate after live drills. Format follows `harness/schemas/evidence-event.schema.json`.
+Format follows `harness/schemas/evidence-event.schema.json` where applicable.
+Synthetic lab artifacts are labeled `synthetic_data_label: true`.
 
 | Event id | Candidate SHA | Result | Linked artifact |
 | --- | --- | --- | --- |
-| `s7-restore-drill` | _pending_ | _pending_ | `restore-verification.json` (not yet emitted) |
-| `s7-load-baseline` | _pending_ | _pending_ | Measured `performance-results.json` |
+| `s7-restore-drill` | `90ba9818c1911d43c31cc0c87c9111f6bb87e29c` | pass (synthetic) | [restore-verification-lab.json](../events/restore-verification-lab.json) |
+| `s7-load-baseline` | `90ba9818c1911d43c31cc0c87c9111f6bb87e29c` | illustrative | [baseline-results.json](../../tests/performance/baseline-results.json) (synthetic) |
 | `s7-teardown` | _pending_ | _pending_ | Teardown manifest JSON |
 | `s7-finops-review` | _pending_ | _pending_ | Idle candidate report |
 

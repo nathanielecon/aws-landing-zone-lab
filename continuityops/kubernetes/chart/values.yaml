@@ -6,7 +6,7 @@ replicaCount: 2
 image:
   repository: ghcr.io/continuityops/lab-app
   # Immutable pin required; admission policies reject tag-only references.
-  digest: sha256:PENDING_BUILD
+  digest: sha256:525366446236834ef25125fb3bc639ca1f91522e84f3625788b5648603a3e00f
   pullPolicy: IfNotPresent
 
 nameOverride: ""
@@ -144,6 +144,9 @@ config:
   LOG_LEVEL: info
   APP_ENV: lab
   HTTP_PORT: "8080"
+  APP_VERSION: "0.1.0-s1"
+  APP_SOURCE: continuityops-lab
+  IMAGE_DIGEST: "sha256:525366446236834ef25125fb3bc639ca1f91522e84f3625788b5648603a3e00f"
 
 secret:
   # Reference an existing Secret by name; chart does not ship real credentials.
