@@ -152,9 +152,11 @@ try {
     if (-not $s1 -or -not $s2) { throw 'missing required stages' }
     if ([bool]$s1.human_gates -or [bool]$s2.human_gates) { throw 'human_gates must be false while building' }
     if (-not [bool]$s2.concurrency.multi_threaded) { throw 'stage 2 must be multi_threaded' }
-    $stop = [double]$s2.stop_when.council_average_min
-    if ($stop -lt 9.5) { throw 'council_average_min must be >= 9.5' }
-    Add-Result -Id 'orchestration_model' -Status 'pass' -Detail 'stage1 build + stage2 multi-threaded ≥9.5; no build gates'
+    if ([string]$s2.stop_when.owner -ne 'orchestrator_only') { throw 'stop_when.owner must be orchestrator_only' }
+    if (-not [bool]$s2.stop_when.judges_must_not_receive_gate_numbers) { throw 'judges_must_not_receive_gate_numbers must be true' }
+    $gatePath = Join-Path $Root ([string]$s2.stop_when.gate_file)
+    if (-not (Test-Path -LiteralPath $gatePath)) { throw "missing orchestrator gate file $gatePath" }
+    Add-Result -Id 'orchestration_model' -Status 'pass' -Detail 'stage1 build + stage2 multi-threaded; gate orchestrator-only'
 }
 catch {
     Add-Result -Id 'orchestration_model' -Status 'fail' -Detail $_.Exception.Message

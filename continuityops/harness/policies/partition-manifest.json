@@ -1,14 +1,14 @@
 {
   "schema_version": "continuityops-partition-manifest-v1",
   "plan_id": "continuityops-cloud-reliability-v1",
-  "generated_at_utc": "2026-07-15T14:51:00.5680195Z",
-  "host_commit_sha": "90ba9818c1911d43c31cc0c87c9111f6bb87e29c",
+  "generated_at_utc": "2026-07-15T14:54:50.1333348Z",
+  "host_commit_sha": "1f7102b3a95b94af4f59b77f55923a11d2b70a88",
   "root": "continuityops/",
-  "file_count": 196,
-  "tree_paths_sha256": "4a4a4214bfc282576a8717653286fa64e5e1e5b020e73023e635290f2ac6b0b6",
+  "file_count": 204,
+  "tree_paths_sha256": "219defea08cac0ffea86efe6f19fb5549e484dbf76206083fc04dbb7b019b2aa",
   "slices": {
     "S0": {
-      "path_count": 50,
+      "path_count": 56,
       "paths": [
         "continuityops/AGENTS.md",
         "continuityops/app/build/continuityops-lab-app.tar",
@@ -19,7 +19,12 @@
         "continuityops/DECISIONS.md",
         "continuityops/evidence/manifests/accuracy-final.json",
         "continuityops/evidence/manifests/accuracy-round-1.json",
+        "continuityops/evidence/manifests/deterministic-checks.json",
         "continuityops/evidence/manifests/folder-ready.json",
+        "continuityops/evidence/manifests/fresh-council-aggregate.json",
+        "continuityops/evidence/manifests/fresh-council-round1/fresh-judge-J1.json",
+        "continuityops/evidence/manifests/fresh-council-round1/fresh-judge-J2.json",
+        "continuityops/evidence/manifests/fresh-council-round1/fresh-judge-J3.json",
         "continuityops/evidence/manifests/fresh-judge-J1.json",
         "continuityops/evidence/manifests/fresh-judge-J2.json",
         "continuityops/evidence/manifests/fresh-judge-J3.json",
@@ -29,6 +34,7 @@
         "continuityops/harness/handoffs/ORCH-002.zh-CN.md",
         "continuityops/harness/handoffs/ORCH-003.zh-CN.md",
         "continuityops/harness/policies/orchestration-model.json",
+        "continuityops/harness/policies/orchestrator-gate.private.json",
         "continuityops/harness/policies/partition-manifest.json",
         "continuityops/harness/policies/postbuild-partition-manifest.json",
         "continuityops/harness/policies/postbuild-partition-notes.md",
@@ -61,7 +67,7 @@
         "continuityops/tests/observability/Test-AlertSchema.ps1",
         "continuityops/tests/phase0/README.md"
       ],
-      "paths_sha256": "513176a48aeef58db2a09ceb49f21b4a156d696aa19d510e14c98a39e47e7307"
+      "paths_sha256": "a9733ecf29cb5cf7c2af38dae65a416f33a70605a218a1208e15b628eb04f477"
     },
     "S1": {
       "path_count": 39,
@@ -205,7 +211,7 @@
       "paths_sha256": "f9caf6732499accedd867e658177acfb022a5a011ef8b6d6e03623beb0eeeb84"
     },
     "S6": {
-      "path_count": 8,
+      "path_count": 10,
       "paths": [
         "continuityops/agentic/policies/mutation-policy.json",
         "continuityops/agentic/policies/prompt-safety.md",
@@ -213,10 +219,12 @@
         "continuityops/agentic/prompts/incident-triage.en.md",
         "continuityops/agentic/prompts/incident-triage.zh-CN.md",
         "continuityops/agentic/README.md",
+        "continuityops/agentic/runtime/Evaluate-RemediationProposal.ps1",
+        "continuityops/agentic/tests/Test-EvaluateRemediationProposal.ps1",
         "continuityops/agentic/tests/Test-UnsafeProposals.ps1",
         "continuityops/agentic/tests/unsafe-proposal-cases.json"
       ],
-      "paths_sha256": "c503dd6e69ba3a95a6d9fbb410c60229cdb0ef42837ec3ef267b87aa5f49cf49"
+      "paths_sha256": "a264dbfd1a70427691cbadb18db72a2239ab29949ebfa7f52057997215aa3710"
     },
     "S7": {
       "path_count": 13,
@@ -299,6 +307,18 @@
       "sha256": "1ab1fdb0905d30d99fc8baeabd54b1f5780bd4d7ac7fc345f508f76a781fb4cb",
       "primary_slice": "S6",
       "bytes": 2704
+    },
+    {
+      "path": "continuityops/agentic/runtime/Evaluate-RemediationProposal.ps1",
+      "sha256": "8d928f31e679e0db235454887bec2fa85fd39b6c3630ba9be940b9019a200300",
+      "primary_slice": "S6",
+      "bytes": 2518
+    },
+    {
+      "path": "continuityops/agentic/tests/Test-EvaluateRemediationProposal.ps1",
+      "sha256": "f2efb2eab924f77ba2cb0137dcbbcf4064721fd14e2871d15bc72c0c06e61579",
+      "primary_slice": "S6",
+      "bytes": 746
     },
     {
       "path": "continuityops/agentic/tests/Test-UnsafeProposals.ps1",
@@ -481,28 +501,58 @@
       "bytes": 835
     },
     {
-      "path": "continuityops/evidence/manifests/folder-ready.json",
-      "sha256": "60ebcb295c0be08c641d036cba4456073d5e93f3e587c03639d60961218a3903",
+      "path": "continuityops/evidence/manifests/deterministic-checks.json",
+      "sha256": "1bc2003875abad7ab63e74bcc7411fa017a0faee0b5843b6c085317977fc1bf4",
       "primary_slice": "S0",
-      "bytes": 1707
+      "bytes": 1432
     },
     {
-      "path": "continuityops/evidence/manifests/fresh-judge-J1.json",
+      "path": "continuityops/evidence/manifests/folder-ready.json",
+      "sha256": "e9b5d32f54d50adb45e5ddb252ba6cbe43237ba5c80b8b3939b5027298cc8929",
+      "primary_slice": "S0",
+      "bytes": 1708
+    },
+    {
+      "path": "continuityops/evidence/manifests/fresh-council-aggregate.json",
+      "sha256": "1feb0d077e664f47c8b737841af4388a8215c0aa329197a6d4d1d5339ae86f92",
+      "primary_slice": "S0",
+      "bytes": 2409
+    },
+    {
+      "path": "continuityops/evidence/manifests/fresh-council-round1/fresh-judge-J1.json",
       "sha256": "bf8dc20bcb1abc2099b3776e09255eac602f80692841b0d831fac6cc16313a2a",
       "primary_slice": "S0",
       "bytes": 15532
     },
     {
-      "path": "continuityops/evidence/manifests/fresh-judge-J2.json",
+      "path": "continuityops/evidence/manifests/fresh-council-round1/fresh-judge-J2.json",
       "sha256": "7bbcb472c6dc15e82ca1a2e5c30fc557c19638350a6f0f32152b7dc588131e72",
       "primary_slice": "S0",
       "bytes": 17615
     },
     {
-      "path": "continuityops/evidence/manifests/fresh-judge-J3.json",
+      "path": "continuityops/evidence/manifests/fresh-council-round1/fresh-judge-J3.json",
       "sha256": "8a7a812b77314f25ab4e76acd7ac064c75bf752690b8b8c30d105ee97defd0c4",
       "primary_slice": "S0",
       "bytes": 16309
+    },
+    {
+      "path": "continuityops/evidence/manifests/fresh-judge-J1.json",
+      "sha256": "1d79d3a1aa8b3ad79032b42bbacf6949596fe9fdb8c8b2f037e253f6fd64d051",
+      "primary_slice": "S0",
+      "bytes": 15918
+    },
+    {
+      "path": "continuityops/evidence/manifests/fresh-judge-J2.json",
+      "sha256": "a5f6bc6193e1e6c938ed722558d1092c961b08b7026d2e6269a4c95c435ec106",
+      "primary_slice": "S0",
+      "bytes": 18311
+    },
+    {
+      "path": "continuityops/evidence/manifests/fresh-judge-J3.json",
+      "sha256": "8e77b2b521614c633c945bc7a7e13c439aedef6eb4dab4f3de4d351759af18f2",
+      "primary_slice": "S0",
+      "bytes": 16777
     },
     {
       "path": "continuityops/evidence/manifests/phase0-baseline.json",
@@ -524,9 +574,9 @@
     },
     {
       "path": "continuityops/harness/approvals/plan-approval.json",
-      "sha256": "1f671870858e1b3f16c69633b0827fae0a632a5b2a5e35139feedb84b91b4fe2",
+      "sha256": "995763d2522fd0bc8d0bab41a660e16ee4727b94bda9c646b158d2e79854d60f",
       "primary_slice": "S0",
-      "bytes": 921
+      "bytes": 872
     },
     {
       "path": "continuityops/harness/handoffs/ORCH-001.zh-CN.md",
@@ -548,27 +598,33 @@
     },
     {
       "path": "continuityops/harness/policies/orchestration-model.json",
-      "sha256": "c9ca655e0a3fb278e635223c76c45fcc458e02bc99fa329899de91ac43b1bd8c",
+      "sha256": "c14d95dd717a076631160e1d258db8db5c29cb233e92aabcd200cc478efe9a07",
       "primary_slice": "S0",
-      "bytes": 971
+      "bytes": 1044
+    },
+    {
+      "path": "continuityops/harness/policies/orchestrator-gate.private.json",
+      "sha256": "47b4d986bc8950293b0ffb556a1c750a6d51749d3c23b54e9d9c36cc559ec0f6",
+      "primary_slice": "S0",
+      "bytes": 262
     },
     {
       "path": "continuityops/harness/policies/partition-manifest.json",
-      "sha256": "adadd62cd5198b60f6f87aa24b5e7fe3ab63ebff009978717620abb9888b5c23",
+      "sha256": "3fddb4c8a7cccf236ac501385b625c8b0580cb2c802ad82a3224d8759150d896",
       "primary_slice": "S0",
-      "bytes": 55851
+      "bytes": 58310
     },
     {
       "path": "continuityops/harness/policies/postbuild-partition-manifest.json",
-      "sha256": "7530a40ee27401c781e7ca344a767e58242a88c6c5319a90dd2b1e2ccbb7a4f6",
+      "sha256": "9952b3d78463a57b43f6d17e4287df5708cf2d554fd222adc9839411c818740c",
       "primary_slice": "S0",
-      "bytes": 15029
+      "bytes": 15692
     },
     {
       "path": "continuityops/harness/policies/postbuild-partition-notes.md",
-      "sha256": "276c8ffe8686b27498513a7847dcb93817eeb16d57629cc363823bb543d73612",
+      "sha256": "a466177fb7b691008956754b17b048c23100f54521da2341cf27891bb54e4d13",
       "primary_slice": "S0",
-      "bytes": 1875
+      "bytes": 1776
     },
     {
       "path": "continuityops/harness/rubrics/JUDGE_PROMPT_NO_THRESHOLD.md",
@@ -848,9 +904,9 @@
     },
     {
       "path": "continuityops/observability/alerts/alerts.yaml",
-      "sha256": "ee48b45e00368a40cb3ef3716c2f1b27419875084a854640fe753eeb2e204776",
+      "sha256": "bf6dd7171d037c299d465a9689ecc48b8a3e2eef1f4c070898236f85c78f158d",
       "primary_slice": "S4",
-      "bytes": 7315
+      "bytes": 7320
     },
     {
       "path": "continuityops/observability/dashboards/kubernetes.json",
@@ -1064,15 +1120,15 @@
     },
     {
       "path": "continuityops/scripts/Invoke-ContinuityOpsValidators.ps1",
-      "sha256": "105cddc1c34bd6a2d0d23a877cb32b075505d55df5b3fa7dff352bc2de087651",
+      "sha256": "3f5829ecea060294057b479d25a852888171eb137a9381a2f622a1e9a887e50c",
       "primary_slice": "S0",
-      "bytes": 8835
+      "bytes": 9128
     },
     {
       "path": "continuityops/scripts/Invoke-FreshCouncilAggregate.ps1",
-      "sha256": "8648cb47fb91dd5da8b53bcbf4b4ed94e58c308ec7ba1a018e45ddeb184182bf",
+      "sha256": "1c86076b869220abf0513f9a9f9ed6ba4b5989b416a64da36cf695d3117083a1",
       "primary_slice": "S0",
-      "bytes": 3243
+      "bytes": 3447
     },
     {
       "path": "continuityops/scripts/New-PartitionManifest.ps1",
@@ -1082,9 +1138,9 @@
     },
     {
       "path": "continuityops/scripts/New-PostbuildPartitionManifest.ps1",
-      "sha256": "85f8b2d33d292b9c521eaa29760105a47a9e468401d8ec5b49441d691f3563e8",
+      "sha256": "795b0e015e5b18eafa35b6f7f37793c9ecd328b8db079fd1c84433e139fa6e94",
       "primary_slice": "S0",
-      "bytes": 5200
+      "bytes": 5157
     },
     {
       "path": "continuityops/scripts/Show-ContinuityOpsOrchestration.ps1",
@@ -1160,9 +1216,9 @@
     },
     {
       "path": "continuityops/STATUS.md",
-      "sha256": "fd10e10be4ef7e17383e484eb958c0b1cb926a45a9337dbf731290b885e0c371",
+      "sha256": "f4489f0fac43d25c10eeb39d6c6bc44bee6a2e1774646ddc69648a5da5839f7d",
       "primary_slice": "S0",
-      "bytes": 1573
+      "bytes": 883
     },
     {
       "path": "continuityops/terraform/bootstrap/main.tf",

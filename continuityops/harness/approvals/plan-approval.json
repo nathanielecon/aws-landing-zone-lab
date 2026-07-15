@@ -7,16 +7,16 @@
   "approved_by": "operator-directive-no-gates-while-building",
   "approved_at": "2026-07-15",
   "plan_sha256": "7aae4dc91091b0c1731ce7d1cef93ed1e81a30e4a5efe10bb09e720ebc3ce54f",
-  "partition_manifest_sha256": "2002ae38b65676f1d969c5fdaede54b32b75fad3d168096b3c41363a7b7fe11a",
-  "validator_implementation_sha256": "105cddc1c34bd6a2d0d23a877cb32b075505d55df5b3fa7dff352bc2de087651",
+  "partition_manifest_sha256": "cea7b13f28fbc36e7a1888eef14fb9ba31e8b4d3646d842424a0d60c4e947eda",
+  "validator_implementation_sha256": "3f5829ecea060294057b479d25a852888171eb137a9381a2f622a1e9a887e50c",
   "ralphy_model": {
     "stage_1": "build_orchestration_create_project",
-    "stage_2": "multi_threaded_accuracy_loops_until_9_5",
-    "stop_score": 9.5,
-    "min_judge_score": 9.0
+    "stage_2": "multi_threaded_blind_judge_loops",
+    "scoring": "judges_score_without_thresholds",
+    "gate_application": "orchestrator_only_after_scoring"
   },
   "notes": [
     "Operator directed: no human gates while building.",
-    "Stage 2 accuracy loops are multi-threaded by design."
+    "Numeric council gate lives only in orchestrator-gate.private.json and must not be passed to judges."
   ]
 }

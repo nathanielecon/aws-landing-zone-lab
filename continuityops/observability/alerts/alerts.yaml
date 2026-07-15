@@ -15,7 +15,7 @@ alerts:
       Investigate 5xx rate on ingress and app pods before customer impact widens.
     owner: continuityops-platform-oncall
     severity: SEV-2
-    runbook: continuityops/operations/runbooks/README.md
+    runbook: continuityops/operations/runbooks/app-smoke.md
     dedupe:
       key: "{{ alert_id }}:{{ environment }}"
       window: 1h
@@ -44,7 +44,7 @@ alerts:
       mitigated within the response window.
     owner: continuityops-platform-oncall
     severity: SEV-3
-    runbook: continuityops/observability/slo-catalog.json
+    runbook: continuityops/operations/runbooks/app-smoke.md
     dedupe:
       key: "{{ alert_id }}:{{ environment }}"
       window: 6h
@@ -73,7 +73,7 @@ alerts:
       saturation, and downstream queue publish latency.
     owner: continuityops-k8s-owner
     severity: SEV-3
-    runbook: continuityops/kubernetes/scenarios/resource-pressure.md
+    runbook: continuityops/operations/runbooks/kubectl-first-five.md
     dedupe:
       key: "{{ alert_id }}:{{ route }}"
       window: 30m

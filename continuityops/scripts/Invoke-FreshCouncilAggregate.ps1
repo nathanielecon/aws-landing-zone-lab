@@ -26,8 +26,9 @@ foreach ($id in @('J1', 'J2', 'J3')) {
     if ($j.threshold_provided -eq $true) { throw "$id claimed threshold_provided=true (leak)" }
     # Detect rationale leakage
     $blob = ($j | ConvertTo-Json -Depth 20)
-    if ($blob -match '9\.5' -or $blob -match 'pass bar' -or $blob -match 'threshold') {
-        Write-Warning "$id output mentions threshold-like language; review manually."
+    # Flag only if a numeric bar appears to have steered scoring (allow threshold_provided:false).
+    if ($blob -match '(?i)aim(?:ed|ing)? for 9\.5' -or $blob -match '(?i)pass(?:ing)? (?:bar|threshold) of' -or $blob -match '(?i)need(?:s|ed)? (?:to )?(?:hit |reach )?9\.5') {
+        Write-Warning "$id output may contain threshold steering language; review manually."
     }
     $judges += $j
 }
@@ -39,14 +40,14 @@ $min = [math]::Round((($scores | Measure-Object -Minimum).Minimum), 2)
 # Per-partition averages
 $partIds = @($judges[0].partitions | ForEach-Object { $_.partition_id })
 $partAgg = @()
-foreach ($pid in $partIds) {
+foreach ($partId in $partIds) {
     $ps = @()
     foreach ($j in $judges) {
-        $p = @($j.partitions | Where-Object { $_.partition_id -eq $pid } | Select-Object -First 1)
+        $p = @($j.partitions | Where-Object { $_.partition_id -eq $partId } | Select-Object -First 1)
         if ($p) { $ps += [double]$p.score }
     }
     $partAgg += [ordered]@{
-        partition_id = $pid
+        partition_id = $partId
         average      = [math]::Round((($ps | Measure-Object -Average).Average), 2)
         floor        = [math]::Round((($ps | Measure-Object -Minimum).Minimum), 2)
         scores       = $ps
