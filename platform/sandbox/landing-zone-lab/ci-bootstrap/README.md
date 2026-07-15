@@ -27,18 +27,52 @@ workflow default if it matches).
 
 If Actions fails at **Configure AWS credentials (OIDC)** after a rename,
 self-heal from GHA cannot run (needs the role). Fix in **AWS CloudShell**
-(Linux paths — do not use `C:\...`), account `283077380808`:
+(Linux paths — do not use `C:\...`), account `283077380808`.
 
-```bash
-# No clone needed — paste in CloudShell:
-curl -fsSL https://raw.githubusercontent.com/nathanielecon/aws-landing-zone-lab/cursor/oidc-trust-recovery-d314/platform/sandbox/landing-zone-lab/ci-bootstrap/fix-oidc-trust-cloudshell.sh | bash
-```
-
-Or from a repo checkout of this branch:
+The repo is private — do **not** rely on `curl` from raw.githubusercontent.com.
+Paste the contents of [`fix-oidc-trust-cloudshell.sh`](./fix-oidc-trust-cloudshell.sh)
+into CloudShell (or clone this branch and run it):
 
 ```bash
 bash platform/sandbox/landing-zone-lab/ci-bootstrap/fix-oidc-trust-cloudshell.sh
 # or: terraform apply in this directory (same trust shape)
+```
+
+Inline paste (CloudShell):
+
+```bash
+ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+OIDC_ARN="arn:aws:iam::${ACCOUNT}:oidc-provider/token.actions.githubusercontent.com"
+cat > /tmp/trust.json <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "GitHubActionsOidc",
+    "Effect": "Allow",
+    "Principal": { "Federated": "${OIDC_ARN}" },
+    "Action": "sts:AssumeRoleWithWebIdentity",
+    "Condition": {
+      "StringEquals": {
+        "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+        "token.actions.githubusercontent.com:repository_id": "1296742987",
+        "token.actions.githubusercontent.com:repository_owner_id": "177059064"
+      },
+      "StringLike": {
+        "token.actions.githubusercontent.com:sub": [
+          "repo:nathanielecon/*:ref:refs/heads/main",
+          "repo:nathanielecon/*:pull_request",
+          "repo:nathanielecon/*:ref:refs/heads/cursor/*",
+          "repo:nathanielecon/*:environment:lab"
+        ]
+      }
+    }
+  }]
+}
+EOF
+aws iam update-assume-role-policy --role-name project-a-lzlab-gha \
+  --policy-document file:///tmp/trust.json
+aws iam get-role --role-name project-a-lzlab-gha \
+  --query 'Role.AssumeRolePolicyDocument' --output json
 ```
 
 Then dispatch **Landing Zone lab (Terraform)** → `plan` and confirm the OIDC
