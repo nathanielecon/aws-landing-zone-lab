@@ -1,7 +1,7 @@
 {
   "schema_version": "continuityops-performance-results-v1",
   "run_id": "perf-baseline-synthetic-2026-07-15",
-  "candidate_sha": "bc894f5cb0ecf67024db362f95ad3b4540828e1a",
+  "candidate_sha": "1bfa233c5d263c408d6aa150d62f9c9ce416d8bb",
   "environment": "repo_only",
   "scenario_ref": "continuityops/tests/performance/load-scenario.md",
   "started_at_utc": "2026-07-15T12:00:00Z",

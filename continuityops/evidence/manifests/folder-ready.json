@@ -1,7 +1,7 @@
 {
   "schema_version": "continuityops-evidence-event-v1",
   "event_id": "folder-ready",
-  "candidate_sha": "bc894f5cb0ecf67024db362f95ad3b4540828e1a",
+  "candidate_sha": "1bfa233c5d263c408d6aa150d62f9c9ce416d8bb",
   "environment": "repo_only",
   "identity": "continuityops-validate",
   "timestamp_utc": "2026-07-15T14:57:52.2307665Z",
@@ -14,7 +14,7 @@
   "validation": {
     "schema_version": "continuityops-validate-v1",
     "task_id": "COP-001",
-    "candidate_sha": "bc894f5cb0ecf67024db362f95ad3b4540828e1a",
+    "candidate_sha": "1bfa233c5d263c408d6aa150d62f9c9ce416d8bb",
     "timestamp_utc": "2026-07-15T14:57:52.2307665Z",
     "results": [
       {

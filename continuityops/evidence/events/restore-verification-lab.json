@@ -1,7 +1,7 @@
 {
   "schema_version": "continuityops-restore-verification-v1",
   "verification_id": "rv-2026-07-15-synthetic-lab-001",
-  "candidate_sha": "bc894f5cb0ecf67024db362f95ad3b4540828e1a",
+  "candidate_sha": "1bfa233c5d263c408d6aa150d62f9c9ce416d8bb",
   "environment": "recovery-lab",
   "change_id": "CH-backup-restore",
   "scenario": "kubernetes_drill",
