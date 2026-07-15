@@ -11,6 +11,10 @@ Default trust pins GitHub **`repository_id=1296742987`** (this repo) and
 rename does not brick OIDC. Live AWS resource name prefixes such as
 `project-a-lzlab-*` are unchanged.
 
+**Status (2026-07-15):** Live trust on `project-a-lzlab-gha` was restored via
+CloudShell to the rename-resilient shape above. Re-apply this directory when
+convenient so Terraform state matches IAM.
+
 ## Apply once (local break-glass)
 
 ```powershell
