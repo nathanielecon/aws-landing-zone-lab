@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "continuityops-task-policy-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "title",
+    "risk",
+    "mode",
+    "phase",
+    "slice",
+    "allowed_paths",
+    "adapter_owned_paths",
+    "forbidden_operations",
+    "validators",
+    "expected_evidence"
+  ],
+  "properties": {
+    "schema_version": { "const": "continuityops-task-policy-v1" },
+    "id": { "type": "string", "pattern": "^COP-[0-9]{3}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "risk": { "enum": ["low", "medium", "high"] },
+    "mode": { "enum": ["repo_only", "read_only_cloud", "mutation_cloud"] },
+    "phase": { "type": "integer", "minimum": 0, "maximum": 8 },
+    "slice": { "enum": ["S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "IFACE"] },
+    "depends_on": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^COP-[0-9]{3}$" }
+    },
+    "allowed_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "adapter_owned_paths": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "forbidden_operations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "validators": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "timeout_seconds", "required"],
+        "properties": {
+          "id": { "type": "string" },
+          "args": { "type": "array", "items": { "type": "string" } },
+          "timeout_seconds": { "type": "integer", "minimum": 1 },
+          "required": { "type": "boolean" }
+        }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "gate_id", "approver"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "gate_id": { "enum": ["H0", "H1", "H2", "H3", "H4", "H5", "H6", "none"] },
+        "stage": { "type": "string" },
+        "approver": { "const": "human" },
+        "receipt_path": { "type": "string" },
+        "reason": { "type": "string" }
+      }
+    },
+    "expected_artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "expected_evidence": { "type": "string" },
+    "claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cloud_validated": { "type": "boolean" },
+        "aws_implemented": { "type": "boolean" },
+        "azure_implemented": { "type": "boolean" }
+      }
+    }
+  }
+}

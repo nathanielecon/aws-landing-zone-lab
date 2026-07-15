@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "continuityops-evidence-event-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "candidate_sha",
+    "environment",
+    "timestamp_utc",
+    "command",
+    "exit_code",
+    "result",
+    "artifact_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": "continuityops-evidence-event-v1" },
+    "event_id": { "type": "string", "minLength": 1 },
+    "candidate_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "environment": {
+      "enum": ["local", "staging", "recovery-lab", "portfolio-demo", "repo_only"]
+    },
+    "identity": { "type": "string" },
+    "timestamp_utc": { "type": "string", "format": "date-time" },
+    "command": { "type": "string" },
+    "exit_code": { "type": "integer" },
+    "result": { "enum": ["pass", "fail", "blocked", "skipped"] },
+    "artifact_sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
+    "slice": { "type": "string" },
+    "notes": { "type": "string" }
+  }
+}

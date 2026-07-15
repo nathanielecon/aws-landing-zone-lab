@@ -1,0 +1,55 @@
+{
+  "schema_version": "continuityops-evidence-event-v1",
+  "event_id": "phase0-baseline",
+  "candidate_sha": "4c702f0a26b80b742c9d05e10d2b14bc9a1e6e42",
+  "environment": "repo_only",
+  "identity": "continuityops-phase0-validator",
+  "timestamp_utc": "2026-07-15T03:05:17.3783695Z",
+  "command": "pwsh -File continuityops/scripts/Invoke-ContinuityOpsValidators.ps1",
+  "exit_code": 0,
+  "result": "pass",
+  "artifact_sha256": "568e3fbb27767e3ebbf6a46d2ca23f0543c523443f811154b362cbe7b88cdd38",
+  "slice": "S0",
+  "notes": "Phase 0 allowlisted validator summary",
+  "validation": {
+    "schema_version": "continuityops-phase0-validation-v1",
+    "task_id": "COP-001",
+    "candidate_sha": "4c702f0a26b80b742c9d05e10d2b14bc9a1e6e42",
+    "timestamp_utc": "2026-07-15T03:05:17.3783695Z",
+    "results": [
+      {
+        "id": "path_scope",
+        "status": "pass",
+        "detail": "allowed_paths confined to continuityops/"
+      },
+      {
+        "id": "secret_scan",
+        "status": "pass",
+        "detail": "no high-confidence secrets in continuityops/"
+      },
+      {
+        "id": "upstream_lock",
+        "status": "pass",
+        "detail": "A=4c702f0a26b8 C.digest=REQUIRED_OR_EXPLICITLY_UNAVAILABLE"
+      },
+      {
+        "id": "partition_manifest",
+        "status": "pass",
+        "detail": "files=45 tree=ce5531d34770"
+      },
+      {
+        "id": "unauthorized_phase_rejection",
+        "status": "pass",
+        "detail": "Phase 1 blocked: execution_approved=false"
+      },
+      {
+        "id": "project_a_untouched",
+        "status": "pass",
+        "detail": "no working-tree changes under project-a/"
+      }
+    ],
+    "pass_count": 6,
+    "fail_count": 0,
+    "overall": "pass"
+  }
+}
