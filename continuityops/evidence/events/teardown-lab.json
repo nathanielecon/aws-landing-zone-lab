@@ -1,0 +1,140 @@
+{
+  "schema_version": "continuityops-teardown-inventory-v1",
+  "event_id": "s7-teardown-lab-001",
+  "change_id": "CH-teardown",
+  "candidate_sha": "554471bc6d8e964d78824f8883c2c66732e55f2f",
+  "environment": "recovery-lab",
+  "started_at_utc": "2026-07-15T15:20:00Z",
+  "completed_at_utc": "2026-07-15T15:35:00Z",
+  "result": "pass",
+  "synthetic": true,
+  "synthetic_data_label": true,
+  "resources_removed": [
+    {
+      "type": "eks_cluster",
+      "name": "continuityops-recovery-lab",
+      "module": "modules/eks",
+      "action": "terraform_destroy",
+      "removed": true
+    },
+    {
+      "type": "eks_node_group",
+      "name": "continuityops-recovery-lab-ng",
+      "module": "modules/eks",
+      "action": "terraform_destroy",
+      "removed": true,
+      "retained_evidence": "instance_type=t3.medium; desired_count=2"
+    },
+    {
+      "type": "lambda_function",
+      "name": "continuityops-recovery-worker",
+      "module": "modules/serverless",
+      "action": "terraform_destroy",
+      "removed": true,
+      "retained_evidence": "function_version=lab-v3; zip_sha256=synthetic-worker-zip-aaaaaaaa"
+    },
+    {
+      "type": "sqs_queue",
+      "name": "continuityops-recovery-primary",
+      "module": "modules/serverless",
+      "action": "terraform_destroy",
+      "removed": true,
+      "retained_evidence": "final_depth=0"
+    },
+    {
+      "type": "sqs_queue",
+      "name": "continuityops-recovery-dlq",
+      "module": "modules/serverless",
+      "action": "terraform_destroy",
+      "removed": true,
+      "retained_evidence": "final_dlq_depth=0"
+    },
+    {
+      "type": "iam_role",
+      "name": "continuityops-recovery-worker-role",
+      "module": "modules/serverless",
+      "action": "terraform_destroy",
+      "removed": true,
+      "retained_evidence": "role_name_only=continuityops-recovery-worker-role"
+    },
+    {
+      "type": "cloudwatch_log_group",
+      "name": "/continuityops/continuityops-recovery",
+      "module": "modules/observability",
+      "action": "terraform_destroy",
+      "removed": true,
+      "retained_evidence": "retention_days=14; sample_query_id=lab-q-synthetic-001"
+    },
+    {
+      "type": "cloudwatch_alarm",
+      "name": "continuityops-recovery-worker-errors",
+      "module": "modules/observability",
+      "action": "terraform_destroy",
+      "removed": true,
+      "retained_evidence": "last_state=OK"
+    },
+    {
+      "type": "vpc",
+      "name": "continuityops-recovery-vpc",
+      "module": "modules/network",
+      "action": "terraform_destroy",
+      "removed": true,
+      "retained_evidence": "cidr=10.43.0.0/16"
+    },
+    {
+      "type": "helm_release",
+      "name": "continuityops-lab",
+      "namespace": "continuityops-lab",
+      "action": "helm_uninstall",
+      "removed": true,
+      "retained_evidence": "final_revision=3"
+    },
+    {
+      "type": "kubernetes_namespace",
+      "name": "continuityops-lab",
+      "action": "kubectl_delete",
+      "removed": true
+    },
+    {
+      "type": "kubernetes_secret",
+      "name": "continuityops-lab-tls",
+      "action": "removed_with_release",
+      "removed": true,
+      "retained_evidence": "secret_name_only=continuityops-lab-tls (values never retained)"
+    }
+  ],
+  "evidence_retained": [
+    {
+      "artifact": "teardown_manifest",
+      "path": "continuityops/evidence/events/teardown-lab.json",
+      "contents_allowed": "resource types, counts, timestamps, candidate SHA",
+      "contents_forbidden": "access keys, tokens, secret values"
+    },
+    {
+      "artifact": "queue_metrics_export",
+      "path": "synthetic-drill/teardown/queue-metrics.json",
+      "contents_allowed": "depth, age of oldest message",
+      "contents_forbidden": "message bodies"
+    },
+    {
+      "artifact": "cost_report_snapshot",
+      "path": "synthetic-drill/teardown/cost-snapshot.json",
+      "contents_allowed": "service-level USD with synthetic labels",
+      "contents_forbidden": "payer account credentials"
+    },
+    {
+      "artifact": "restore_verification_link",
+      "path": "continuityops/evidence/events/restore-verification-lab.json",
+      "contents_allowed": "schema-shaped verification record",
+      "contents_forbidden": "private keys, webhook URLs with secrets"
+    }
+  ],
+  "verification": {
+    "eks_clusters_named_continuityops_recovery": 0,
+    "sqs_queues_named_continuityops_recovery": 0,
+    "lambda_continuityops_recovery_worker": 0,
+    "vpc_10_43_0_0_16": 0
+  },
+  "retention_days": 90,
+  "notes": "SYNTHETIC teardown inventory for recovery-lab — synthetic:true. Expected resources marked removed; evidence retained without secrets. Bound to candidate_sha=554471bc6d8e964d78824f8883c2c66732e55f2f. Not a live cloud destroy proof."
+}

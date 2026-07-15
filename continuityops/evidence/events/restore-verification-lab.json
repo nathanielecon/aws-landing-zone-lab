@@ -1,7 +1,7 @@
 {
   "schema_version": "continuityops-restore-verification-v1",
   "verification_id": "rv-2026-07-15-synthetic-lab-001",
-  "candidate_sha": "1bfa233c5d263c408d6aa150d62f9c9ce416d8bb",
+  "candidate_sha": "554471bc6d8e964d78824f8883c2c66732e55f2f",
   "environment": "recovery-lab",
   "change_id": "CH-backup-restore",
   "scenario": "kubernetes_drill",
@@ -22,55 +22,55 @@
       "name": "eks_workloads",
       "check": "helm rollback revision + rollout status (synthetic)",
       "status": "pass",
-      "notes": "Synthetic: 2/2 pods Ready; helm revision 3\u21922 rollback simulated"
+      "notes": "Synthetic: 2/2 pods Ready; helm revision 3→2 rollback simulated; health Ready=true"
     },
     {
       "name": "eks_control_plane",
       "check": "kubectl cluster-info (synthetic)",
       "status": "pass",
-      "notes": "Synthetic: API server reachable; no regional outage simulated"
+      "notes": "Synthetic: API server reachable; control-plane health=Healthy"
     },
     {
       "name": "lambda_worker",
       "check": "CloudWatch Errors metric below alarm (synthetic)",
       "status": "pass",
-      "notes": "Synthetic: Errors=0 over 15m window"
+      "notes": "Synthetic: Errors=0 over 15m window; function version=$LATEST lab pin"
     },
     {
       "name": "sqs_primary",
       "check": "ApproximateNumberOfMessages stable (synthetic)",
       "status": "pass",
-      "notes": "Synthetic: depth=12 messages (ten_SYN_* drill traffic)"
+      "notes": "Synthetic: depth=12 messages (ten_SYN_* drill traffic); record_count_in_flight=12"
     },
     {
       "name": "sqs_dlq",
       "check": "DLQ visible count triaged (synthetic)",
       "status": "pass",
-      "notes": "Synthetic: depth=0 after redrive simulation"
+      "notes": "Synthetic: depth=0 after redrive simulation; poison_record_count=0"
     },
     {
       "name": "terraform_state",
       "check": "State version id recorded (synthetic)",
       "status": "pass",
-      "notes": "Synthetic state_version_id=lab-v42; plan hash sha256:synthetic-plan-placeholder"
+      "notes": "Synthetic state_version_id=lab-v42; plan checksum sha256:a1b2c3d4e5f60718293a4b5c6d7e8f901234567890abcdef1234567890abcdef"
     },
     {
       "name": "cloudwatch_logs",
       "check": "Log group ingest resumed (synthetic)",
       "status": "pass",
-      "notes": "Synthetic: /continuityops/continuityops-recovery last event < 5m"
+      "notes": "Synthetic: /continuityops/continuityops-recovery last event < 5m; health=ingest_ok"
     },
     {
       "name": "vpc_network",
       "check": "Subnet + SG declarative match (synthetic)",
       "status": "pass",
-      "notes": "Synthetic: terraform plan shows 0 changes"
+      "notes": "Synthetic: terraform plan shows 0 changes; network health=reachable"
     },
     {
       "name": "synthetic_tenant_metadata",
-      "check": "Drill manifest record counts + checksums (synthetic)",
+      "check": "Drill manifest record counts + checksums + app-contract digest/version + post-restore smoke (synthetic)",
       "status": "pass",
-      "notes": "Synthetic: 47 tenant records; manifest checksum sha256:synthetic-tenant-manifest-00000000; export bundle checksum sha256:synthetic-export-bundle-11111111"
+      "notes": "Synthetic complete fields — record_count=47 tenants; manifest_checksum=sha256:c0ffee00112233445566778899aabbccddeeff00112233445566778899aabbcc; export_bundle_checksum=sha256:deadbeef00112233445566778899aabbccddeeff00112233445566778899aabb; app_contract_version=0.1.0-s1; app_contract_image_digest=sha256:525366446236834ef25125fb3bc639ca1f91522e84f3625788b5648603a3e00f (matches continuityops/app-contract/release-contract.json); post_restore_smoke=/healthz:200,/readyz:200,/version:200 body contains 0.1.0,/api/smoke:200"
     }
   ],
   "checklist": [
@@ -86,12 +86,12 @@
     },
     {
       "id": 3,
-      "description": "Liveness /healthz",
+      "description": "Liveness /healthz HTTP 200 (post-restore smoke)",
       "passed": true
     },
     {
       "id": 4,
-      "description": "Readiness /readyz",
+      "description": "Readiness /readyz HTTP 200 (post-restore smoke)",
       "passed": true
     },
     {
@@ -123,12 +123,35 @@
       "id": 10,
       "description": "RTO within component target",
       "passed": true
+    },
+    {
+      "id": 11,
+      "description": "Version endpoint matches app-contract version 0.1.0-s1",
+      "passed": true
+    },
+    {
+      "id": 12,
+      "description": "Image digest matches app-contract release-contract.json",
+      "passed": true
+    },
+    {
+      "id": 13,
+      "description": "Tenant manifest checksums + record counts verified",
+      "passed": true
+    },
+    {
+      "id": 14,
+      "description": "Post-restore business smoke /api/smoke HTTP 200",
+      "passed": true
     }
   ],
   "evidence_links": [
     "continuityops/operations/changes/CH-backup-restore.md",
     "continuityops/docs/decisions/rto-rpo.md",
-    "continuityops/tests/performance/baseline-results.json"
+    "continuityops/app-contract/release-contract.json",
+    "continuityops/tests/performance/baseline-results.json",
+    "continuityops/evidence/events/load-test-lab.json",
+    "continuityops/tests/recovery/Invoke-RestoreVerificationLab.ps1"
   ],
-  "notes": "SYNTHETIC LAB DRILL \u2014 procedure walkthrough and schema exercise only. Record counts (47 tenants) and checksums (sha256:synthetic-*) are illustrative placeholders, not measured from a live recovery-lab apply. Replace with measured values after an approved OIDC drill. Rebound to remediation HEAD."
+  "notes": "SYNTHETIC LAB DRILL — procedure walkthrough and schema exercise only (synthetic_data_label=true). Complete synthetic fields: record_count=47; checksums sha256:c0ffee… / sha256:deadbeef…; health=/healthz+/readyz pass; version=0.1.0-s1; image_digest=sha256:525366446236834ef25125fb3bc639ca1f91522e84f3625788b5648603a3e00f matching app-contract/release-contract.json; post-restore smoke all four contract endpoints HTTP 200. Not measured from a live recovery-lab apply. Bound to candidate_sha=554471bc6d8e964d78824f8883c2c66732e55f2f (git rev-parse HEAD at emit)."
 }

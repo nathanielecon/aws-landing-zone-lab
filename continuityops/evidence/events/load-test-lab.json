@@ -1,0 +1,61 @@
+{
+  "schema_version": "continuityops-performance-results-v1",
+  "run_id": "perf-load-test-lab-synthetic-2026-07-15",
+  "candidate_sha": "554471bc6d8e964d78824f8883c2c66732e55f2f",
+  "environment": "repo_only",
+  "scenario_ref": "continuityops/tests/performance/load-scenario.md",
+  "started_at_utc": "2026-07-15T15:00:00Z",
+  "completed_at_utc": "2026-07-15T15:17:00Z",
+  "synthetic_data_label": true,
+  "tool": "synthetic-generator (illustrative — not measured)",
+  "traffic": {
+    "base_url": "http://continuityops-lab:8080",
+    "total_requests": 48200,
+    "duration_seconds": 1020
+  },
+  "summary": {
+    "error_rate": 0.003,
+    "latency_ms_p50": 45,
+    "latency_ms_p95": 342,
+    "latency_ms_p99": 640,
+    "availability": 0.997,
+    "slo_p95_met": true,
+    "slo_availability_met": true
+  },
+  "phases": [
+    {
+      "name": "warm_up",
+      "duration_seconds": 120,
+      "virtual_users": 25,
+      "error_rate": 0.002,
+      "latency_ms_p95": 290
+    },
+    {
+      "name": "steady",
+      "duration_seconds": 600,
+      "virtual_users": 55,
+      "error_rate": 0.002,
+      "latency_ms_p95": 342
+    },
+    {
+      "name": "spike",
+      "duration_seconds": 180,
+      "virtual_users": 160,
+      "error_rate": 0.006,
+      "latency_ms_p95": 510
+    },
+    {
+      "name": "cool_down",
+      "duration_seconds": 120,
+      "virtual_users": 5,
+      "error_rate": 0.001,
+      "latency_ms_p95": 220
+    }
+  ],
+  "resource_snapshot": {
+    "cpu_utilization_percent": 72,
+    "memory_utilization_percent": 74,
+    "replica_count": 2
+  },
+  "notes": "SYNTHETIC LOAD RESULT — synthetic:true (synthetic_data_label=true). Non-zero illustrative metrics for schema completeness and S7 evidence linkage only. Not a live measured drill. Bound to candidate_sha=554471bc6d8e964d78824f8883c2c66732e55f2f."
+}

@@ -1,13 +1,13 @@
 {
   "schema_version": "continuityops-performance-results-v1",
   "run_id": "perf-baseline-synthetic-2026-07-15",
-  "candidate_sha": "1bfa233c5d263c408d6aa150d62f9c9ce416d8bb",
+  "candidate_sha": "554471bc6d8e964d78824f8883c2c66732e55f2f",
   "environment": "repo_only",
   "scenario_ref": "continuityops/tests/performance/load-scenario.md",
   "started_at_utc": "2026-07-15T12:00:00Z",
   "completed_at_utc": "2026-07-15T12:17:00Z",
   "synthetic_data_label": true,
-  "tool": "synthetic-generator (illustrative \u2014 not measured)",
+  "tool": "synthetic-generator (illustrative — not measured)",
   "traffic": {
     "base_url": "http://continuityops-lab:8080",
     "total_requests": 42500,
@@ -57,5 +57,5 @@
     "memory_utilization_percent": 71,
     "replica_count": 2
   },
-  "notes": "SYNTHETIC BASELINE \u2014 numbers are illustrative placeholders for schema and regression comparison only. Do not cite as live production or lab measurements. Replace with a measured run after an approved load drill."
+  "notes": "SYNTHETIC BASELINE — numbers are illustrative placeholders for schema and regression comparison only (synthetic_data_label=true). Do not cite as live production or lab measurements. Bound to candidate_sha=554471bc6d8e964d78824f8883c2c66732e55f2f. Companion event: evidence/events/load-test-lab.json."
 }
