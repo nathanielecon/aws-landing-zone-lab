@@ -1,21 +1,21 @@
 {
   "schema_version": "continuityops-evidence-event-v1",
   "event_id": "folder-ready",
-  "candidate_sha": "90ba9818c1911d43c31cc0c87c9111f6bb87e29c",
+  "candidate_sha": "1f7102b3a95b94af4f59b77f55923a11d2b70a88",
   "environment": "repo_only",
   "identity": "continuityops-validate",
-  "timestamp_utc": "2026-07-15T14:51:00.4913963Z",
+  "timestamp_utc": "2026-07-15T14:54:49.9856805Z",
   "command": "pwsh -File continuityops/scripts/Invoke-ContinuityOpsValidators.ps1",
   "exit_code": 0,
   "result": "pass",
-  "artifact_sha256": "68d47ecec4485e1e1e78e4d0241496b1d6f8163ddf70da38c69401dbfd33763c",
+  "artifact_sha256": "897e915c2959d8db3f0d1e617e25b8d1822bad85db8993efc79cbb06d4708cf6",
   "slice": "S0",
   "notes": "ContinuityOps folder health validation",
   "validation": {
     "schema_version": "continuityops-validate-v1",
     "task_id": "COP-001",
-    "candidate_sha": "90ba9818c1911d43c31cc0c87c9111f6bb87e29c",
-    "timestamp_utc": "2026-07-15T14:51:00.4913963Z",
+    "candidate_sha": "1f7102b3a95b94af4f59b77f55923a11d2b70a88",
+    "timestamp_utc": "2026-07-15T14:54:49.9856805Z",
     "results": [
       {
         "id": "path_scope",
@@ -35,12 +35,12 @@
       {
         "id": "partition_manifest",
         "status": "pass",
-        "detail": "files=196 tree=4a4a4214bfc2"
+        "detail": "files=204 tree=219defea08ca"
       },
       {
         "id": "orchestration_model",
         "status": "pass",
-        "detail": "stage1 build + stage2 multi-threaded ≥9.5; no build gates"
+        "detail": "stage1 build + stage2 multi-threaded; gate orchestrator-only"
       },
       {
         "id": "project_a_untouched",

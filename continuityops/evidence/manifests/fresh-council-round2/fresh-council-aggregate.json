@@ -1,0 +1,131 @@
+{
+  "schema_version": "continuityops-fresh-council-aggregate-v1",
+  "timestamp_utc": "2026-07-15T14:54:03.4406508Z",
+  "candidate_sha": "1f7102b3a95b94af4f59b77f55923a11d2b70a88",
+  "threshold_in_judge_prompts": false,
+  "judges": [
+    {
+      "judge_id": "J1",
+      "overall_score": 8.3,
+      "merge_ready_opinion": "abstain",
+      "threshold_provided": false
+    },
+    {
+      "judge_id": "J2",
+      "overall_score": 8.4,
+      "merge_ready_opinion": "abstain",
+      "threshold_provided": false
+    },
+    {
+      "judge_id": "J3",
+      "overall_score": 8.41,
+      "merge_ready_opinion": "yes",
+      "threshold_provided": false
+    }
+  ],
+  "overall_average": 8.37,
+  "overall_floor": 8.3,
+  "partition_averages": [
+    {
+      "partition_id": "P_authority",
+      "average": 8.37,
+      "floor": 8.1,
+      "scores": [
+        8.1,
+        8.5,
+        8.5
+      ]
+    },
+    {
+      "partition_id": "P_foundation",
+      "average": 8.27,
+      "floor": 8.2,
+      "scores": [
+        8.2,
+        8.2,
+        8.4
+      ]
+    },
+    {
+      "partition_id": "P_kubernetes",
+      "average": 8.57,
+      "floor": 8.4,
+      "scores": [
+        8.6,
+        8.4,
+        8.7
+      ]
+    },
+    {
+      "partition_id": "P_serverless",
+      "average": 8.6,
+      "floor": 8.6,
+      "scores": [
+        8.6,
+        8.6,
+        8.6
+      ]
+    },
+    {
+      "partition_id": "P_observability",
+      "average": 8.03,
+      "floor": 7.9,
+      "scores": [
+        8.0,
+        7.9,
+        8.2
+      ]
+    },
+    {
+      "partition_id": "P_operations",
+      "average": 8.63,
+      "floor": 8.6,
+      "scores": [
+        8.6,
+        8.7,
+        8.6
+      ]
+    },
+    {
+      "partition_id": "P_security",
+      "average": 8.27,
+      "floor": 8.1,
+      "scores": [
+        8.1,
+        8.3,
+        8.4
+      ]
+    },
+    {
+      "partition_id": "P_resilience",
+      "average": 8.13,
+      "floor": 8.0,
+      "scores": [
+        8.1,
+        8.3,
+        8.0
+      ]
+    },
+    {
+      "partition_id": "P_portfolio",
+      "average": 8.3,
+      "floor": 8.3,
+      "scores": [
+        8.3,
+        8.3,
+        8.3
+      ]
+    }
+  ],
+  "opinions": [
+    "abstain",
+    "abstain",
+    "yes"
+  ],
+  "orchestrator_gate": {
+    "note": "Applied only by orchestrator after blind scoring; judges never received these numbers.",
+    "average_min": 9.5,
+    "floor_min": 9.0,
+    "pass": false
+  }
+}

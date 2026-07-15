@@ -1,0 +1,8 @@
+{
+  "schema_version": "continuityops-orchestrator-gate-v1",
+  "visibility": "orchestrator_only",
+  "note": "Judges must never be given this file or its numbers in prompts.",
+  "council_average_min": 9.5,
+  "judge_floor_min": 9.0,
+  "all_must_haves_pass": true
+}

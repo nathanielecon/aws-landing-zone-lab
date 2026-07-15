@@ -27,9 +27,9 @@
       "human_gates": false,
       "start_when": "stage_1_complete",
       "stop_when": {
-        "council_average_min": 9.5,
-        "judge_floor_min": 9.0,
-        "all_must_haves_pass": true
+        "owner": "orchestrator_only",
+        "gate_file": "continuityops/harness/policies/orchestrator-gate.private.json",
+        "judges_must_not_receive_gate_numbers": true
       }
     }
   ]
