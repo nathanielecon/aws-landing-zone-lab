@@ -27,7 +27,7 @@ case "$CALLER_ARN" in
     ;;
 esac
 
-# Retarget GHA OIDC trust to aws-landing-zone-lab (idempotent; safe after rename).
+# Retarget GHA OIDC trust (rename-resilient repository_id lock; idempotent).
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 OIDC_ARN="arn:aws:iam::${ACCOUNT_ID}:oidc-provider/token.actions.githubusercontent.com"
 ROLE_NAME="project-a-lzlab-gha"
@@ -43,14 +43,16 @@ cat > "$TRUST_FILE" <<EOF
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
         "StringEquals": {
-          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+          "token.actions.githubusercontent.com:repository_id": "1296742987",
+          "token.actions.githubusercontent.com:repository_owner_id": "177059064"
         },
         "StringLike": {
           "token.actions.githubusercontent.com:sub": [
-            "repo:nathanielecon/aws-landing-zone-lab:ref:refs/heads/main",
-            "repo:nathanielecon/aws-landing-zone-lab:pull_request",
-            "repo:nathanielecon/aws-landing-zone-lab:ref:refs/heads/cursor/*",
-            "repo:nathanielecon/aws-landing-zone-lab:environment:lab"
+            "repo:nathanielecon/*:ref:refs/heads/main",
+            "repo:nathanielecon/*:pull_request",
+            "repo:nathanielecon/*:ref:refs/heads/cursor/*",
+            "repo:nathanielecon/*:environment:lab"
           ]
         }
       }

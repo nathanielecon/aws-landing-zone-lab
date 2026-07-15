@@ -5,8 +5,10 @@ One-time root in this account. Creates:
 - IAM OIDC provider for `token.actions.githubusercontent.com`
 - IAM role `project-a-lzlab-gha` for GitHub Actions plan/apply
 
-Default trust is for repository **`nathanielecon/aws-landing-zone-lab`**
-(`github_repository` variable). Live AWS resource name prefixes such as
+Default trust pins GitHub **`repository_id=1296742987`** (this repo) and
+**`repository_owner_id=177059064`** (`nathanielecon`), with `sub` patterns
+`repo:nathanielecon/*:(main|pull_request|cursor/*|environment:lab)` so a GitHub
+rename does not brick OIDC. Live AWS resource name prefixes such as
 `project-a-lzlab-*` are unchanged.
 
 ## Apply once (local break-glass)
@@ -21,17 +23,15 @@ terraform output gha_role_arn
 Then set the repo variable `AWS_ROLE_ARN_LZ_LAB` to that ARN (or rely on the
 workflow default if it matches).
 
-## After renaming GitHub `cloud` → `aws-landing-zone-lab`
+## After renaming GitHub (OIDC outage)
 
-OIDC `sub` trust is repo-name specific. Re-apply this root so the role accepts
-tokens from the new repository (and remove the old `cloud` subjects if Terraform
-replaces the trust policy):
+If Actions fails at **Configure AWS credentials (OIDC)** after a rename,
+self-heal from GHA cannot run (needs the role). Fix in **AWS CloudShell**
+(Linux paths — do not use `C:\...`):
 
-```powershell
-cd platform/sandbox/landing-zone-lab/ci-bootstrap
-terraform init -backend=false -input=false
-terraform apply -input=false -auto-approve \
-  -var="github_repository=aws-landing-zone-lab"
+```bash
+bash platform/sandbox/landing-zone-lab/ci-bootstrap/fix-oidc-trust-cloudshell.sh
+# or: terraform apply in this directory (same trust shape)
 ```
 
 Cloud Agents do **not** hold apply credentials for this step.
