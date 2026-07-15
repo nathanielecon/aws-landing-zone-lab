@@ -2,11 +2,11 @@
   "judge_id": "J1",
   "model": "cursor-grok-4.5-high-fast",
   "threshold_provided": false,
-  "candidate_sha": "9c1bb24c278fa4da89926598e6a17f73dc44ebaf",
+  "candidate_sha": "9b24d748aba0e5cafd41bd50af563696f44bfb01",
   "partitions": [
     {
       "partition_id": "P_authority",
-      "score": 7.4,
+      "score": 8.1,
       "must_haves": [
         {
           "id": "scope_independence",
@@ -16,17 +16,17 @@
         {
           "id": "validators_present",
           "pass": true,
-          "note": "Invoke-ContinuityOpsValidators.ps1 covers path_scope, secret_scan, independence_lock, partition_manifest, orchestration_model, project_a_untouched."
+          "note": "Invoke-ContinuityOpsValidators.ps1 covers path_scope, secret_scan, independence_lock, partition_manifest, orchestration_model, project_a_untouched; folder-ready and deterministic-checks pass."
         },
         {
           "id": "orchestration_documented",
           "pass": true,
-          "note": "orchestration-model.json, plan-approval.json, PLAN.md, and handoffs describe two-stage build/accuracy flow."
+          "note": "orchestration-model.json, PLAN.md, and handoffs describe two-stage build then accuracy loops."
         },
         {
           "id": "status_claim_consistency",
           "pass": false,
-          "note": "STATUS.md and ISSUES claim Stage 2 complete/merge_ready while PLAN.md and plan-approval.json still say build-orchestration; accuracy-final is near-ceiling at an older SHA."
+          "note": "STATUS.md and PLAN.md align on fresh-council-remediation / not merge_ready, but harness/approvals/plan-approval.json still status=build-orchestration; evidence manifests bind candidate_sha 90ba9818… not HEAD 9b24d748…"
         },
         {
           "id": "secrets_discipline_meta",
@@ -37,21 +37,21 @@
       "findings": [
         {
           "severity": "medium",
-          "note": "Authority status surfaces overstate certification relative to PLAN/approval still marked build-orchestration and residual lab placeholders elsewhere."
+          "note": "plan-approval.json status and pinned plan/manifest hashes lag the remediating STATUS/PLAN narrative."
         },
         {
           "severity": "low",
-          "note": "accuracy-final.json reports near-perfect council scores with no partition-level findings trail, reducing trust as independent evidence."
+          "note": "Prior accuracy-final.json remains on disk as invalidated evidence; STATUS correctly marks it invalid for merge."
         }
       ],
       "strengths": [
-        "Clear ContinuityOps-only scope with automated independence and path-scope gates.",
-        "Useful local demo entrypoints and evidence manifests under continuityops/evidence/."
+        "Honest remediation posture: merge_ready retracted, OPEN-COP-005/006 track threshold leakage and fresh-council work.",
+        "Clear ContinuityOps-only scope with automated independence and path-scope gates."
       ]
     },
     {
       "partition_id": "P_foundation",
-      "score": 7.8,
+      "score": 8.2,
       "must_haves": [
         {
           "id": "terraform_modules",
@@ -71,27 +71,27 @@
         {
           "id": "delivery_honesty",
           "pass": true,
-          "note": "GitHub workflow is explicitly draft/plan-only with REPLACE_ME OIDC role; README honest footer denies production SRE ownership."
+          "note": "GitHub workflow is explicitly draft/plan-only with REPLACE_ME OIDC role; README honest about lab scope."
         },
         {
           "id": "app_contract",
           "pass": true,
-          "note": "release-contract.json and openapi-smoke.yaml define lab smoke endpoints; digest marked PENDING_BUILD."
+          "note": "release-contract.json status lab_packaged; image_digest is sha256 of app/build/continuityops-lab-app.tar with honest pending-registry note."
         },
         {
           "id": "docs_currency",
-          "pass": false,
-          "note": "terraform/README.md still says Phase 0 directory reserved despite full module tree."
+          "pass": true,
+          "note": "terraform/README.md now documents the real module tree and validate commands (no longer Phase-0 reserved)."
         }
       ],
       "findings": [
         {
           "severity": "medium",
-          "note": "Observability Terraform module is thin (one log group + one generic alarm) versus rich alert/SLO catalogs elsewhere."
+          "note": "Observability Terraform module remains thin (log group + generic alarm) versus rich alert/SLO catalogs elsewhere."
         },
         {
           "severity": "low",
-          "note": "No terraform validate evidence artifact sampled; CI remains draft and account IDs are placeholders."
+          "note": "Digest is content-hash of a source tar, not a pushed registry image digest; CI remains draft."
         }
       ],
       "strengths": [
@@ -101,7 +101,7 @@
     },
     {
       "partition_id": "P_kubernetes",
-      "score": 8.3,
+      "score": 8.6,
       "must_haves": [
         {
           "id": "hardened_helm_chart",
@@ -124,6 +124,11 @@
           "note": "Test-ContinuityOpsChart.ps1 asserts required templates and hardening keys (structural; Helm optional)."
         },
         {
+          "id": "lab_digest_set",
+          "pass": true,
+          "note": "image.digest and IMAGE_DIGEST set to sha256:525366446236834ef25125fb3bc639ca1f91522e84f3625788b5648603a3e00f matching lab app tar."
+        },
+        {
           "id": "secrets_hygiene_chart",
           "pass": true,
           "note": "secret.create defaults false; template placeholders warn against committing credentials."
@@ -131,22 +136,22 @@
       ],
       "findings": [
         {
-          "severity": "medium",
-          "note": "Image digest remains sha256:PENDING_BUILD — chart is deploy-shaped but not image-proven."
+          "severity": "low",
+          "note": "Chart test is file/key presence and tab checks, not rendered-template or kubeconform validation."
         },
         {
           "severity": "low",
-          "note": "Chart test is file/key presence and tab checks, not rendered-template or kubeconform validation."
+          "note": "Digest is lab content hash pending registry push — deploy-shaped, not image-pull proven."
         }
       ],
       "strengths": [
         "Lab-grade defaults read as production-minded without claiming live cluster proof.",
-        "Scenario scripts are concrete kubectl patches operators can actually run in a lab namespace."
+        "Scenario scripts are concrete kubectl patches operators can run in a lab namespace."
       ]
     },
     {
       "partition_id": "P_serverless",
-      "score": 7.5,
+      "score": 8.6,
       "must_haves": [
         {
           "id": "worker_semantics",
@@ -156,7 +161,7 @@
         {
           "id": "unit_tests",
           "pass": true,
-          "note": "idempotency.test.js and parse.test.js use node:test; contract lists runner paths."
+          "note": "idempotency.test.js and parse.test.js use node:test; deterministic-checks report serverless_unit pass."
         },
         {
           "id": "dlq_ops_docs",
@@ -170,23 +175,19 @@
         },
         {
           "id": "deployable_package",
-          "pass": false,
-          "note": "serverless/build/worker.zip is a 65-byte stub handler, not the ESM worker sources under src/worker/."
+          "pass": true,
+          "note": "serverless/build/worker.zip (~3KB) contains index.js, idempotency.js, parse.js, package.json byte-identical to src/worker/."
         }
       ],
       "findings": [
-        {
-          "severity": "high",
-          "note": "Packaged worker.zip does not match the implemented worker; Terraform lambda_package_path would ship a no-op stub."
-        },
         {
           "severity": "low",
           "note": "No package-lock.json despite supply-chain guidance; mitigated by zero runtime dependencies today."
         }
       ],
       "strengths": [
-        "Clear poison/idempotency/partial-batch design suitable for teaching async reliability.",
-        "Contract JSON honestly labels lab_store vs production_store."
+        "Packaged artifact now matches implemented worker — Terraform lambda_package_path would ship real code.",
+        "Clear poison/idempotency/partial-batch design suitable for teaching async reliability."
       ]
     },
     {
@@ -241,7 +242,7 @@
         {
           "id": "runbooks_with_cautions",
           "pass": true,
-          "note": "Runbooks include do-not-yet and stop/escalation sections (sampled kubectl-first-five and security-boundary)."
+          "note": "Runbooks include do-not-yet and stop/escalation sections (sampled kubectl-first-five)."
         },
         {
           "id": "incident_postmortem_templates",
@@ -277,7 +278,7 @@
         {
           "id": "unsafe_proposal_tests",
           "pass": true,
-          "note": "Test-UnsafeProposals.ps1 plus unsafe-proposal-cases.json cover injection, forged evidence, scope, secrets, mutation."
+          "note": "Test-UnsafeProposals.ps1 plus unsafe-proposal-cases.json cover injection, forged evidence, scope, secrets, mutation; deterministic check passes."
         },
         {
           "id": "guardrail_docs",
@@ -293,11 +294,11 @@
       "findings": [
         {
           "severity": "medium",
-          "note": "Unsafe-proposal test is keyword/rule-id matching, not an exercised LLM gate — honest for unit coverage but not runtime enforcement proof."
+          "note": "Unsafe-proposal test is keyword/rule-id matching, not an exercised LLM gate — honest unit coverage but not runtime enforcement proof."
         },
         {
           "severity": "low",
-          "note": "Supply-chain doc claims Node lockfile committed; worker has package.json only (no deps)."
+          "note": "Supply-chain doc still says Node lockfile committed; worker has package.json only (zero deps)."
         }
       ],
       "strengths": [
@@ -307,7 +308,7 @@
     },
     {
       "partition_id": "P_resilience",
-      "score": 7.2,
+      "score": 8.1,
       "must_haves": [
         {
           "id": "rto_rpo_targets",
@@ -331,28 +332,28 @@
         },
         {
           "id": "emitted_restore_evidence",
-          "pass": false,
-          "note": "S7 index lists restore/load/teardown evidence events as pending; no restore-verification instance present."
+          "pass": true,
+          "note": "evidence/events/restore-verification-lab.json is schema-shaped, synthetic_data_label true, linked from S7 index; teardown/finops events still pending."
         }
       ],
       "findings": [
         {
           "severity": "medium",
-          "note": "Resilience is procedure-and-schema complete but lacks executed restore-verification artifacts bound to candidate SHA."
+          "note": "Restore and performance artifacts bind candidate_sha 90ba9818… not current HEAD; values are explicitly synthetic placeholders, not measured live drill."
         },
         {
           "severity": "low",
-          "note": "baseline-results.json uses zeroed candidate_sha and explicitly illustrative numbers — honest, not measured."
+          "note": "S7 teardown and finops-review evidence events remain pending."
         }
       ],
       "strengths": [
-        "Synthetic labeling is consistent and recruiter-safe.",
-        "S7 index transparently marks pending live-drill evidence."
+        "Synthetic labeling and schema exercise close the prior empty-evidence gap without inventing live-cloud proof.",
+        "RTO/RPO and change procedures remain recruiter-safe and procedure-complete."
       ]
     },
     {
       "partition_id": "P_portfolio",
-      "score": 7.6,
+      "score": 8.3,
       "must_haves": [
         {
           "id": "architecture_story",
@@ -367,31 +368,31 @@
         {
           "id": "evidence_index",
           "pass": true,
-          "note": "evidence/INDEX.md maps S0–S8 artifacts with honest footer."
+          "note": "evidence/INDEX.md maps S0–S8 artifacts with honest footer; restore-verification-lab.json present under events/."
         },
         {
           "id": "claims_docs_consistency",
-          "pass": false,
-          "note": "docs/claims/README.md still describes Phase-0-only allowed claims and unauthorized Phase 1 rejection, conflicting with claims-boundary.md and STATUS."
+          "pass": true,
+          "note": "docs/claims/README.md now mirrors Stage-1 scaffold claims and explicitly rejects prior accuracy-final merge_ready."
         }
       ],
       "findings": [
         {
-          "severity": "medium",
-          "note": "Portfolio claim docs are split: primary boundary is honest; claims README is stale Phase-0 language."
+          "severity": "low",
+          "note": "Interview walkthrough remains concise and useful but depends on optional Helm/node demos."
         },
         {
           "severity": "low",
-          "note": "Interview walkthrough is concise and useful but depends on optional Helm/node demos."
+          "note": "claims-boundary.md omits the accuracy-final invalidation note present in claims README — minor split."
         }
       ],
       "strengths": [
         "Claims boundary and evidence index make overclaiming harder for careful readers.",
-        "Interview path ties architecture, drills, and agentic safety together."
+        "Portfolio narrative now consistent with remediation status rather than Phase-0-only language."
       ]
     }
   ],
-  "overall_score": 7.8,
+  "overall_score": 8.3,
   "merge_ready_opinion": "abstain",
-  "rationale": "ContinuityOps is a strong repo-only reliability lab: hardened Helm, useful drills/runbooks, serverless semantics with tests, SLO/alert catalogs, and clear A/C independence plus secret hygiene. Residual gaps that matter on merit—stub worker.zip vs real sources, PENDING image digest, no emitted restore-verification evidence, and authority/status vs PLAN claim drift—keep me from endorsing the tree's self-declared Stage-2 merge_ready posture even though the scaffold is operationally useful."
+  "rationale": "Post-remediation ContinuityOps is a stronger repo-only reliability lab: worker.zip now byte-matches sources, lab app digest is set and consistent across chart/contract/tar, synthetic restore-verification evidence exists, and STATUS/PLAN/claims no longer overclaim merge_ready. Residual merit gaps—plan-approval still on build-orchestration, evidence SHAs lag HEAD, restore numbers remain synthetic, observability TF thin, teardown evidence pending—keep me from endorsing merge_ready while Stage 2 remediation is openly in progress."
 }
