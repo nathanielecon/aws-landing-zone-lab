@@ -6,7 +6,7 @@
   "approved_by": null,
   "approved_at": null,
   "plan_sha256": "7176d719bf09215d366daaba2dbed66eb76f33ceb4592decddc848434d053275",
-  "partition_manifest_sha256": "f33b4bf8ad254a57c841108a4ed6700f30c79044406359d52d945da371403fa5",
+  "partition_manifest_sha256": "6a8ee248d4c2a789ec5bf743adaaffe73cbb6c36c624f3309d8e84bde7dca8fe",
   "validator_implementation_sha256": "1c64eb8297fdc789e38f6d076cc5643b8e005936c4ac84a432197e3b42b55f98",
   "notes": [
     "Human gate H0 must pin exact hashes before Phase 1.",
