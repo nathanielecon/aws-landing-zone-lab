@@ -1,0 +1,134 @@
+{
+  "schema_version": "project-a-evidence-v1",
+  "profile_id": "project-a",
+  "mode": "repo_only",
+  "cloud_validated": false,
+  "aws_implemented": false,
+  "azure_implemented": false,
+  "execution_bundle_sha256": "38B09AE350763EFA978AE4A9B2A886573BF2183A09A4A481A61BC8C2D460A6A7",
+  "validator_implementation_sha256": "19A807388C328EB6CBCD0B4F38E5CA23557E326C1F6E51B4B7BCC7C96483CBEC",
+  "policy_sha256": "BB6121AA2CD73611F92F71937AFEE353277E426D4BD1F0B7B4F34FE00FE86CE9",
+  "run_id": "20260711T010843Z-671f1815",
+  "task_id": "A-003",
+  "phase_passed": "sol",
+  "terra_attempts": 2,
+  "sol_attempts": 2,
+  "starting_commit": "9c883d5094e2e3e54630d88f82c2d341a421ef0c",
+  "diff_sha256": "DD2C8C061CD6C3BEA77AAEA0B82A3CC2F9D270B1D1BE6E24AB034CB572B485E6",
+  "changed_entries": [
+    {
+      "path": "platform/docs/guardrails/iam.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1085,
+      "content_sha256": "52BCCE00094976F8C9CE8807E8257ACA43F45F3241E20273BCB7164FEEFCF9FE"
+    },
+    {
+      "path": "platform/docs/guardrails/policy-validation.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 903,
+      "content_sha256": "D106046525421B97EE9F2F317BCCEFE8FF841F46C5E39E093813DC61E3B489EE"
+    },
+    {
+      "path": "platform/policies/deny_root_user.json",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 167,
+      "content_sha256": "BE22CB7012FABD1E2B0EAB2B667EDBC9A0FA6DB900FFE10B6053CADCE88BF5F1"
+    },
+    {
+      "path": "platform/terraform/identity/.terraform.lock.hcl",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1409,
+      "content_sha256": "F7EE91C10B628C916F2AED6C1B57C94CCECEC09886E974540F2BE77FA5C0C2A3"
+    },
+    {
+      "path": "platform/terraform/identity/main.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1988,
+      "content_sha256": "BC0EEE0BAC5E546C4F27B2442D5081FFCCDF01C03B011C1C2109186A896832DF"
+    },
+    {
+      "path": "platform/terraform/identity/outputs.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 319,
+      "content_sha256": "711C0B3E4A301A8339A060DD7841AECF028F42F345654D2E4F24E53BB68A40C6"
+    },
+    {
+      "path": "platform/terraform/identity/README.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1193,
+      "content_sha256": "560412162679C0E356E63F8AC9CBC0F11EB33B21B71D916F2CE8697CC2EDBFD5"
+    },
+    {
+      "path": "platform/terraform/identity/variables.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1193,
+      "content_sha256": "89814A68AD6ABA79E02C87A4C873345940F19AB1A2BB1BD340BA89F15A3BCDFA"
+    },
+    {
+      "path": "platform/terraform/identity/versions.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 152,
+      "content_sha256": "58FD2578149E351B59C53AE4FAE825D0AC4C9589BAE9CE6C3B4E48A635658571"
+    },
+    {
+      "path": "platform/tests/governance/README.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 534,
+      "content_sha256": "7B1E09BBE632FA1422A86A460787A58E100394A8D3DD3D700DE9FA04BA787B7A"
+    },
+    {
+      "path": "platform/tests/iam/identity.tftest.hcl",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 654,
+      "content_sha256": "8A61633EB1595EC285F80454C98A1DDD4F1C2448F6EF4284E7FF10E72FE1A03D"
+    },
+    {
+      "path": "platform/tests/iam/README.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 320,
+      "content_sha256": "697E5501989AF7A7004EA161DA7BDB39B255099B7878EB7B2237548117844969"
+    }
+  ],
+  "validation_digest": "3D6AF7F703596DDB7DF1A5315F5F6C2DDC9EFCEFCE6503FC68BBCC197EE92ECC",
+  "approval_required": false,
+  "approval_receipt_digest": "",
+  "completed_at": "2026-07-11T01:09:33.7697048+00:00",
+  "commit_parent": "9c883d5094e2e3e54630d88f82c2d341a421ef0c",
+  "commit_lookup": "git log -1 --format=%H -- evidence/platform/A-003.json"
+}

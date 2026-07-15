@@ -1,0 +1,107 @@
+{
+  "schema_version": "project-a-evidence-v1",
+  "profile_id": "project-a",
+  "mode": "repo_only",
+  "cloud_validated": false,
+  "aws_implemented": false,
+  "azure_implemented": false,
+  "execution_bundle_sha256": "CD5CCD079EE5695ED6D4AC93FD26C8C5872C7A4B2DA8610703AEF10889BBC4E4",
+  "validator_implementation_sha256": "19A807388C328EB6CBCD0B4F38E5CA23557E326C1F6E51B4B7BCC7C96483CBEC",
+  "policy_sha256": "2853AE83152A0CA7EFDBFB6EA2F3D90D2C174D95E68FAEACE37928E8F3DE9633",
+  "run_id": "20260711T110101Z-9832ce55",
+  "task_id": "A-006",
+  "phase_passed": "terra",
+  "terra_attempts": 0,
+  "sol_attempts": 0,
+  "starting_commit": "0158b9e17a927ab7a59173e3b743c3fd7fcd37b3",
+  "diff_sha256": "19813E4EC7D864ED633F61A1EDD04D7E08EFB0E7257FACD76980A37F0A01A069",
+  "changed_entries": [
+    {
+      "path": "platform/docs/operations/baseline-runbook.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1435,
+      "content_sha256": "10DC972FCB7A3372D0379E8FC7503E857A65C728DD8147169F1FDF1395FB733E"
+    },
+    {
+      "path": "platform/docs/operations/cost-and-teardown.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1358,
+      "content_sha256": "F51AB18C14EF77243D2E1554268759C8A6D28EAF97515E6F1662D0623BEDDF51"
+    },
+    {
+      "path": "platform/docs/validation.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1466,
+      "content_sha256": "96ABCE7BA222936525571766D9CA9BDF5A133AC1C68B269D6A02FE0DD5C040FE"
+    },
+    {
+      "path": "platform/environments/nonproduction/main.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 420,
+      "content_sha256": "BD93C6E3EF09C6FCB60753156D6FB6BAC114E720660346B677C852936855CB1A"
+    },
+    {
+      "path": "platform/environments/production/main.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 411,
+      "content_sha256": "A0549BAF0D851D14046AE1C0D568F6277BC049134C6B54D9151A5B64B67DBF8A"
+    },
+    {
+      "path": "platform/environments/README.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1084,
+      "content_sha256": "767BF7368DA844E6593FD3D9E19B78CC5D8A770606B44F11F3788159E64C3A70"
+    },
+    {
+      "path": "platform/scripts/validate-project-a.ps1",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1180,
+      "content_sha256": "90FF76183D5C361224DF3A582F5773D83CFFB2035B8AC9160A036797A35F4B2F"
+    },
+    {
+      "path": "platform/tests/integration/README.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 231,
+      "content_sha256": "3F1BCB90550AF580AAF8100D0778B54545ECE0BEA59963E602B148934EA1F9EB"
+    },
+    {
+      "path": "platform/tests/integration/root_composition.tftest.hcl",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 477,
+      "content_sha256": "248E130F495C0FDED226E738E043D755C094BCC4364C096D9C66F85801EB0F20"
+    }
+  ],
+  "validation_digest": "15FF2EB7BF746D688BAFBA6FF48CEBDFAEBD5C89E5A88B483D174C39916C439E",
+  "approval_required": false,
+  "approval_receipt_digest": "",
+  "completed_at": "2026-07-11T11:01:09.9810672+00:00",
+  "commit_parent": "0158b9e17a927ab7a59173e3b743c3fd7fcd37b3",
+  "commit_lookup": "git log -1 --format=%H -- evidence/platform/A-006.json"
+}

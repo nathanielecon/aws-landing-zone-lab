@@ -1,0 +1,116 @@
+{
+  "schema_version": "project-a-evidence-v1",
+  "profile_id": "project-a",
+  "mode": "repo_only",
+  "cloud_validated": false,
+  "aws_implemented": false,
+  "azure_implemented": false,
+  "execution_bundle_sha256": "CD5CCD079EE5695ED6D4AC93FD26C8C5872C7A4B2DA8610703AEF10889BBC4E4",
+  "validator_implementation_sha256": "19A807388C328EB6CBCD0B4F38E5CA23557E326C1F6E51B4B7BCC7C96483CBEC",
+  "policy_sha256": "C3B4BA92D222265859302170A422AC63BBAF1D0864A9D71E3BDDB57E84FE815C",
+  "run_id": "20260711T105615Z-1fdecd6d",
+  "task_id": "A-005",
+  "phase_passed": "terra",
+  "terra_attempts": 0,
+  "sol_attempts": 0,
+  "starting_commit": "ce9b979a4eaae18562929cf6e0409b6caae8b784",
+  "diff_sha256": "C989A18706C594BB23CD54FB84DEE1271F243B9D0463B28DBEF8DA89BF966D75",
+  "changed_entries": [
+    {
+      "path": "platform/docs/architecture/logging.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1443,
+      "content_sha256": "4F31391B3E7FE1B4B0A03535E0D6BAF13873F275D343AFA5DA5D6D9D8AE763B0"
+    },
+    {
+      "path": "platform/docs/operations/audit-review.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1365,
+      "content_sha256": "47975B8825B4DBF7E72E272CA292FE43D48162145652D9BABCEFA71060009A0A"
+    },
+    {
+      "path": "platform/docs/operations/audit-troubleshooting.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1442,
+      "content_sha256": "0D14E0133BE238323E7D08A0F809C5F4C10CAFAF9DF9ACC63F3587C5133BD87E"
+    },
+    {
+      "path": "platform/terraform/audit/.terraform.lock.hcl",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1409,
+      "content_sha256": "F7EE91C10B628C916F2AED6C1B57C94CCECEC09886E974540F2BE77FA5C0C2A3"
+    },
+    {
+      "path": "platform/terraform/audit/main.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 5493,
+      "content_sha256": "B5B89B4539F5B4E66FB1B0F1052C05E5FA56099B1311C3C301ADD2ECBE9DBD37"
+    },
+    {
+      "path": "platform/terraform/audit/outputs.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 536,
+      "content_sha256": "B5EC5E10441A593A3D251D596A0CED994D47C013439BB508E628CD9DC7034EF2"
+    },
+    {
+      "path": "platform/terraform/audit/README.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1050,
+      "content_sha256": "9A53B2BB2AA5576091F0FB95A56D8E3D51C9C3E34224193255E4B7C89F203BB9"
+    },
+    {
+      "path": "platform/terraform/audit/variables.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1503,
+      "content_sha256": "F215E94A64CBD088674B6C48D80BBECBD15534AEAEDECE0303CF95D1E2F44884"
+    },
+    {
+      "path": "platform/terraform/audit/versions.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 152,
+      "content_sha256": "58FD2578149E351B59C53AE4FAE825D0AC4C9589BAE9CE6C3B4E48A635658571"
+    },
+    {
+      "path": "platform/tests/audit/README.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 239,
+      "content_sha256": "53D21567D73CC8FB16732321A5888D16353C0715B8C5890C287B8FE6C697CEF4"
+    }
+  ],
+  "validation_digest": "F8D9B29C78AC6A33555292E115D874931C03C4A2F35B970D4A28FE2FA638A917",
+  "approval_required": false,
+  "approval_receipt_digest": "",
+  "completed_at": "2026-07-11T10:56:43.7326862+00:00",
+  "commit_parent": "ce9b979a4eaae18562929cf6e0409b6caae8b784",
+  "commit_lookup": "git log -1 --format=%H -- evidence/platform/A-005.json"
+}
