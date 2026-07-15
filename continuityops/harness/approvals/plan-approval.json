@@ -7,8 +7,8 @@
   "approved_by": "operator-directive-no-gates-while-building",
   "approved_at": "2026-07-15",
   "plan_sha256": "a1448744ce4c2fa3f3f6f7dd06053733ae38641a4bff11746c057cd74b5702f3",
-  "partition_manifest_sha256": "7cc61071467ae57207ecb165c1ac38f7b53eed22e2ae6318c9b8b6e50376b08c",
-  "validator_implementation_sha256": "6b5dc7bce63fd7174456509b70da077caba1bc2014792569c24faefff0ddd5b3",
+  "partition_manifest_sha256": "361e0bc80b0ecb31948fd9f1a2658825eb1f104104683a1b72c19cf68a550c0f",
+  "validator_implementation_sha256": "105cddc1c34bd6a2d0d23a877cb32b075505d55df5b3fa7dff352bc2de087651",
   "ralphy_model": {
     "stage_1": "build_orchestration_create_project",
     "stage_2": "multi_threaded_accuracy_loops_until_9_5",

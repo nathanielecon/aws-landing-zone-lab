@@ -21,7 +21,7 @@ Append-only.
 ## OPEN-COP-004 — Stage 1 implementation incomplete
 
 - **Opened:** 2026-07-15
-- **Severity:** medium
-- **Summary:** Cloud folder is prepared; slice implementations still need
-  orchestrated Codex build streams.
-- **Status:** open
+- **Closed:** 2026-07-15
+- **Summary:** Stage 1 build across S1–S8 completed; Stage 2 accuracy council
+  returned merge_ready with average ≥ 9.5.
+- **Status:** closed

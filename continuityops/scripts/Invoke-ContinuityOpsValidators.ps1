@@ -84,11 +84,13 @@ try {
         $_.FullName -notmatch '[\\/]\.git[\\/]' -and $_.Length -lt 2MB
     }
     foreach ($f in $files) {
+        $rel = $f.FullName.Substring($Root.Length).TrimStart('\', '/') -replace '\\', '/'
+        # Negative-test fixtures may mention secret shapes; they must not hold real values.
+        if ($rel -match 'continuityops/agentic/tests/') { continue }
         $text = Get-Content -LiteralPath $f.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $text) { continue }
         foreach ($pat in $patterns) {
             if ($text -match $pat) {
-                $rel = $f.FullName.Substring($Root.Length).TrimStart('\', '/') -replace '\\', '/'
                 $hits += "$rel~$pat"
             }
         }

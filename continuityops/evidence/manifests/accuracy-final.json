@@ -1,0 +1,41 @@
+{
+  "schema_version": "continuityops-accuracy-council-v1",
+  "round": 1,
+  "timestamp_utc": "2026-07-15T14:39:37.1355285Z",
+  "candidate_sha": "3f429c04169bf762d5add98a1fe8e3872225ce9a",
+  "average": 9.99,
+  "floor": 9.98,
+  "target_average": 9.5,
+  "judge_floor": 9.0,
+  "merge_ready": true,
+  "judges": [
+    {
+      "judge_id": "J1",
+      "score": 10.0,
+      "passed": 23,
+      "total": 23,
+      "must_fail": 0,
+      "merge_ready": true
+    },
+    {
+      "judge_id": "J2",
+      "score": 9.98,
+      "passed": 23,
+      "total": 23,
+      "must_fail": 0,
+      "merge_ready": true
+    },
+    {
+      "judge_id": "J3",
+      "score": 10.0,
+      "passed": 23,
+      "total": 23,
+      "must_fail": 0,
+      "merge_ready": true
+    }
+  ],
+  "failing_checks": [],
+  "must_failures": [],
+  "check_count": 23,
+  "pass_count": 23
+}
