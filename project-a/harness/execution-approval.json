@@ -10,12 +10,10 @@
     "live_models": false,
     "fake_codex_only": true,
     "cloud_credentials": false,
-    "project_a_harness_assertions": 101,
-    "contract_assertions": 139,
-    "spec_assertions": 167
+    "project_a_harness_assertions": 101
   },
   "approved_by": "user",
   "approved_at": "2026-07-14",
-  "approval_source": "Cursor cloud CLEAN REJUDGE slice-4: repin after HARNESS.md + record suite assertion counts",
-  "reason": "Repinned after Slice 3 fixer r8: governance_semantics invokes Assert-ScpAttachmentNegatives.ps1 fail-closed (BC-ORG-01). Spec bundle unchanged; release/verify scripts remain outside execution-hash members. Deterministic gates, workspace-write, network denial, allowlists, owned commits, terminal stopping, and monitoring remain mandatory."
+  "approval_source": "Cursor cloud CLEAN REJUDGE slice-4: repin after HARNESS.md (suite counts stay in BREAK_FIX_LOG / CI)",
+  "reason": "Repinned after Slice 3 fixer r8: governance_semantics invokes Assert-ScpAttachmentNegatives.ps1 fail-closed (BC-ORG-01). Spec bundle unchanged; release/verify scripts remain outside execution-hash members. Deterministic gates, workspace-write, network denial, allowlists, owned commits, terminal stopping, and monitoring remain mandatory. Removed undeclared proven_with.contract_assertions/spec_assertions that #17 left on main (schema allows only live_models/fake_codex_only/cloud_credentials/project_a_harness_assertions)."
 }
