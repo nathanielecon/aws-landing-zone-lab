@@ -77,12 +77,16 @@ function Get-SliceForPath {
     param([Parameter(Mandatory)][string]$RelativePath)
     $p = $RelativePath -replace '\\', '/'
     if ($p -match '^continuityops/(PLAN\.md|STATUS\.md|ISSUES\.md|DECISIONS\.md|BREAK_FIX_LOG\.md|AGENTS\.md|README\.md)$') { return 'S0' }
+    if ($p -match '^continuityops/tests/(recovery|performance)/') { return 'S7' }
     if ($p -match '^continuityops/(harness|scripts|integration|tests)/') { return 'S0' }
     if ($p -match '^continuityops/evidence/manifests/') { return 'S0' }
     if ($p -match '^continuityops/(terraform|\.github|app-contract)/') { return 'S1' }
     if ($p -match '^continuityops/kubernetes/') { return 'S2' }
     if ($p -match '^continuityops/serverless/') { return 'S3' }
     if ($p -match '^continuityops/observability/') { return 'S4' }
+    if ($p -match '^continuityops/operations/changes/') { return 'S7' }
+    if ($p -match '^continuityops/docs/decisions/(rto-rpo|finops)\.md$') { return 'S7' }
+    if ($p -match '^continuityops/evidence/slices/') { return 'S7' }
     if ($p -match '^continuityops/operations/') { return 'S5' }
     if ($p -match '^continuityops/agentic/') { return 'S6' }
     if ($p -match '^continuityops/docs/') { return 'S8' }

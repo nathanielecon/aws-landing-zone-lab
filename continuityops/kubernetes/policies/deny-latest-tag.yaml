@@ -1,0 +1,45 @@
+# Kyverno policy example — deny :latest image tag
+#
+# Complements require-digest.yaml by explicitly blocking the mutable :latest tag
+# even when a digest is not yet enforced cluster-wide.
+#
+#   kubectl apply -f continuityops/kubernetes/policies/deny-latest-tag.yaml
+#
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: continuityops-deny-latest-tag
+  annotations:
+    policies.kyverno.io/title: Deny latest tag
+    policies.kyverno.io/category: ContinuityOps
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Reject container images that end with :latest. Use a pinned digest instead.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: deny-latest
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: >-
+          The :latest tag is not allowed. Pin images with an immutable digest.
+        foreach:
+          - list: request.object.spec.containers
+            deny:
+              conditions:
+                any:
+                  - key: "{{ ends_with(element.image, ':latest') }}"
+                    operator: Equals
+                    value: true
+          - list: request.object.spec.initContainers || `[]`
+            deny:
+              conditions:
+                any:
+                  - key: "{{ ends_with(element.image, ':latest') }}"
+                    operator: Equals
+                    value: true

@@ -1,6 +1,18 @@
 apiVersion: v2
 name: continuityops-lab
-description: ContinuityOps lab Helm chart (scaffold)
+description: >-
+  ContinuityOps lab Helm chart — pinned digest, hardened defaults, network
+  policy, PDB, and HPA for preflight (kind) and managed EKS evidence.
 type: application
-version: 0.0.1
-appVersion: "0.0.0-scaffold"
+version: 0.1.0
+appVersion: "0.1.0-lab"
+kubeVersion: ">=1.25.0-0"
+keywords:
+  - continuityops
+  - reliability
+  - lab
+maintainers:
+  - name: ContinuityOps
+    url: https://github.com/continuityops
+sources:
+  - https://github.com/continuityops/lab

@@ -1,0 +1,61 @@
+{
+  "schema_version": "continuityops-performance-results-v1",
+  "run_id": "perf-baseline-synthetic-2026-07-15",
+  "candidate_sha": "0000000000000000000000000000000000000000",
+  "environment": "repo_only",
+  "scenario_ref": "continuityops/tests/performance/load-scenario.md",
+  "started_at_utc": "2026-07-15T12:00:00Z",
+  "completed_at_utc": "2026-07-15T12:17:00Z",
+  "synthetic_data_label": true,
+  "tool": "synthetic-generator (illustrative — not measured)",
+  "traffic": {
+    "base_url": "http://continuityops-lab:8080",
+    "total_requests": 42500,
+    "duration_seconds": 1020
+  },
+  "summary": {
+    "error_rate": 0.002,
+    "latency_ms_p50": 42,
+    "latency_ms_p95": 318,
+    "latency_ms_p99": 612,
+    "availability": 0.998,
+    "slo_p95_met": true,
+    "slo_availability_met": true
+  },
+  "phases": [
+    {
+      "name": "warm_up",
+      "duration_seconds": 120,
+      "virtual_users": 20,
+      "error_rate": 0.001,
+      "latency_ms_p95": 280
+    },
+    {
+      "name": "steady",
+      "duration_seconds": 600,
+      "virtual_users": 50,
+      "error_rate": 0.001,
+      "latency_ms_p95": 318
+    },
+    {
+      "name": "spike",
+      "duration_seconds": 180,
+      "virtual_users": 150,
+      "error_rate": 0.005,
+      "latency_ms_p95": 487
+    },
+    {
+      "name": "cool_down",
+      "duration_seconds": 120,
+      "virtual_users": 0,
+      "error_rate": 0.0,
+      "latency_ms_p95": 210
+    }
+  ],
+  "resource_snapshot": {
+    "cpu_utilization_percent": 68,
+    "memory_utilization_percent": 71,
+    "replica_count": 2
+  },
+  "notes": "SYNTHETIC BASELINE — numbers are illustrative placeholders for schema and regression comparison only. Do not cite as live production or lab measurements. Replace with a measured run after an approved load drill."
+}

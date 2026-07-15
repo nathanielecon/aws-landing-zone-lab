@@ -1,0 +1,47 @@
+# Kyverno policy example — require immutable image digest
+#
+# Apply in a cluster with Kyverno installed. Rejects Pods whose container images
+# use a tag reference instead of repo@sha256:... digest pin.
+#
+#   kubectl apply -f continuityops/kubernetes/policies/require-digest.yaml
+#
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: continuityops-require-image-digest
+  annotations:
+    policies.kyverno.io/title: Require image digest
+    policies.kyverno.io/category: ContinuityOps
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/description: >-
+      Lab workloads must reference images by digest (repo@sha256:...) to prevent
+      mutable tag drift. Tag-only references are denied.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-digest-not-tag
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: >-
+          Container image must use an immutable digest (image@sha256:...).
+          Tag-only references are not allowed.
+        foreach:
+          - list: request.object.spec.containers
+            deny:
+              conditions:
+                any:
+                  - key: "{{ regex_match('^[^:]+@sha256:[a-f0-9]{64}$', element.image) }}"
+                    operator: Equals
+                    value: false
+          - list: request.object.spec.initContainers || `[]`
+            deny:
+              conditions:
+                any:
+                  - key: "{{ regex_match('^[^:]+@sha256:[a-f0-9]{64}$', element.image) }}"
+                    operator: Equals
+                    value: false

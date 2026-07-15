@@ -1,0 +1,35 @@
+{{- if .Values.tests.connection.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "continuityops-lab.fullname" . }}-test-connection"
+  labels:
+    {{- include "continuityops-lab.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: wget
+      image: busybox:1.36
+      command: ['sh', '-c']
+      args:
+        - |
+          set -e
+          wget -qO- "http://{{ include "continuityops-lab.fullname" . }}:{{ .Values.service.port }}/healthz"
+          echo "connection ok"
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsUser: 10001
+        capabilities:
+          drop:
+            - ALL
+{{- end }}

@@ -1,18 +1,52 @@
 {
   "schema_version": "continuityops-app-contract-v1",
-  "status": "scaffold",
+  "status": "lab-ready",
   "source": "continuityops-lab",
   "image_repository": "ghcr.io/continuityops/lab-app",
   "image_digest": "sha256:PENDING_BUILD",
-  "version": "0.0.0-scaffold",
+  "version": "0.1.0-s1",
+  "openapi_spec": "openapi-smoke.yaml",
   "endpoints": {
     "liveness": "/healthz",
     "readiness": "/readyz",
     "version": "/version",
     "business_smoke": "/api/smoke"
   },
+  "smoke_checks": [
+    {
+      "name": "liveness",
+      "method": "GET",
+      "path": "/healthz",
+      "expect_status": 200
+    },
+    {
+      "name": "readiness",
+      "method": "GET",
+      "path": "/readyz",
+      "expect_status": 200
+    },
+    {
+      "name": "version",
+      "method": "GET",
+      "path": "/version",
+      "expect_status": 200,
+      "expect_body_contains": "0.1.0"
+    },
+    {
+      "name": "business_smoke",
+      "method": "GET",
+      "path": "/api/smoke",
+      "expect_status": 200
+    }
+  ],
+  "runtime": {
+    "platform": "kubernetes",
+    "helm_chart": "kubernetes/chart",
+    "worker_contract": "serverless/worker.contract.json"
+  },
   "notes": [
     "ContinuityOps-owned lab artifact — not a Project C production release.",
-    "Digest filled when Stage 1 builds the image."
+    "Digest filled when Stage 1 builds the container image.",
+    "OpenAPI smoke spec defines recruiter-facing HTTP contract checks."
   ]
 }

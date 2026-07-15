@@ -1,13 +1,74 @@
 {
   "name": "continuityops-event-worker",
+  "version": "0.1.0",
   "runtime": "nodejs20.x",
   "trigger": "sqs",
+  "entry": "continuityops/serverless/src/worker/index.js",
+  "handler": "handler",
+  "package": "continuityops/serverless/src/worker/package.json",
   "features": [
     "idempotency",
     "bounded_retries",
     "visibility_timeout",
     "dlq",
-    "replay"
+    "replay",
+    "partial_batch_failures",
+    "structured_logging",
+    "poison_message_detection"
   ],
-  "status": "scaffold"
+  "status": "lab_implemented",
+  "sqs": {
+    "queue_name": "continuityops-events",
+    "dlq_name": "continuityops-events-dlq",
+    "batch_size": 10,
+    "function_response_types": ["ReportBatchItemFailures"],
+    "visibility_timeout_seconds": 180,
+    "max_receive_count": 5,
+    "message_attributes": ["correlation_id", "tenant_id", "event_type"]
+  },
+  "lambda": {
+    "timeout_seconds": 30,
+    "memory_mb": 256,
+    "reserved_concurrent_executions": 10
+  },
+  "idempotency": {
+    "lab_store": "in_memory_map",
+    "production_store": "dynamodb",
+    "key_format": "{messageId}#{sha256(body)}",
+    "notes": "DynamoDB partition recommended on tenant_id in production"
+  },
+  "logging": {
+    "format": "json",
+    "correlation_field": "correlation_id",
+    "required_fields": ["level", "correlation_id", "message", "service", "timestamp"]
+  },
+  "poison_messages": {
+    "detection": "invalid_json_or_non_object_payload",
+    "behavior": "mark_message_id_then_fail_record",
+    "module": "continuityops/serverless/src/worker/parse.js"
+  },
+  "supported_event_types": [
+    "tenant.onboard",
+    "tenant.suspend",
+    "tenant.resume",
+    "tenant.export",
+    "tenant.deprovision",
+    "tenant.activated",
+    "tenant.deprovisioned"
+  ],
+  "tests": {
+    "runner": "node --test",
+    "paths": [
+      "continuityops/serverless/tests/idempotency.test.js",
+      "continuityops/serverless/tests/parse.test.js"
+    ]
+  },
+  "infra_docs": [
+    "continuityops/serverless/infra/sqs-dlq.md",
+    "continuityops/serverless/infra/template.md"
+  ],
+  "related_decisions": [
+    "continuityops/docs/decisions/saas-lifecycle.md",
+    "continuityops/docs/decisions/severity-model.md"
+  ]
 }

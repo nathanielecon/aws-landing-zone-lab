@@ -1,0 +1,12 @@
+# Copy to backend.tf and fill placeholders before remote state apply.
+# Recovery-lab state must remain isolated from staging.
+
+terraform {
+  backend "s3" {
+    bucket         = "REPLACE_ME-continuityops-terraform-state"
+    key            = "recovery-lab/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "REPLACE_ME-continuityops-terraform-locks"
+    encrypt        = true
+  }
+}

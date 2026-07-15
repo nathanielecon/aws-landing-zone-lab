@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "continuityops-performance-results-v1",
+  "title": "ContinuityOps load test results",
+  "description": "Structured results for lab load scenarios. Synthetic baselines must set synthetic_data_label true.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "candidate_sha",
+    "environment",
+    "scenario_ref",
+    "started_at_utc",
+    "completed_at_utc",
+    "synthetic_data_label",
+    "traffic",
+    "summary",
+    "phases"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "continuityops-performance-results-v1"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "environment": {
+      "enum": ["recovery-lab", "staging", "local", "repo_only"]
+    },
+    "scenario_ref": {
+      "type": "string",
+      "description": "Path to load scenario doc, e.g. continuityops/tests/performance/load-scenario.md"
+    },
+    "started_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "synthetic_data_label": {
+      "type": "boolean",
+      "description": "true when numbers are illustrative or from synthetic drill traffic only"
+    },
+    "tool": {
+      "type": "string",
+      "description": "Load generator name and version, e.g. k6 0.49.0"
+    },
+    "traffic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base_url", "total_requests", "duration_seconds"],
+      "properties": {
+        "base_url": {
+          "type": "string",
+          "description": "Host only — no credentials in URL"
+        },
+        "total_requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duration_seconds": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "error_rate",
+        "latency_ms_p50",
+        "latency_ms_p95",
+        "latency_ms_p99",
+        "availability"
+      ],
+      "properties": {
+        "error_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "latency_ms_p50": {
+          "type": "number",
+          "minimum": 0
+        },
+        "latency_ms_p95": {
+          "type": "number",
+          "minimum": 0
+        },
+        "latency_ms_p99": {
+          "type": "number",
+          "minimum": 0
+        },
+        "availability": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "slo_p95_met": {
+          "type": "boolean"
+        },
+        "slo_availability_met": {
+          "type": "boolean"
+        }
+      }
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "duration_seconds", "virtual_users", "error_rate", "latency_ms_p95"],
+        "properties": {
+          "name": {
+            "enum": ["warm_up", "steady", "spike", "cool_down"]
+          },
+          "duration_seconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "virtual_users": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "error_rate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "latency_ms_p95": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "resource_snapshot": {
+      "type": "object",
+      "description": "Optional pod/node utilization at steady phase",
+      "additionalProperties": false,
+      "properties": {
+        "cpu_utilization_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "memory_utilization_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "replica_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

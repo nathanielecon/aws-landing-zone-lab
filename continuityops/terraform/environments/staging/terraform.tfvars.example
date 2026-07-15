@@ -1,0 +1,17 @@
+# Example values for continuityops-staging. Copy to terraform.tfvars locally.
+# Never commit terraform.tfvars with real account IDs or secrets.
+
+aws_region         = "us-east-1"
+aws_account_id     = "REPLACE_ME"
+vpc_cidr           = "10.42.0.0/16"
+availability_zones = ["us-east-1a", "us-east-1b"]
+enable_nat_gateway = false
+kubernetes_version = "1.29"
+node_instance_type = "t3.medium"
+node_desired_size  = 1
+
+# Path relative to environments/staging/
+lambda_package_path = "../../../serverless/build/worker.zip"
+
+# Leave empty until an SNS topic is provisioned for paging.
+alarm_sns_topic_arn = ""

@@ -1,0 +1,86 @@
+# ContinuityOps OpenTelemetry Collector — lab scaffold
+# No secrets or live endpoints. Replace OTLP/HTTP placeholders before deploy.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 512
+    send_batch_max_size: 1024
+
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: ${env:CONTINUITYOPS_ENV}
+        action: upsert
+      - key: service.namespace
+        value: continuityops
+        action: upsert
+
+  attributes/redaction_hints:
+    actions:
+      # Mark fields for downstream redaction; collector does not log raw values.
+      - key: http.request.header.authorization
+        action: delete
+      - key: http.request.header.cookie
+        action: delete
+      - key: user.email
+        action: hash
+      - key: tenant.secret
+        action: delete
+      - key: correlation_id
+        action: insert
+        from_attribute: trace_id
+        # When W3C traceparent is present but correlation_id is missing, derive hint.
+
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 256
+    spike_limit_mib: 64
+
+exporters:
+  logging:
+    verbosity: basic
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+  # Placeholder — set endpoint via CONTINUITYOPS_OTLP_HTTP_ENDPOINT (e.g. Grafana Cloud, ADOT).
+  otlphttp/backend:
+    endpoint: https://otlp.example.invalid/v1/traces
+    tls:
+      insecure: false
+    headers:
+      # Use env injection at deploy time; never commit tokens.
+      X-Scope-OrgID: ${env:OTEL_SCOPE_ORG}
+
+  otlphttp/metrics:
+    endpoint: https://otlp.example.invalid/v1/metrics
+    tls:
+      insecure: false
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, attributes/redaction_hints, batch]
+      exporters: [logging, otlphttp/backend]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [logging, otlphttp/metrics]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, attributes/redaction_hints, batch]
+      exporters: [logging]

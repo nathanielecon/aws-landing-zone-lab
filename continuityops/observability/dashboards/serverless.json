@@ -1,0 +1,230 @@
+{
+  "description": "Lambda, SQS, and DLQ panels for continuityops-event-worker. CloudWatch-native metrics with Grafana import.",
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "title": "SQS / DLQ runbook",
+      "type": "link",
+      "url": "../../serverless/infra/sqs-dlq.md"
+    }
+  ],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Lambda",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 1 },
+      "id": 2,
+      "targets": [
+        {
+          "alias": "invocations",
+          "dimensions": { "FunctionName": "continuityops-event-worker" },
+          "metricName": "Invocations",
+          "namespace": "AWS/Lambda",
+          "period": "60",
+          "refId": "A",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "Invocations",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 1 },
+      "id": 3,
+      "targets": [
+        {
+          "alias": "errors",
+          "dimensions": { "FunctionName": "continuityops-event-worker" },
+          "metricName": "Errors",
+          "namespace": "AWS/Lambda",
+          "period": "60",
+          "refId": "A",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "Errors",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": { "unit": "ms" }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 1 },
+      "id": 4,
+      "targets": [
+        {
+          "alias": "duration_p95",
+          "dimensions": { "FunctionName": "continuityops-event-worker" },
+          "metricName": "Duration",
+          "namespace": "AWS/Lambda",
+          "period": "300",
+          "refId": "A",
+          "statistic": "p95"
+        }
+      ],
+      "title": "Duration p95",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "id": 5,
+      "title": "SQS primary queue",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 10 },
+      "id": 6,
+      "targets": [
+        {
+          "alias": "visible",
+          "dimensions": { "QueueName": "continuityops-events" },
+          "metricName": "ApproximateNumberOfMessagesVisible",
+          "namespace": "AWS/SQS",
+          "period": "60",
+          "refId": "A",
+          "statistic": "Maximum"
+        }
+      ],
+      "title": "Messages visible",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 10 },
+      "id": 7,
+      "targets": [
+        {
+          "alias": "age_oldest",
+          "dimensions": { "QueueName": "continuityops-events" },
+          "metricName": "ApproximateAgeOfOldestMessage",
+          "namespace": "AWS/SQS",
+          "period": "60",
+          "refId": "A",
+          "statistic": "Maximum"
+        }
+      ],
+      "title": "Oldest message age (s)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 10 },
+      "id": 8,
+      "targets": [
+        {
+          "alias": "sent",
+          "dimensions": { "QueueName": "continuityops-events" },
+          "metricName": "NumberOfMessagesSent",
+          "namespace": "AWS/SQS",
+          "period": "60",
+          "refId": "A",
+          "statistic": "Sum"
+        },
+        {
+          "alias": "received",
+          "dimensions": { "QueueName": "continuityops-events" },
+          "metricName": "NumberOfMessagesReceived",
+          "namespace": "AWS/SQS",
+          "period": "60",
+          "refId": "B",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "Sent vs received",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
+      "id": 9,
+      "title": "DLQ",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "description": "Page when > 0 for sustained period (see alerts.yaml)",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 19 },
+      "id": 10,
+      "targets": [
+        {
+          "alias": "dlq_visible",
+          "dimensions": { "QueueName": "continuityops-events-dlq" },
+          "metricName": "ApproximateNumberOfMessagesVisible",
+          "namespace": "AWS/SQS",
+          "period": "60",
+          "refId": "A",
+          "statistic": "Maximum"
+        }
+      ],
+      "title": "DLQ depth",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 19 },
+      "id": 11,
+      "targets": [
+        {
+          "alias": "dlq_age",
+          "dimensions": { "QueueName": "continuityops-events-dlq" },
+          "metricName": "ApproximateAgeOfOldestMessage",
+          "namespace": "AWS/SQS",
+          "period": "60",
+          "refId": "A",
+          "statistic": "Maximum"
+        }
+      ],
+      "title": "DLQ oldest message age",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "cloudwatch", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 19 },
+      "id": 12,
+      "targets": [
+        {
+          "alias": "concurrent",
+          "dimensions": { "FunctionName": "continuityops-event-worker" },
+          "metricName": "ConcurrentExecutions",
+          "namespace": "AWS/Lambda",
+          "period": "60",
+          "refId": "A",
+          "statistic": "Maximum"
+        }
+      ],
+      "title": "Lambda concurrent executions",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["continuityops", "s4", "serverless", "sqs", "lambda"],
+  "templating": {
+    "list": [
+      {
+        "current": { "text": "CloudWatch", "value": "cloudwatch" },
+        "label": "Datasource",
+        "name": "datasource",
+        "query": "cloudwatch",
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "utc",
+  "title": "ContinuityOps — Serverless (Lambda / SQS / DLQ)",
+  "uid": "co-serverless",
+  "version": 1
+}

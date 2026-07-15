@@ -1,0 +1,20 @@
+flowchart LR
+  subgraph build [Stage1 Build]
+    Grok[Grok Orchestrator] --> Codex[Codex Workers]
+    Codex --> Tree[continuityops tree]
+  end
+  subgraph runtime [Cloud Runtime]
+    OIDC[GitHub OIDC] --> TF[Terraform]
+    TF --> EKS[EKS + Helm]
+    TF --> SQS[SQS + Lambda + DLQ]
+  end
+  subgraph ops [Observe Diagnose Recover]
+    OTel[OTel Signals] --> Alert[SLO Alerts]
+    Alert --> IR[Incident + Runbook]
+    IR --> Rec[Recovery Verify]
+    Agent[Agent Proposal Only] -.-> Gate[Protected Mutation Path]
+  end
+  Tree --> OIDC
+  EKS --> OTel
+  SQS --> OTel
+  Rec --> Evidence[Evidence + Cost]
