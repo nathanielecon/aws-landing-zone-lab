@@ -37,7 +37,7 @@ variable "github_organization" {
 
 variable "github_repository" {
   type    = string
-  default = "cloud"
+  default = "aws-landing-zone-lab"
 }
 
 variable "vpc_cidr" {
