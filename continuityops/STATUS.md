@@ -7,6 +7,9 @@
 | Active phase | `0` — Baseline, authority, and proof harness |
 | Orchestrator | Grok 4.5 High Fast |
 | Baseline SHA (host repo) | `4c702f0a26b80b742c9d05e10d2b14bc9a1e6e42` |
+| ContinuityOps branch | `cursor/continuityops-phase0-f0b8` |
+| ContinuityOps tip | `495d08c` |
+| PR | https://github.com/nathanielecon/cloud/pull/19 |
 | Execution approved | `false` (awaiting human gate H0) |
 | Cloud mutation | none |
 | Phase 0 validators | `pass` (path_scope, secret_scan, upstream_lock, partition_manifest, unauthorized_phase_rejection, project_a_untouched) |
