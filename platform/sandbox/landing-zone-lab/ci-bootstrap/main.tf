@@ -31,6 +31,19 @@ variable "github_repository" {
   default = "aws-landing-zone-lab"
 }
 
+# Stable across GitHub renames (nathanielecon/aws-landing-zone-lab → was cloud).
+variable "github_repository_id" {
+  type        = string
+  default     = "1296742987"
+  description = "GitHub repository id claim; survives repo renames."
+}
+
+variable "github_repository_owner_id" {
+  type        = string
+  default     = "177059064"
+  description = "GitHub repository_owner_id claim for nathanielecon."
+}
+
 variable "name_prefix" {
   type    = string
   default = "project-a-lzlab"
@@ -47,12 +60,13 @@ locals {
     Purpose     = "github-actions-oidc"
   }
 
+  # Repo-name wildcards + repository_id lock: rename-safe without widening org.
   # Allow main, PRs, cursor/* branches, and the protected "lab" GitHub Environment.
   github_sub_patterns = [
-    "repo:${var.github_organization}/${var.github_repository}:ref:refs/heads/main",
-    "repo:${var.github_organization}/${var.github_repository}:pull_request",
-    "repo:${var.github_organization}/${var.github_repository}:ref:refs/heads/cursor/*",
-    "repo:${var.github_organization}/${var.github_repository}:environment:lab",
+    "repo:${var.github_organization}/*:ref:refs/heads/main",
+    "repo:${var.github_organization}/*:pull_request",
+    "repo:${var.github_organization}/*:ref:refs/heads/cursor/*",
+    "repo:${var.github_organization}/*:environment:lab",
   ]
 }
 
@@ -83,6 +97,18 @@ data "aws_iam_policy_document" "gha_assume" {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:aud"
       values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:repository_id"
+      values   = [var.github_repository_id]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:repository_owner_id"
+      values   = [var.github_repository_owner_id]
     }
 
     condition {
