@@ -81,3 +81,4 @@ step is green. Cloud Agents do **not** hold apply credentials for this step.
 
 The lab root **reads** this OIDC provider via a data source; it does not create
 a second one.
+<!-- oidc-verify 2026-07-15T21:37:32Z -->
