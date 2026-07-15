@@ -26,7 +26,7 @@
       "content_sha256": "D58179766EE34700B6F985ABBB4318639F0406C909D0F0470C0278DFFDBE3682"
     },
     {
-      "path": "project-a/docs/diagrams/network.svg",
+      "path": "project-a/docs/diagrams/aws-landing-zone-network.png",
       "status": "present",
       "git_status": "untracked",
       "old_mode": "000000",

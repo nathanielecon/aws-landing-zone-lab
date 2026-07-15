@@ -34,7 +34,7 @@ VPN, Direct Connect, and RAM shares are extension points—not implemented
 connectivity. This repository is not cloud validated and does not deploy AWS or
 Azure resources.
 
-![Network boundary diagram](../diagrams/network.svg)
+![Network boundary diagram](../diagrams/aws-landing-zone-network.png)
 
 See [network failure cases](../operations/network-failure-cases.md), the
 [blocked-change catalog](../operations/blocked-change-catalog.md), and the

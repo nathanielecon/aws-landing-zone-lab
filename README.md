@@ -1,39 +1,55 @@
-# Ralphy Windows Harness
+# AWS Landing Zone Lab
 
-Native-Windows, Codex-first smoke harness for one sequential Ralphy loop.
+Terraform + GitHub OIDC CI. **Cloud-validated** single-account lab in `us-east-1`: identity, private network, and audit. Multi-account Orgs/OU/SCP interfaces stay design-only.
 
-The first milestone validates deterministic gating and Terra-to-Sol takeover
-without Git worktrees, parallel agents, cloud credentials, or Project A code.
+## Diagram
 
-## Run
+One Image2 figure — architecture, how it works, and private network consolidated (latest panels preferred where they overlapped).
 
-Double-click `launcher\Launch Ralphy Harness.cmd`, or use PowerShell 7:
+<p align="center">
+  <img src="project-a/docs/diagrams/aws-landing-zone-lab.png" alt="AWS Landing Zone Lab — consolidated architecture, how it works, and private network" width="100%">
+</p>
+
+<p align="center">
+  <a href="project-a/docs/diagrams/aws-landing-zone-lab.drawio">Editable draw.io source</a>
+</p>
+
+| Panel | What it shows |
+|-------|----------------|
+| **A. Architecture** | Bootstrap → Organization (design) → Identity → Network → Audit → Validation. Live lab applied identity + network + audit in one account. |
+| **B. How it works** | Push → OIDC → Terraform (one account) → live resources → evidence. |
+| **C. Private network** | Private subnets, default-deny SG, Flow Logs → Log Archive. No internet, NAT, peering, Transit Gateway, or cross-account route. |
+
+Section archives (harness / deep links): [`architecture.png`](project-a/docs/diagrams/aws-landing-zone-architecture.png) · [`network.png`](project-a/docs/diagrams/aws-landing-zone-network.png)
+
+## Resume bullet
+
+> Designed a multi-account AWS Landing Zone (Orgs/OU/SCP interfaces) and cloud-validated a single-account lab composition of identity, private network, and audit (CloudTrail/KMS Log Archive) in `us-east-1` with Terraform, evidence, and CI-gated delivery.
+
+## Proven vs not
+
+**Cloud-validated (live lab)** — single-account `us-east-1`; OIDC role `project-a-lzlab-gha`; private VPC + flow logs; CloudTrail / Config / KMS Log Archive; CI-gated Terraform apply with written evidence.
+
+**Not proven** — multi-account Organizations with real member accounts; enterprise production operations; Azure Government (translation docs only). This repository does **not** prove production deployment or senior-level platform ownership.
+
+Details: [`project-a/docs/portfolio/claims-boundary.md`](project-a/docs/portfolio/claims-boundary.md).
+
+## Where to look next
+
+| Want… | Go here |
+|-------|---------|
+| Project docs entry | [`project-a/README.md`](project-a/README.md) |
+| Architecture contract | [`project-a/docs/architecture/overview.md`](project-a/docs/architecture/overview.md) |
+| Live lab evidence | [`project-a/sandbox/landing-zone-lab/EVIDENCE.md`](project-a/sandbox/landing-zone-lab/EVIDENCE.md) |
+| Orgs design interface | [`project-a/sandbox/landing-zone-lab/ORGS_INTERFACE.md`](project-a/sandbox/landing-zone-lab/ORGS_INTERFACE.md) |
+
+## Harness (repo tooling)
+
+Native-Windows smoke harness for one sequential Ralphy loop — separate from the Landing Zone lab story above.
 
 ```powershell
 ./scripts/Start-Harness.ps1 -DryRun
 ./scripts/Start-Harness.ps1
-./scripts/Start-Harness.ps1 -Resume
 ```
 
-Verbose sanitized logs are stored outside the repository under
-`%LOCALAPPDATA%\RalphyHarness\cloud`. Mutable Ralphy progress and takeover state
-are stored under ignored `.harness/runtime`.
-
-The smoke baseline currently pins Codex CLI 0.144.x because GPT-5.6 Sol and
-Terra reject the older 0.133.x CLI.
-
-## Project A preparation
-
-The proven smoke harness is tagged `ralphy-harness-v0.1.0`. The Phase 3
-[Project A candidate plan](project-a/PROJECT_A_PLAN.md) defines seven sequential,
-repo-only tasks and their human gates. It is intentionally marked non-executable
-until Phase 4 generalizes the smoke adapter, scrubs cloud credentials, implements
-the allowlisted validators, and binds explicit approval receipts to exact diffs.
-
-Phase 4 implementation and its execution-approval pins (`execution_approved: true`) are documented
-in [project-a/HARNESS.md](project-a/HARNESS.md). Architecture and delivery
-navigation live under
-[project-a/docs/architecture/overview.md](project-a/docs/architecture/overview.md).
-The [Project A Graphify report](project-a/graphify-out/GRAPH_REPORT.md) is a
-repo-only navigation aid and is never a substitute for Terraform, policy,
-security, or human validation.
+Details: [`project-a/HARNESS.md`](project-a/HARNESS.md).
