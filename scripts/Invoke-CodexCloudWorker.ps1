@@ -3,9 +3,10 @@
   Laptop-direct Codex Cloud task submit (debug / fallback).
 
 .DESCRIPTION
-  Primary orchestration path is Cursor Cloud Orchestrator →
-  scripts/Dispatch-CodexCloudWorker.ps1. This script runs `codex cloud exec`
-  on the laptop using the local ChatGPT login for quick tests.
+  Primary orchestration path is Cursor UI Orchestrator (Runtime Secret
+  CODEX_AUTH_JSON_GZB64) → scripts/Dispatch-CodexCloudWorker.ps1.
+  This script runs `codex cloud exec` on the laptop using the local ChatGPT
+  login for quick tests only.
 
 .PARAMETER Prompt
   Task prompt.

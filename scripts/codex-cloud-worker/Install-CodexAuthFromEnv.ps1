@@ -18,7 +18,13 @@ $ErrorActionPreference = 'Stop'
 
 $gzb64 = [string]$env:CODEX_AUTH_JSON_GZB64
 if ([string]::IsNullOrWhiteSpace($gzb64)) {
-    throw 'CODEX_AUTH_JSON_GZB64 is not set. Launch with Invoke-CursorCloudWorker.ps1 -Role Orchestrator (or set a Cursor Runtime Secret).'
+    throw @"
+CODEX_AUTH_JSON_GZB64 is not set.
+Primary path: on the laptop run scripts/codex-cloud-worker/Publish-CodexAuthRuntimeSecret.ps1,
+then paste into Cursor Dashboard → Secrets as Runtime Secret CODEX_AUTH_JSON_GZB64,
+then start a Cloud Agent from the Cursor UI (see scripts/cursor-cloud-worker/ORCHESTRATOR_UI_PROMPT.md).
+Advanced/optional: Invoke-CursorCloudWorker.ps1 -Role Orchestrator (requires CURSOR_API_KEY).
+"@
 }
 
 if ([string]::IsNullOrWhiteSpace($CodexHome)) {

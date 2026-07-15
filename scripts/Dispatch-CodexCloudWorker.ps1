@@ -62,7 +62,7 @@ if (-not $SkipBootstrap) {
         & $bootstrap
     }
     elseif (-not (Test-Path -LiteralPath (Join-Path (Join-Path $HOME '.codex') 'auth.json') -PathType Leaf)) {
-        throw 'No CODEX_AUTH_JSON_GZB64 and no ~/.codex/auth.json. Launch Orchestrator with auth inject.'
+        throw 'No CODEX_AUTH_JSON_GZB64 and no ~/.codex/auth.json. Set Cursor Runtime Secret CODEX_AUTH_JSON_GZB64 via Publish-CodexAuthRuntimeSecret.ps1, then start the Orchestrator from the Cursor UI.'
     }
 }
 

@@ -18,37 +18,55 @@ If work stalls on auth, CI, cloud credentials, dashboards, or any tool the
 current agent cannot reach, the **lead orchestrator must dispatch a bottleneck
 agent** **in this session**. Do not leave the user to open a new chat.
 
-| Worker | When | How |
+| Worker | When | How (primary) |
 | --- | --- | --- |
-| **Cursor Cloud Orchestrator** | Needs to fan out **Codex Cloud** workers on the Codex/ChatGPT subscription | `scripts/Invoke-CursorCloudWorker.ps1 -Role Orchestrator` + `CURSOR_API_KEY` (injects one ChatGPT auth stream) |
-| **Cursor Cloud worker** | Long repo/CI edits; **no** Codex auth | `scripts/Invoke-CursorCloudWorker.ps1 -Role Worker` |
-| **Codex Cloud worker** | Dispatched **by** a Cursor Cloud Orchestrator (or laptop fallback) | In-VM: `scripts/Dispatch-CodexCloudWorker.ps1` · Laptop debug: `scripts/Invoke-CodexCloudWorker.ps1` |
+| **Cursor Cloud Orchestrator** | Needs to fan out **Codex Cloud** workers on the Codex/ChatGPT subscription | **Cursor UI** Cloud Agent + Runtime Secret `CODEX_AUTH_JSON_GZB64` (see `Publish-CodexAuthRuntimeSecret.ps1` + `ORCHESTRATOR_UI_PROMPT.md`) |
+| **Cursor Cloud worker** | Long repo/CI edits; **must not** use Codex auth | Cursor UI Cloud Agent **without** calling Dispatch |
+| **Codex Cloud worker** | Dispatched **by** a Cursor Cloud Orchestrator | In-VM: `scripts/Dispatch-CodexCloudWorker.ps1` · Laptop debug: `scripts/Invoke-CodexCloudWorker.ps1` |
 | **Local Codex / Image2 bottleneck** | Portfolio visuals, ChatGPT Codex tools on the laptop | This chat’s GenerateImage **or** local `codex` (ChatGPT login) |
 | **GitHub Actions / local AWS** | Live cloud plan/apply | Unchanged GitOps path below |
 
+**Advanced / optional:** `scripts/Invoke-CursorCloudWorker.ps1` + `CURSOR_API_KEY`
+can SDK-launch the same Orchestrator. **Not required** for the primary UI path.
+
 **Cursor Cloud Orchestrator → Codex Cloud (required pattern):** One Cursor Cloud
-Orchestrator holds ChatGPT/`auth.json` (via `CODEX_AUTH_JSON_GZB64`) and runs
-many `codex cloud exec` launches. Parallel **Codex Cloud** sandboxes on the
-Codex subscription = allowed. Seeding the **same** `auth.json` into **multiple
-concurrent Cursor Cloud agents** = forbidden (OpenAI refresh-token races).
+Orchestrator holds ChatGPT/`auth.json` (via Runtime Secret
+`CODEX_AUTH_JSON_GZB64`) and runs many `codex cloud exec` launches. Parallel
+**Codex Cloud** sandboxes on the Codex subscription = allowed. Seeding the
+**same** `auth.json` into **multiple concurrent Cursor Cloud agents** that each
+refresh auth = forbidden (OpenAI refresh-token races).
 
 ### 2. Auth planes (do not conflate)
 
 | Plane | Auth | Role |
 | --- | --- | --- |
-| Local control plane | Cursor session + `CURSOR_API_KEY` + laptop ChatGPT `~/.codex/auth.json` | Launches Cursor Cloud Orchestrator/Worker; Image2 bottleneck |
-| Cursor Cloud Orchestrator | Cursor account + **one** injected ChatGPT auth stream (`CODEX_AUTH_JSON_GZB64`) | Dispatches Codex Cloud workers via `Dispatch-CodexCloudWorker.ps1` |
-| Cursor Cloud worker | Cursor account only | Repo edits; must **not** receive Codex auth |
-| Codex Cloud task | ChatGPT/Codex subscription of the account that submitted the task | Inner cloud workers under the Orchestrator |
+| Local laptop | Cursor desktop session + ChatGPT `~/.codex/auth.json` | Export Runtime Secret; Image2 bottleneck; optional SDK launch |
+| Cursor Cloud Orchestrator | Cursor account + **one** Runtime Secret `CODEX_AUTH_JSON_GZB64` | Dispatches Codex Cloud workers via `Dispatch-CodexCloudWorker.ps1` |
+| Cursor Cloud worker | Cursor account only (do not call Dispatch) | Repo edits |
+| Codex Cloud task | ChatGPT/Codex subscription that submitted the task | Inner cloud workers under the Orchestrator |
 | Local Codex CLI | ChatGPT login | Image2 / laptop Codex tools |
 
-- Laptop ChatGPT login ≠ credentials inside ordinary Cursor Cloud **workers**.
-- Prefer gzip+base64 inject (`CODEX_AUTH_JSON_GZB64`) or a Cursor **Runtime
-  Secret**; never commit tokens; never print them.
-- After Orchestrator runs, import write-back artifacts with
-  `scripts/codex-cloud-worker/Import-CodexAuthWriteback.ps1` when present, and
-  refresh any dashboard secret from a fresh
-  `Export-CodexAuthGzB64.ps1` export.
+**Runtime Secret setup (no API key):**
+
+1. Laptop: `codex login` (ChatGPT) if needed.
+2. `pwsh -File scripts/codex-cloud-worker/Publish-CodexAuthRuntimeSecret.ps1`
+3. Paste into Cursor Dashboard → Secrets as **Runtime Secret**
+   `CODEX_AUTH_JSON_GZB64` (prefer environment-scoped to the Orchestrator env).
+4. Start Cloud Agent in the UI with
+   [`scripts/cursor-cloud-worker/ORCHESTRATOR_UI_PROMPT.md`](scripts/cursor-cloud-worker/ORCHESTRATOR_UI_PROMPT.md).
+5. After refresh/write-back, re-run Publish and update the same secret.
+   Only **one** Orchestrator session may bootstrap/refresh that secret at a time.
+
+**Secret hygiene:** Environment Runtime Secrets are visible to agents on that
+environment. Ordinary worker prompts must **not** run
+`Dispatch-CodexCloudWorker.ps1` or touch `auth.json` even if the secret is
+present. Prefer a dedicated Orchestrator environment when the dashboard allows
+environment-scoped secrets.
+
+- Never commit tokens; never print them.
+- After Orchestrator runs, import write-back with
+  `scripts/codex-cloud-worker/Import-CodexAuthWriteback.ps1` when present, then
+  refresh the dashboard secret via Publish.
 - Do **not** use `OPENAI_API_KEY` as the Codex Cloud power source (Platform
   billing ≠ Codex subscription).
 - Image2 stays **local** (GenerateImage or local Codex) — never in Cursor or
