@@ -101,7 +101,7 @@ components:
           example: continuityops-lab
         image_digest:
           type: string
-          example: sha256:PENDING_BUILD
+          example: sha256:525366446236834ef25125fb3bc639ca1f91522e84f3625788b5648603a3e00f
 
     SmokeResponse:
       type: object

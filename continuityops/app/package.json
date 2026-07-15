@@ -1,0 +1,11 @@
+{
+  "name": "continuityops-lab-app",
+  "version": "0.1.0-s1",
+  "description": "ContinuityOps lab HTTP smoke surface",
+  "type": "module",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "private": true
+}

@@ -1,0 +1,70 @@
+{
+  "schema_version": "continuityops-deterministic-checks-v1",
+  "note": "Deterministic checks only. Blind Grok judges score separately without thresholds.",
+  "candidate_sha": "90ba9818c1911d43c31cc0c87c9111f6bb87e29c",
+  "timestamp_utc": "2026-07-15T14:51:00.7237188Z",
+  "pass_count": 12,
+  "fail_count": 0,
+  "checks": [
+    {
+      "name": "independence_lock",
+      "pass": true,
+      "detail": "lock"
+    },
+    {
+      "name": "postbuild_partition",
+      "pass": true,
+      "detail": "partition"
+    },
+    {
+      "name": "helm_deployment",
+      "pass": true,
+      "detail": "helm"
+    },
+    {
+      "name": "serverless_worker",
+      "pass": true,
+      "detail": "worker"
+    },
+    {
+      "name": "worker_zip_min_size",
+      "pass": true,
+      "detail": "zip"
+    },
+    {
+      "name": "lab_digest_set",
+      "pass": true,
+      "detail": "digest"
+    },
+    {
+      "name": "eight_drills",
+      "pass": true,
+      "detail": "drills"
+    },
+    {
+      "name": "restore_event",
+      "pass": true,
+      "detail": "restore"
+    },
+    {
+      "name": "claims_boundary",
+      "pass": true,
+      "detail": "claims"
+    },
+    {
+      "name": "project_a_clean",
+      "pass": true,
+      "detail": "project-a"
+    },
+    {
+      "name": "serverless_unit",
+      "pass": true,
+      "detail": "node=0"
+    },
+    {
+      "name": "unsafe_proposals",
+      "pass": true,
+      "detail": "agentic=0"
+    }
+  ]
+}

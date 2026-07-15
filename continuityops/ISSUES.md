@@ -18,10 +18,32 @@ Append-only.
   are not required to advance Stage 1 or Stage 2 accuracy loops.
 - **Status:** closed
 
-## OPEN-COP-004 — Stage 1 implementation incomplete
+## CLOSED-COP-004 — Stage 1 implementation incomplete
 
 - **Opened:** 2026-07-15
 - **Closed:** 2026-07-15
-- **Summary:** Stage 1 build across S1–S8 completed; Stage 2 accuracy council
-  returned merge_ready with average ≥ 9.5.
+- **Summary:** Stage 1 build across S1–S8 completed; prior accuracy council
+  returned merge_ready (later invalidated — see OPEN-COP-005).
 - **Status:** closed
+
+## OPEN-COP-005 — Threshold leakage invalidated prior accuracy council
+
+- **Opened:** 2026-07-15
+- **Summary:** `evidence/manifests/accuracy-final.json` was produced while judge
+  prompts embedded the 9.5 average and 9.0 floor thresholds. Fresh blind Grok
+  judges (`fresh-judge-J1` ~7.8, `J2` ~7.9, `J3` ~8.18; avg ~7.96) scored
+  without thresholds and did not endorse merge_ready. `STATUS.md` falsely
+  claimed `complete` while `PLAN.md` / `plan-approval.json` still said
+  `build-orchestration`.
+- **Remediation:** Status aligned to `fresh-council-remediation`; retract
+  merge_ready claims; fix doc/evidence drift; address fresh-judge findings.
+- **Status:** open
+
+## OPEN-COP-006 — Fresh council remediation in progress
+
+- **Opened:** 2026-07-15
+- **Summary:** Stage 2 accuracy loops must re-run under
+  `harness/rubrics/JUDGE_PROMPT_NO_THRESHOLD.md` until orchestrator gate passes
+  on blind scores only. Interim fixes: terraform README, claims README, synthetic
+  S7 restore-verification lab event, baseline SHA binding.
+- **Status:** open

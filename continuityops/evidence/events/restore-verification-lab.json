@@ -1,0 +1,94 @@
+{
+  "schema_version": "continuityops-restore-verification-v1",
+  "verification_id": "rv-2026-07-15-synthetic-lab-001",
+  "candidate_sha": "90ba9818c1911d43c31cc0c87c9111f6bb87e29c",
+  "environment": "recovery-lab",
+  "change_id": "CH-backup-restore",
+  "scenario": "kubernetes_drill",
+  "started_at_utc": "2026-07-15T14:30:00Z",
+  "completed_at_utc": "2026-07-15T14:48:00Z",
+  "result": "pass",
+  "synthetic_data_label": true,
+  "rto_rpo": {
+    "rto_minutes_measured": 18,
+    "rto_minutes_target": 30,
+    "rpo_minutes_measured": 0,
+    "rpo_minutes_target": 0,
+    "rto_met": true,
+    "rpo_met": true
+  },
+  "components": [
+    {
+      "name": "eks_workloads",
+      "check": "helm rollback revision + rollout status (synthetic)",
+      "status": "pass",
+      "notes": "Synthetic: 2/2 pods Ready; helm revision 3→2 rollback simulated"
+    },
+    {
+      "name": "eks_control_plane",
+      "check": "kubectl cluster-info (synthetic)",
+      "status": "pass",
+      "notes": "Synthetic: API server reachable; no regional outage simulated"
+    },
+    {
+      "name": "lambda_worker",
+      "check": "CloudWatch Errors metric below alarm (synthetic)",
+      "status": "pass",
+      "notes": "Synthetic: Errors=0 over 15m window"
+    },
+    {
+      "name": "sqs_primary",
+      "check": "ApproximateNumberOfMessages stable (synthetic)",
+      "status": "pass",
+      "notes": "Synthetic: depth=12 messages (ten_SYN_* drill traffic)"
+    },
+    {
+      "name": "sqs_dlq",
+      "check": "DLQ visible count triaged (synthetic)",
+      "status": "pass",
+      "notes": "Synthetic: depth=0 after redrive simulation"
+    },
+    {
+      "name": "terraform_state",
+      "check": "State version id recorded (synthetic)",
+      "status": "pass",
+      "notes": "Synthetic state_version_id=lab-v42; plan hash sha256:synthetic-plan-placeholder"
+    },
+    {
+      "name": "cloudwatch_logs",
+      "check": "Log group ingest resumed (synthetic)",
+      "status": "pass",
+      "notes": "Synthetic: /continuityops/continuityops-recovery last event < 5m"
+    },
+    {
+      "name": "vpc_network",
+      "check": "Subnet + SG declarative match (synthetic)",
+      "status": "pass",
+      "notes": "Synthetic: terraform plan shows 0 changes"
+    },
+    {
+      "name": "synthetic_tenant_metadata",
+      "check": "Drill manifest record counts + checksums (synthetic)",
+      "status": "pass",
+      "notes": "Synthetic: 47 tenant records; manifest checksum sha256:synthetic-tenant-manifest-00000000; export bundle checksum sha256:synthetic-export-bundle-11111111"
+    }
+  ],
+  "checklist": [
+    { "id": 1, "description": "Cluster API healthy", "passed": true },
+    { "id": 2, "description": "Workload ready", "passed": true },
+    { "id": 3, "description": "Liveness /healthz", "passed": true },
+    { "id": 4, "description": "Readiness /readyz", "passed": true },
+    { "id": 5, "description": "Worker errors below alarm", "passed": true },
+    { "id": 6, "description": "Primary queue depth stable", "passed": true },
+    { "id": 7, "description": "DLQ depth triaged", "passed": true },
+    { "id": 8, "description": "SLO spot check (synthetic load)", "passed": true },
+    { "id": 9, "description": "Evidence artifact schema valid", "passed": true },
+    { "id": 10, "description": "RTO within component target", "passed": true }
+  ],
+  "evidence_links": [
+    "continuityops/operations/changes/CH-backup-restore.md",
+    "continuityops/docs/decisions/rto-rpo.md",
+    "continuityops/tests/performance/baseline-results.json"
+  ],
+  "notes": "SYNTHETIC LAB DRILL — procedure walkthrough and schema exercise only. Record counts (47 tenants) and checksums (sha256:synthetic-*) are illustrative placeholders, not measured from a live recovery-lab apply. Replace with measured values after an approved OIDC drill."
+}

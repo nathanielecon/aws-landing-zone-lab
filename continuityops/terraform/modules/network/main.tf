@@ -4,6 +4,10 @@ locals {
   tags = merge(var.tags, {
     Module = "continuityops-network"
   })
+
+  eks_cluster_tags = var.eks_cluster_name != "" ? {
+    "kubernetes.io/cluster/${var.eks_cluster_name}" = var.eks_cluster_tag_value
+  } : {}
 }
 
 resource "aws_vpc" "this" {
@@ -32,10 +36,16 @@ resource "aws_subnet" "public" {
   cidr_block              = var.public_subnet_cidrs[count.index]
   map_public_ip_on_launch = true
 
-  tags = merge(local.tags, {
-    Name = "${var.name_prefix}-public-${var.availability_zones[count.index]}"
-    Tier = "public"
-  })
+  tags = merge(
+    local.tags,
+    local.eks_cluster_tags,
+    {
+      Name                     = "${var.name_prefix}-public-${var.availability_zones[count.index]}"
+      Tier                     = "public"
+      "kubernetes.io/role/elb" = "1"
+    },
+    var.public_subnet_tags,
+  )
 }
 
 resource "aws_subnet" "private" {
@@ -45,10 +55,16 @@ resource "aws_subnet" "private" {
   availability_zone = var.availability_zones[count.index]
   cidr_block        = var.private_subnet_cidrs[count.index]
 
-  tags = merge(local.tags, {
-    Name = "${var.name_prefix}-private-${var.availability_zones[count.index]}"
-    Tier = "private"
-  })
+  tags = merge(
+    local.tags,
+    local.eks_cluster_tags,
+    {
+      Name                              = "${var.name_prefix}-private-${var.availability_zones[count.index]}"
+      Tier                              = "private"
+      "kubernetes.io/role/internal-elb" = "1"
+    },
+    var.private_subnet_tags,
+  )
 }
 
 resource "aws_route_table" "public" {
