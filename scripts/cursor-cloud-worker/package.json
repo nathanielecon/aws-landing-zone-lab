@@ -1,0 +1,13 @@
+{
+  "name": "cursor-cloud-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cursor Cloud worker/orchestrator launch shim for the local control plane",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "@cursor/sdk": "^1.0.23"
+  }
+}

@@ -37,6 +37,11 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
+# --- Layer 3b: Codex CLI (Cursor Cloud Orchestrator → codex cloud exec) ---
+# Orchestrators dispatch Codex Cloud workers; do not reinstall at task start.
+RUN npm install -g @openai/codex \
+    && codex --version
+
 # --- Layer 4: Terraform 1.15.5 (matches project-a/harness/tool-versions.json) ---
 ARG TERRAFORM_VERSION=1.15.5
 RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o /tmp/terraform.zip \

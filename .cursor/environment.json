@@ -4,6 +4,6 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
-  "install": "pwsh -NoLogo -NoProfile -Command \"git --version; node --version; pwsh -Version; terraform version; aws --version\"",
+  "install": "pwsh -NoLogo -NoProfile -Command \"git --version; node --version; pwsh -Version; terraform version; aws --version; codex --version\"",
   "start": "sudo service docker start || true"
 }
