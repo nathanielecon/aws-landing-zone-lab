@@ -6,18 +6,18 @@ name: Landing Zone lab (Terraform)
 on:
   pull_request:
     paths:
-      - 'project-a/sandbox/landing-zone-lab/**'
-      - 'project-a/terraform/identity/**'
-      - 'project-a/terraform/network/**'
-      - 'project-a/terraform/audit/**'
+      - 'platform/sandbox/landing-zone-lab/**'
+      - 'platform/terraform/identity/**'
+      - 'platform/terraform/network/**'
+      - 'platform/terraform/audit/**'
       - '.github/workflows/landing-zone-lab.yml'
   push:
     branches: [main]
     paths:
-      - 'project-a/sandbox/landing-zone-lab/**'
-      - 'project-a/terraform/identity/**'
-      - 'project-a/terraform/network/**'
-      - 'project-a/terraform/audit/**'
+      - 'platform/sandbox/landing-zone-lab/**'
+      - 'platform/terraform/identity/**'
+      - 'platform/terraform/network/**'
+      - 'platform/terraform/audit/**'
       - '.github/workflows/landing-zone-lab.yml'
   workflow_dispatch:
     inputs:
@@ -69,7 +69,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Plan lab roots
-        run: bash ./project-a/sandbox/landing-zone-lab/plan-lab.sh
+        run: bash ./platform/sandbox/landing-zone-lab/plan-lab.sh
 
   apply:
     name: Terraform apply
@@ -97,7 +97,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Apply lab roots
-        run: bash ./project-a/sandbox/landing-zone-lab/apply-lab.sh
+        run: bash ./platform/sandbox/landing-zone-lab/apply-lab.sh
 
       - name: Upload evidence capture
         if: always()
@@ -105,6 +105,6 @@ jobs:
         with:
           name: lz-lab-evidence
           path: |
-            project-a/sandbox/landing-zone-lab/EVIDENCE.capture.md
-            project-a/sandbox/landing-zone-lab/lab/backend.hcl
+            platform/sandbox/landing-zone-lab/EVIDENCE.capture.md
+            platform/sandbox/landing-zone-lab/lab/backend.hcl
           if-no-files-found: ignore
