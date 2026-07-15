@@ -1,7 +1,7 @@
 {
   "schema_version": "continuityops-deterministic-checks-v1",
   "note": "Deterministic checks only. Blind Grok judges score separately without thresholds.",
-  "candidate_sha": "90ba9818c1911d43c31cc0c87c9111f6bb87e29c",
+  "candidate_sha": "1bfa233c5d263c408d6aa150d62f9c9ce416d8bb",
   "timestamp_utc": "2026-07-15T14:51:00.7237188Z",
   "pass_count": 12,
   "fail_count": 0,

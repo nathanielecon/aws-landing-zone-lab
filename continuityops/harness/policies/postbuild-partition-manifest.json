@@ -1,9 +1,9 @@
 {
   "schema_version": "continuityops-postbuild-partition-v1",
-  "generated_at_utc": "2026-07-15T14:55:00.2925662Z",
-  "candidate_sha": "1f7102b3a95b94af4f59b77f55923a11d2b70a88",
+  "generated_at_utc": "2026-07-15T14:58:10.4139592Z",
+  "candidate_sha": "1bfa233c5d263c408d6aa150d62f9c9ce416d8bb",
   "root": "continuityops/",
-  "file_count": 214,
+  "file_count": 226,
   "partitions": {
     "P_authority": {
       "id": "P_authority",
@@ -21,15 +21,25 @@
         "continuityops/evidence/manifests/accuracy-round-1.json",
         "continuityops/evidence/manifests/deterministic-checks.json",
         "continuityops/evidence/manifests/folder-ready.json",
-        "continuityops/evidence/manifests/fresh-judge-J1.json",
-        "continuityops/evidence/manifests/fresh-judge-J2.json",
-        "continuityops/evidence/manifests/fresh-judge-J3.json",
+        "continuityops/evidence/manifests/fresh-council-round1/fresh-judge-J1.json",
+        "continuityops/evidence/manifests/fresh-council-round1/fresh-judge-J2.json",
+        "continuityops/evidence/manifests/fresh-council-round1/fresh-judge-J3.json",
+        "continuityops/evidence/manifests/fresh-council-round2/fresh-council-aggregate.json",
+        "continuityops/evidence/manifests/fresh-council-round2/fresh-judge-J1.json",
+        "continuityops/evidence/manifests/fresh-council-round2/fresh-judge-J2.json",
+        "continuityops/evidence/manifests/fresh-council-round2/fresh-judge-J3.json",
+        "continuityops/evidence/manifests/fresh-council-round3/fresh-council-aggregate.json",
+        "continuityops/evidence/manifests/fresh-council-round3/fresh-judge-J1.json",
+        "continuityops/evidence/manifests/fresh-council-round3/fresh-judge-J2.json",
+        "continuityops/evidence/manifests/fresh-council-round3/fresh-judge-J3.json",
         "continuityops/evidence/manifests/phase0-baseline.json",
         "continuityops/harness/approvals/plan-approval.json",
+        "continuityops/harness/handoffs/ORCH-001.zh-CN.historical.md",
         "continuityops/harness/handoffs/ORCH-001.zh-CN.md",
         "continuityops/harness/handoffs/ORCH-002.zh-CN.md",
         "continuityops/harness/handoffs/ORCH-003.zh-CN.md",
         "continuityops/harness/policies/orchestration-model.json",
+        "continuityops/harness/policies/orchestrator-gate.private.json",
         "continuityops/harness/policies/partition-manifest.json",
         "continuityops/harness/policies/postbuild-partition-manifest.json",
         "continuityops/harness/policies/postbuild-partition-notes.md",
@@ -59,8 +69,8 @@
         "continuityops/STATUS.md",
         "continuityops/tests/phase0/README.md"
       ],
-      "path_count": 49,
-      "paths_sha256": "bff954fc6aa9543ad22292f1c71f3eb90f7b027b643895e05f93f27cf006acaf"
+      "path_count": 59,
+      "paths_sha256": "a4d1a9ea208dc2aa464bd7029b92d43afe90a19dd32b8280ce37d9983492f706"
     },
     "P_foundation": {
       "id": "P_foundation",
@@ -239,15 +249,17 @@
         "continuityops/agentic/prompts/incident-triage.en.md",
         "continuityops/agentic/prompts/incident-triage.zh-CN.md",
         "continuityops/agentic/README.md",
+        "continuityops/agentic/runtime/Evaluate-RemediationProposal.ps1",
         "continuityops/agentic/tests/.gitkeep",
+        "continuityops/agentic/tests/Test-EvaluateRemediationProposal.ps1",
         "continuityops/agentic/tests/Test-UnsafeProposals.ps1",
         "continuityops/agentic/tests/unsafe-proposal-cases.json",
         "continuityops/docs/guardrails/iam-rbac.md",
         "continuityops/docs/guardrails/secrets.md",
         "continuityops/docs/guardrails/supply-chain.md"
       ],
-      "path_count": 13,
-      "paths_sha256": "6f35b1fd678d936c7f18a4a8a125baee95e854198c16e2c6c6943b21bab41a65"
+      "path_count": 15,
+      "paths_sha256": "15581e7276fc98affe67c928f690aa29f48755a9376629bdee1243d09b768f5a"
     },
     "P_resilience": {
       "id": "P_resilience",
