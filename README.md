@@ -2,39 +2,25 @@
 
 Terraform + GitHub OIDC CI. **Cloud-validated** single-account lab in `us-east-1`: identity, private network, and audit. Multi-account Orgs/OU/SCP interfaces stay design-only.
 
-## Diagrams
+## Diagram
+
+One Image2 figure — architecture, how it works, and private network consolidated (latest panels preferred where they overlapped).
 
 <p align="center">
-  <img src="project-a/docs/diagrams/aws-landing-zone-lab.png" alt="AWS Landing Zone Lab — architecture, how it works, and private network" width="100%">
+  <img src="project-a/docs/diagrams/aws-landing-zone-lab.png" alt="AWS Landing Zone Lab — consolidated architecture, how it works, and private network" width="100%">
 </p>
-
-<p align="center"><em>Figure 1 — full lab poster (architecture · how it works · network)</em></p>
 
 <p align="center">
-  <img src="project-a/docs/diagrams/aws-landing-zone-architecture.png" alt="AWS Landing Zone Architecture" width="100%">
+  <a href="project-a/docs/diagrams/aws-landing-zone-lab.drawio">Editable draw.io source</a>
 </p>
-
-<p align="center"><em>Figure 2 — platform architecture</em></p>
-
-<p align="center">
-  <img src="project-a/docs/diagrams/aws-landing-zone-how-it-works.png" alt="AWS Landing Zone Lab — How It Works" width="100%">
-</p>
-
-<p align="center"><em>Figure 3 — how the live lab works</em></p>
-
-<p align="center">
-  <img src="project-a/docs/diagrams/aws-landing-zone-network.png" alt="AWS Landing Zone — Private Network" width="100%">
-</p>
-
-<p align="center"><em>Figure 4 — private network detail</em></p>
-
-Editable draw.io sources: [`lab`](project-a/docs/diagrams/aws-landing-zone-lab.drawio) · [`architecture`](project-a/docs/diagrams/aws-landing-zone-architecture.drawio) · [`how-it-works`](project-a/docs/diagrams/aws-landing-zone-how-it-works.drawio)
 
 | Panel | What it shows |
 |-------|----------------|
-| **Architecture** | Bootstrap → Organization (design) → Identity → Network → Audit → Validation. Live lab applied identity + network + audit in one account. |
-| **How it works** | Push → OIDC → Terraform (one account) → live resources → evidence. |
-| **Private network** | Private subnets, default-deny SG, Flow Logs → Log Archive. No internet, NAT, peering, Transit Gateway, or cross-account route. |
+| **A. Architecture** | Bootstrap → Organization (design) → Identity → Network → Audit → Validation. Live lab applied identity + network + audit in one account. |
+| **B. How it works** | Push → OIDC → Terraform (one account) → live resources → evidence. |
+| **C. Private network** | Private subnets, default-deny SG, Flow Logs → Log Archive. No internet, NAT, peering, Transit Gateway, or cross-account route. |
+
+Section archives (harness / deep links): [`architecture.png`](project-a/docs/diagrams/aws-landing-zone-architecture.png) · [`network.png`](project-a/docs/diagrams/aws-landing-zone-network.png)
 
 ## Resume bullet
 
