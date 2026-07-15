@@ -1,49 +1,15 @@
-# Operator: finish GitHub rename + harness repo create
+# Operator split status
 
-This cloud agent token can **push** to `nathanielecon/cloud` but cannot
-**create** or **rename** repositories (GitHub App 403). Complete these steps
-with an account that has admin on `nathanielecon/*`.
+## Completed
 
-## 1. Merge the split PR into `main` on `cloud`
+- Created [`nathanielecon/ralphy-windows-harness`](https://github.com/nathanielecon/ralphy-windows-harness) and pushed smoke harness `main`.
+- Renamed [`nathanielecon/cloud`](https://github.com/nathanielecon/cloud) → [`nathanielecon/aws-landing-zone-lab`](https://github.com/nathanielecon/aws-landing-zone-lab) (GitHub redirects old URLs).
 
-Ensure `platform/` layout and harness strip are on `main`.
+Note: `harness-contracts.yml` was deferred on the harness repo because the OAuth token lacked `workflow` scope. Re-add from branch `export/ralphy-windows-harness` on this repo (or from local history) after authorizing `workflow` scope, if you want CI on the harness.
 
-## 2. Create the harness repo and push the export branch
+## Still required (AWS)
 
-The harness tree is published as orphan branch
-`export/ralphy-windows-harness` on this repo (and also prepared under
-`/tmp/ralphy-windows-harness` during the agent run).
-
-```bash
-# From a machine with admin gh auth:
-gh repo create nathanielecon/ralphy-windows-harness --public \
-  --description "Native-Windows Codex-first Ralphy smoke harness (sequential loop)"
-
-git clone https://github.com/nathanielecon/cloud.git /tmp/cloud-split
-cd /tmp/cloud-split
-git fetch origin export/ralphy-windows-harness
-git checkout export/ralphy-windows-harness
-git remote add harness https://github.com/nathanielecon/ralphy-windows-harness.git
-git push -u harness HEAD:main
-```
-
-Alternatively, if you still have `/tmp/ralphy-windows-harness` from the agent:
-
-```bash
-cd /tmp/ralphy-windows-harness
-git remote set-url origin https://github.com/nathanielecon/ralphy-windows-harness.git
-git push -u origin main
-```
-
-## 3. Rename `cloud` → `aws-landing-zone-lab`
-
-```bash
-gh repo rename aws-landing-zone-lab --repo nathanielecon/cloud --yes
-```
-
-GitHub redirects `nathanielecon/cloud` URLs after rename.
-
-## 4. Re-apply OIDC trust (required)
+Re-apply OIDC trust so Actions from the renamed repo can assume `project-a-lzlab-gha`:
 
 ```powershell
 cd platform/sandbox/landing-zone-lab/ci-bootstrap
