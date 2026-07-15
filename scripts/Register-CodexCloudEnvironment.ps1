@@ -36,6 +36,27 @@ function Get-DefaultRepo {
     return $name.Trim()
 }
 
+function ConvertTo-WarmUtcStamp {
+    param($Value)
+    if ($null -eq $Value -or "$Value" -eq '') {
+        return $null
+    }
+    if ($Value -is [datetime]) {
+        return ([datetime]$Value).ToUniversalTime().ToString('o')
+    }
+    $text = [string]$Value
+    try {
+        $parsed = [datetime]::Parse($text, $null, [System.Globalization.DateTimeStyles]::RoundtripKind)
+        if ($parsed.Kind -eq [DateTimeKind]::Unspecified) {
+            $parsed = [DateTime]::SpecifyKind($parsed, [DateTimeKind]::Utc)
+        }
+        return $parsed.ToUniversalTime().ToString('o')
+    }
+    catch {
+        return $text
+    }
+}
+
 function Read-WarmRegistry {
     param([string]$Path)
     $map = [ordered]@{}
@@ -51,13 +72,8 @@ function Read-WarmRegistry {
         $map[$p.Name] = [ordered]@{
             envId         = [string]$p.Value.envId
             defaultBranch = [string]$(if ($p.Value.PSObject.Properties['defaultBranch'] -and $p.Value.defaultBranch) { $p.Value.defaultBranch } else { 'main' })
-            lastWarmUtc   = $(
-                if ($p.Value.PSObject.Properties['lastWarmUtc'] -and $null -ne $p.Value.lastWarmUtc -and "$($p.Value.lastWarmUtc)" -ne '') {
-                    [string]$p.Value.lastWarmUtc
-                }
-                else {
-                    $null
-                }
+            lastWarmUtc   = ConvertTo-WarmUtcStamp -Value $(
+                if ($p.Value.PSObject.Properties['lastWarmUtc']) { $p.Value.lastWarmUtc } else { $null }
             )
         }
     }
