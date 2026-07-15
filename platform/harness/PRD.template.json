@@ -1,0 +1,11 @@
+{
+  "tasks": [
+    {"title":"[TASK:A-001] Architecture and backend contract","completed":false,"description":"Follow platform/harness/tasks/A-001.json exactly. Remain repo-only, do not commit, and stop for the H0 approval gate after validation."},
+    {"title":"[TASK:A-002] Organizations and account baseline","completed":false,"description":"Follow platform/harness/tasks/A-002.json exactly. Remain repo-only, do not commit, and stop for the H1 approval gate after validation."},
+    {"title":"[TASK:A-003] IAM and policy guardrails","completed":false,"description":"Follow platform/harness/tasks/A-003.json exactly. Remain repo-only and do not commit; deterministic gates own completion."},
+    {"title":"[TASK:A-004] Network boundaries","completed":false,"description":"Follow platform/harness/tasks/A-004.json exactly. Remain repo-only and do not commit; deterministic gates own completion."},
+    {"title":"[TASK:A-005] Central logging and audit path","completed":false,"description":"Follow platform/harness/tasks/A-005.json exactly. Remain repo-only and do not commit; deterministic gates own completion."},
+    {"title":"[TASK:A-006] Environment compositions and validation","completed":false,"description":"Follow platform/harness/tasks/A-006.json exactly. Remain repo-only and do not commit; deterministic gates may complete this task."},
+    {"title":"[TASK:A-007] Evidence, Azure Government notes, and handoff","completed":false,"description":"Follow platform/harness/tasks/A-007.json exactly. Remain repo-only and do not commit; deterministic final gates own completion."}
+  ]
+}

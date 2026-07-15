@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/project-a-task-policy-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version","id","title","risk","mode","depends_on","allowed_paths","adapter_owned_paths","forbidden_operations","validator_mutation_policy","validators","terra_attempt_limit","elapsed_limit_minutes","escalation","approval","expected_artifacts","expected_evidence","commit_message","claims"],
+  "properties": {
+    "schema_version": {"const":"project-a-task-policy-v1"},
+    "id": {"pattern":"^A-00[1-7]$"},
+    "title": {"type":"string","minLength":1},
+    "risk": {"enum":["medium","high"]},
+    "mode": {"const":"repo_only"},
+    "depends_on": {"type":"array","items":{"pattern":"^A-00[1-7]$"},"uniqueItems":true},
+    "allowed_paths": {"type":"array","items":{"type":"string","minLength":1},"minItems":1,"uniqueItems":true},
+    "allowed_executable_paths": {"type":"array","items":{"type":"string","minLength":1},"uniqueItems":true},
+    "adapter_owned_paths": {"type":"array","items":{"pattern":"^evidence/platform/A-00[1-7]\\.json$"},"minItems":1,"maxItems":1,"uniqueItems":true},
+    "forbidden_operations": {"type":"array","items":{"type":"string"},"minItems":6,"uniqueItems":true},
+    "validator_mutation_policy": {"const":"no_tracked_writes"},
+    "validators": {"type":"array","minItems":4,"items":{"type":"object","additionalProperties":false,"required":["id","timeout_seconds","required"],"properties":{"id":{"type":"string","pattern":"^[a-z0-9_]+$"},"args":{"type":"array","items":{"type":"string"}},"timeout_seconds":{"type":"integer","minimum":1,"maximum":900},"required":{"const":true}}}},
+    "terra_attempt_limit": {"const":3},
+    "elapsed_limit_minutes": {"const":25},
+    "escalation": {"type":"object","required":["consecutive_failures","same_error_count","no_diff_repairs","scope_escape"],"properties":{"consecutive_failures":{"const":2},"same_error_count":{"const":2},"no_diff_repairs":{"const":1},"scope_escape":{"const":true}}},
+    "approval": {"type":"object","additionalProperties":false,"required":["required","gate_id","stage","approver","receipt_path","reason"],"properties":{"required":{"type":"boolean"},"gate_id":{"type":["string","null"]},"stage":{"const":"post_validation_pre_commit"},"approver":{"const":"human"},"receipt_path":{"type":["string","null"]},"reason":{"type":"string"}}},
+    "expected_artifacts": {"type":"array","items":{"type":"string"},"minItems":1,"uniqueItems":true},
+    "expected_evidence": {"pattern":"^evidence/platform/A-00[1-7]\\.json$"},
+    "commit_message": {"pattern":"^feat\\(A-00[1-7]\\):"},
+    "claims": {"type":"object","additionalProperties":false,"required":["cloud_validated","aws_implemented","azure_implemented"],"properties":{"cloud_validated":{"const":false},"aws_implemented":{"const":false},"azure_implemented":{"const":false}}}
+  },
+  "allOf": [
+    {
+      "if": {"properties":{"approval":{"properties":{"required":{"const":true}}}}},
+      "then": {"properties":{"approval":{"properties":{"gate_id":{"type":"string","pattern":"^H[0-5]$"},"receipt_path":{"type":"string","pattern":"^\\.harness/runtime/approvals/A-00[1-7]\\.json$"}}}}},
+      "else": {"properties":{"approval":{"properties":{"gate_id":{"type":"null"},"receipt_path":{"type":"null"}}}}}
+    }
+  ]
+}

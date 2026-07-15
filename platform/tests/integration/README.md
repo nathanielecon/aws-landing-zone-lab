@@ -1,0 +1,49 @@
+# Integration validation notes
+
+These tests prove the `platform` root remains a non-deploying composition shell
+while offline validation still works. They do not provision cloud resources or
+replace separate environment approval.
+
+## Composition contract
+
+The root `platform` directory is an orchestration shell only. Composition
+consistency means these interfaces stay present and aligned without a live
+provider:
+
+| Surface | Required offline contract |
+| --- | --- |
+| Identity module | `terraform/identity/{main,outputs,README}.tf` / `.md`; `audit_bucket_name` input; `workload_role_name` output |
+| Network module | `terraform/network/{main,outputs,README}`; `flow_logs_destination_arn` input; `private_subnet_count` output |
+| Audit module | `terraform/audit/{main,outputs,README}`; `aws_cloudtrail.audit`; `archive_bucket_name` / `cloudtrail_arn` outputs |
+| Environments | Distinct `backend_key` and `audit_prefix` per env; shared `network_boundary = "private-only"`; matching outputs |
+
+**Log Archive ownership link:** `flow_logs_destination_arn` must match
+`^arn:aws:s3:::` so Network only emits flow metadata into an S3 ARN shape owned
+by the Log Archive boundary (protected storage). Non-S3 shapes fail offline
+validation (`rejects_non_s3_flow_logs_destination_arn`); Network does not own
+the archive bucket/KMS posture.
+
+`root_composition.tftest.hcl` asserts those paths and locals/outputs contracts
+with `fileexists` / content checks during `terraform test` (no AWS credentials).
+The `log_archive_arn_prefix_contract_alignment` run additionally proves the
+shared Log Archive ARN/prefix contract stays aligned across identity
+(`audit_bucket_name` → `arn:aws:s3:::…/workload/*`), network (S3 ARN validation
+on `flow_logs_destination_arn`), audit (`archive_bucket_arn` +
+`flow_logs_prefix`), and environment `audit_prefix` locals. It also asserts
+**string equality** of the shared offline bucket name token across identity /
+network / audit fixtures (`example-log-archive`) and lab wiring to
+`module.audit.archive_bucket_*`, and locks nonproduction/production composition
+fields to that shared token plus `is_organization_trail = false`.
+
+## Minimal executable check
+
+From `platform/` (or via `scripts/validate-project-a.ps1`):
+
+```bash
+terraform init -backend=false -input=false
+terraform test -no-color -test-directory=tests/integration
+```
+
+Expect all `root_composition` runs to pass. Failure means a module entry,
+environment locals/outputs contract, or identity/network/audit interface was
+removed or drifted—not that cloud resources changed.

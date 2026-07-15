@@ -296,7 +296,7 @@
   `Get-CanonicalDiffRecord`.
 - `Invoke-HarnessReleaseValidation.ps1`: `HARNESS_STRICT_PINS=1` or `CI=1`
   fail-closed on terraform/ralphy pin mismatch (node warn-only). Documented in
-  `project-a/HARNESS.md`. Execution-bundle members edited → approval pins
+  `platform/HARNESS.md`. Execution-bundle members edited → approval pins
   repinned.
 
 ## 2026-07-14 (CLEAN REJUDGE slice-1 fixer r2)
@@ -318,7 +318,7 @@
 - Added `scripts/Invoke-HarnessReleaseValidation.ps1` (tool-version checks +
   `CI=1` / `HARNESS_CONTRACT_ONLY=1` + contract/spec/harness suites).
 - Documented one-command release validation + pin verify in
-  `project-a/HARNESS.md` (execution-bundle member; approval pins repinned).
+  `platform/HARNESS.md` (execution-bundle member; approval pins repinned).
 - Added `scripts/Verify-ProjectABundle.ps1` (recompute vs bundle/execution
   approval pins; optional approval-path overrides for fail-closed tests).
 - Thin contract tests: one-byte digest mutation + flipped pin fails closed;
@@ -332,7 +332,7 @@
   earlier cloud-lab rejudge on this turn. Historical per-slice 9.5+ scores
   from contaminated prompts are **not** process-audit clean.
 - Fix: Adopt hard anti-leak prompt contract in
-  `project-a/docs/architecture/orchestration.md` (banned phrases; required
+  `platform/docs/architecture/orchestration.md` (banned phrases; required
   return shape). Judges score the frozen rubric only; **orchestrator alone**
   compares averages / must-haves to the advance rule. Re-run clean Grok
   multi-judge rounds for slices 1–4 + cloud lab with fresh agents (no
@@ -369,7 +369,7 @@
   modules; retone `operator/README.md`.
 - Round 2 scores: **9.5 / 9.5 / 9.5** (avg **9.5**). Must-haves PASS.
   `merge_ready: yes` ×3. Follow-up: carve lab vs harness in
-  `project-a/evidence-index.md` opener (judge R2 gap).
+  `platform/evidence-index.md` opener (judge R2 gap).
 - Closeout polish: derive `project-a-lzlab-gha` Role.[Name,Arn] from STS in
   `EVIDENCE.capture.md`; add organization module to `OFFLINE_VALIDATE.md`;
   retone `apply-lab.sh` / `aws-env.sh` so GHA OIDC is the only scored path
@@ -456,7 +456,7 @@
 - Operator plan: with one AWS account, run collapsed Landing Zone lab (identity +
   network + audit live; Orgs as interface only) and judge to ≥9.5 on
   single-account lab rubrics — not fake multi-account claims.
-  Action: Added `project-a/sandbox/landing-zone-lab/{operator,state-bootstrap,lab}`,
+  Action: Added `platform/sandbox/landing-zone-lab/{operator,state-bootstrap,lab}`,
   frozen `harness/rubrics/slice-cloud-lab-single-account.md`, extended audit
   module for VPC Flow Logs archive permissions, parameterized identity
   `oidc_provider_arn`, documented Orgs non-apply in `ORGS_INTERFACE.md`, updated
@@ -467,12 +467,12 @@
 ## 2026-07-13 (sandbox AWS proof)
 
 - Operator override: live AWS apply requested despite repo-only stop conditions.
-  Action: Installed AWS CLI; authenticated account `283077380808`; created separate root `project-a/sandbox/aws-proof` reusing `terraform/audit`; applied in `us-east-1` (13 resources). CloudTrail `project-a-sandbox-trail` IsLogging=true; archive bucket KMS-encrypted + versioned + public access blocked. Evidence: `project-a/sandbox/aws-proof/EVIDENCE.md`. Does not rewrite A-001…A-007 repo-only harness claims.
+  Action: Installed AWS CLI; authenticated account `283077380808`; created separate root `platform/sandbox/aws-proof` reusing `terraform/audit`; applied in `us-east-1` (13 resources). CloudTrail `project-a-sandbox-trail` IsLogging=true; archive bucket KMS-encrypted + versioned + public access blocked. Evidence: `platform/sandbox/aws-proof/EVIDENCE.md`. Does not rewrite A-001…A-007 repo-only harness claims.
 
 ## 2026-07-13
 
 - Closeout: PR `#13` squash-merged to `main` as `1564c6b` after Windows CI green on `5fd7d0b` and slice advances (1: 9.6, 2: 9.6, 3: 9.5, 4: 9.6).
-  Process postmortem: recorded on-the-fly judge-loop deviations in `project-a/docs/architecture/orchestration.md` § “Delivery closeout — recorded process deviations (2026-07-13)” — mid-stream rubric restore, CI-first then slice accounting, frequent single-judge rejudges, cloud-worker cherry-picks, A-007 evidence hash drift honesty, and repo-only confidence boundary. Technical break/fix rows below remain the machine-facing history.
+  Process postmortem: recorded on-the-fly judge-loop deviations in `platform/docs/architecture/orchestration.md` § “Delivery closeout — recorded process deviations (2026-07-13)” — mid-stream rubric restore, CI-first then slice accounting, frequent single-judge rejudges, cloud-worker cherry-picks, A-007 evidence hash drift honesty, and repo-only confidence boundary. Technical break/fix rows below remain the machine-facing history.
 
 - Break: Slice 3 judge score 9.2 < 9.5 after must-haves passed (missing platform validator-ID / fail-closed docs and weak integration composition assertions).
   Fix: Documented A-003…A-006 representative validator IDs plus `UNKNOWN_VALIDATOR` fail-closed behavior in `policy-validation.md`; strengthened `root_composition.tftest.hcl` with identity/network/audit module-entry and environment locals/outputs contract asserts (offline `fileexists`/content checks) and clarified the composition contract in `tests/integration/README.md`. Docs/tests only; no harness hot-path or execution-bundle repin.
@@ -487,7 +487,7 @@
   Fix: Updated `scripts/Harness.Common.psm1` so `Read-JsonFile` uses `ConvertFrom-Json -DateKind String`, preserving contract timestamps as strings across PowerShell environments; repinned execution approval hashes.
 
 - Break: PR `#13` Windows contract suite then failed on `default forbidden-operations policy allows clean text artifacts`.
-  Fix: Narrowed `scripts/Invoke-ProjectAValidators.ps1` forbidden-operation scanning to skip harness control files under `.harness/`, `harness/`, and `project-a/harness/`; repinned validator and execution approval hashes.
+  Fix: Narrowed `scripts/Invoke-ProjectAValidators.ps1` forbidden-operation scanning to skip harness control files under `.harness/`, `harness/`, and `platform/harness/`; repinned validator and execution approval hashes.
 
 - Break: GitHub Actions still reported failure after branch fixes were pushed.
   Fix: Reproduced the PR merge ref locally by checking out `refs/pull/13/merge` into an isolated worktree and reran `tests/Run-ProjectAHarnessTests.ps1` under CI-equivalent environment variables. The merge-ref reproduction passed locally, so the remaining issue is currently isolated to GitHub runner behavior or stale rerun state rather than an obvious branch-only regression.

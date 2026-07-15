@@ -1,0 +1,89 @@
+{
+  "schema_version": "project-a-evidence-v1",
+  "profile_id": "project-a",
+  "mode": "repo_only",
+  "cloud_validated": false,
+  "aws_implemented": false,
+  "azure_implemented": false,
+  "execution_bundle_sha256": "CD5CCD079EE5695ED6D4AC93FD26C8C5872C7A4B2DA8610703AEF10889BBC4E4",
+  "validator_implementation_sha256": "19A807388C328EB6CBCD0B4F38E5CA23557E326C1F6E51B4B7BCC7C96483CBEC",
+  "policy_sha256": "E8F665E8B74A35423700175BF7AB03CDCFE3E55A59F0C3BEE4F9842A03DE20F7",
+  "run_id": "20260711T110351Z-04308560",
+  "task_id": "A-007",
+  "phase_passed": "terra",
+  "terra_attempts": 0,
+  "sol_attempts": 0,
+  "starting_commit": "81b27029b4886cc69308fab6344fbaf16b22c2ec",
+  "diff_sha256": "09F4461D5779BC53EB28C6E53A01BD30C974F2BA49CD978BB7A5E5FA4CEF4E2D",
+  "changed_entries": [
+    {
+      "path": "platform/docs/azure-government/readiness.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1124,
+      "content_sha256": "9E7C04CDDB5F2A1EA506E2268C2E964AB487AB06EF438C6A5243DADB87B5D4ED"
+    },
+    {
+      "path": "platform/docs/diagrams/aws-landing-zone-architecture.png",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 3125,
+      "content_sha256": "C745D6C804A4CC40624AFE5CBD10C11B3D9C9DD0C353426B4C9EB0AA1C38BE0C"
+    },
+    {
+      "path": "platform/docs/portfolio/claims-boundary.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 851,
+      "content_sha256": "848260D88FB65012C7ADD4BC024E4E393C1F9B938F47822D981F5FBB3AC74E0A"
+    },
+    {
+      "path": "platform/docs/review/pushback-and-handoff.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1072,
+      "content_sha256": "5DB9CBE6D7618FB7B4B12F0F6D2EB635675BB419B661427483FDBC47A4461C77"
+    },
+    {
+      "path": "platform/evidence-index.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1203,
+      "content_sha256": "18235AEC0DA6BBF229382FBE9A024A3F03CB8C715A31D6545CB2A388C3FA729A"
+    },
+    {
+      "path": "platform/graphify-out/GRAPH_REPORT.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 364,
+      "content_sha256": "BC0C4EE860CEF2457BEE2B17B9D1042F39342103EB53D40E9F088A7E89748C30"
+    },
+    {
+      "path": "platform/README.md",
+      "status": "present",
+      "git_status": "M",
+      "old_mode": "100644",
+      "new_mode": "100644",
+      "length": 938,
+      "content_sha256": "89A4A84F4ACECA5B54BC3A1F3EA585E4418332C5F3BE0C1EEC1ABF8583CCCEDD"
+    }
+  ],
+  "validation_digest": "B84061C7B87F79FE282D62736CD8CF21200179891B4FB3B59EA64513783AF8EF",
+  "approval_required": false,
+  "approval_receipt_digest": "",
+  "completed_at": "2026-07-11T11:03:57.9188686+00:00",
+  "commit_parent": "81b27029b4886cc69308fab6344fbaf16b22c2ec",
+  "commit_lookup": "git log -1 --format=%H -- evidence/platform/A-007.json"
+}
