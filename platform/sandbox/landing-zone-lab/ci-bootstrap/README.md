@@ -27,14 +27,22 @@ workflow default if it matches).
 
 If Actions fails at **Configure AWS credentials (OIDC)** after a rename,
 self-heal from GHA cannot run (needs the role). Fix in **AWS CloudShell**
-(Linux paths — do not use `C:\...`):
+(Linux paths — do not use `C:\...`), account `283077380808`:
+
+```bash
+# No clone needed — paste in CloudShell:
+curl -fsSL https://raw.githubusercontent.com/nathanielecon/aws-landing-zone-lab/cursor/oidc-trust-recovery-d314/platform/sandbox/landing-zone-lab/ci-bootstrap/fix-oidc-trust-cloudshell.sh | bash
+```
+
+Or from a repo checkout of this branch:
 
 ```bash
 bash platform/sandbox/landing-zone-lab/ci-bootstrap/fix-oidc-trust-cloudshell.sh
 # or: terraform apply in this directory (same trust shape)
 ```
 
-Cloud Agents do **not** hold apply credentials for this step.
+Then dispatch **Landing Zone lab (Terraform)** → `plan` and confirm the OIDC
+step is green. Cloud Agents do **not** hold apply credentials for this step.
 
 The lab root **reads** this OIDC provider via a data source; it does not create
 a second one.
