@@ -19,7 +19,6 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 & (Join-Path $PSScriptRoot 'codex-cloud-worker/Test-OrchestratorAuthRoundTrip.ps1')
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -32,29 +31,22 @@ if ($codex) {
 }
 
 if ($SkipLive -or -not $hasKey -or -not $chatgpt) {
-    Write-Host 'LIVE_SMOKE_SKIPPED: need CURSOR_API_KEY + local ChatGPT `codex login` on the laptop control plane.'
-    Write-Host @'
-Live smoke command (run on laptop after `codex login` + set CURSOR_API_KEY):
-
-  pwsh -NoLogo -NoProfile -File scripts/Invoke-CursorCloudWorker.ps1 `
-    -Role Orchestrator `
-    -Prompt @'
-Bootstrap Codex auth, then run:
-pwsh -NoLogo -NoProfile -File scripts/Dispatch-CodexCloudWorker.ps1 -Prompt "Reply with exactly: codex cloud ok. Make no file changes."
-Then export the auth write-back artifact. Do not modify repo files.
-'@ `
-    -Wait:$true
-'@
+    Write-Host 'LIVE_SMOKE_SKIPPED: need CURSOR_API_KEY + local ChatGPT codex login on the laptop control plane.'
+    Write-Host 'Live smoke on laptop:'
+    Write-Host '  $env:CURSOR_API_KEY = ''cursor_...'''
+    Write-Host '  pwsh -NoLogo -NoProfile -File scripts/Invoke-CursorCloudWorker.ps1 -Role Orchestrator -Prompt ''Bootstrap auth; Dispatch-CodexCloudWorker: Reply codex cloud ok; make no file changes.'' -Wait:$true'
     exit 0
 }
 
 Write-Host 'LIVE_SMOKE: launching Cursor Cloud Orchestrator to dispatch one Codex Cloud task ...'
+$livePrompt = @(
+    'Bootstrap Codex auth with Install-CodexAuthFromEnv.ps1.'
+    'Then run Dispatch-CodexCloudWorker.ps1 with prompt: Reply with exactly: codex cloud ok. Make no file changes.'
+    'Export the auth write-back artifact. Make no other file changes.'
+) -join ' '
+
 & (Join-Path $PSScriptRoot 'Invoke-CursorCloudWorker.ps1') `
     -Role Orchestrator `
-    -Prompt @'
-Bootstrap Codex auth with Install-CodexAuthFromEnv.ps1.
-Then run Dispatch-CodexCloudWorker.ps1 with prompt: Reply with exactly: codex cloud ok. Make no file changes.
-Export the auth write-back artifact. Make no other file changes.
-'@ `
+    -Prompt $livePrompt `
     -Wait:$true
 exit $LASTEXITCODE
