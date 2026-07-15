@@ -1,0 +1,16 @@
+{
+  "schema_version": "continuityops-app-contract-v1",
+  "status": "stub",
+  "source": "continuityops-lab-or-project-c",
+  "image_digest": "REQUIRED_OR_EXPLICITLY_UNAVAILABLE",
+  "endpoints": {
+    "liveness": "/healthz",
+    "readiness": "/readyz",
+    "version": "/version",
+    "business_smoke": "/api/smoke"
+  },
+  "notes": [
+    "Do not invent digests.",
+    "Label lab-built images as ContinuityOps lab artifacts."
+  ]
+}
