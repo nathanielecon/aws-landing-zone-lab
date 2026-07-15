@@ -2,30 +2,18 @@
 
 Terraform modules, CI-gated apply, and written evidence for an AWS Landing Zone design plus a **cloud-validated** single-account live lab.
 
-## Diagrams
+## Diagram
 
 <p align="center">
-  <img src="docs/diagrams/aws-landing-zone-lab.png" alt="AWS Landing Zone Lab — full poster" width="100%">
-</p>
-
-<p align="center">
-  <img src="docs/diagrams/aws-landing-zone-architecture.png" alt="AWS Landing Zone Architecture" width="100%">
-</p>
-
-<p align="center">
-  <img src="docs/diagrams/aws-landing-zone-how-it-works.png" alt="AWS Landing Zone Lab — How It Works" width="100%">
-</p>
-
-<p align="center">
-  <img src="docs/diagrams/aws-landing-zone-network.png" alt="AWS Landing Zone — Private Network" width="100%">
+  <img src="docs/diagrams/aws-landing-zone-lab.png" alt="AWS Landing Zone Lab — consolidated figure" width="100%">
 </p>
 
 <p align="center">
   <a href="docs/diagrams/aws-landing-zone-lab.drawio">lab.drawio</a>
   ·
-  <a href="docs/diagrams/aws-landing-zone-architecture.drawio">architecture.drawio</a>
+  <a href="docs/diagrams/aws-landing-zone-architecture.png">architecture.png</a>
   ·
-  <a href="docs/diagrams/aws-landing-zone-how-it-works.drawio">how-it-works.drawio</a>
+  <a href="docs/diagrams/aws-landing-zone-network.png">network.png</a>
 </p>
 
 Most of this folder is a **repo-only** multi-account platform contract: inspectable Terraform, docs, harness gates, and A-001…A-007 evidence that is **not** cloud-validated. Azure Government stays translation-only.
