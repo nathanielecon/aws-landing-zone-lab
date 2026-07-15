@@ -35,6 +35,10 @@ Actions run, dashboard browser, etc.).
 
 Applies to **Cursor Cloud Agents** and **Codex CLI / Codex Cloud** tasks.
 
+**Local vs cloud:** The Codex **CLI on your laptop** is local. **Codex Cloud**
+tasks (launched from app/web or `codex cloud exec`) run in OpenAI’s remote
+Linux containers. Speeding up Cloud tasks does not change local CLI latency.
+
 - Cloud Agents run in isolated Linux pods. They **cannot** use the user’s local
   laptop session (`aws login`, PowerShell, browser cookies, desktop SSO).
 - Granting local IDE/shell permissions does **not** inject credentials into a
@@ -48,17 +52,31 @@ Applies to **Cursor Cloud Agents** and **Codex CLI / Codex Cloud** tasks.
     (PowerShell, Node 24, Terraform 1.15.5, AWS CLI, Docker). Do not reinstall
     those tools with `apt-get` / `npm install` at session start unless the image
     lacks them.
-  - **Codex Cloud:** Codex does not use the Cursor Dockerfile. Wire
-    [`.codex/cloud-setup.sh`](.codex/cloud-setup.sh) as the Environment **setup
-    script** and [`.codex/cloud-maintenance.sh`](.codex/cloud-maintenance.sh) as
+  - **Codex Cloud:** Codex does **not** use the Cursor Dockerfile. It uses the
+    **universal** image plus dashboard Environment scripts. Wire
+    [`.codex/cloud-setup.sh`](.codex/cloud-setup.sh) as **setup** and
+    [`.codex/cloud-maintenance.sh`](.codex/cloud-maintenance.sh) as
     **maintenance** (see [`.codex/README.md`](.codex/README.md)). Codex caches
-    that container ~12h; changing setup/secrets/env vars invalidates the cache.
-    Warm once with a throwaway task, then rely on the cache.
+    that container ~12h; changing setup/secrets/env vars **invalidates** the
+    cache. Warm once with a throwaway task, then rely on the cache.
+  - **In-progress tasks** keep the container they started with — they do **not**
+    pick up Environment script changes mid-flight. New tasks use the saved
+    Environment (and warm cache when available).
 - Cloud Agents **edit the repo** (IaC, workflows, docs, evidence). They are
   **not** the cloud apply control plane.
 - If a Cloud Agent is stuck on NoCredentials: that is expected under GitOps.
   Escalate to the orchestrator → local or GitHub Actions bottleneck agent.
   Do **not** make Cloud Agent assume-role the primary path.
+
+**Example fill — this repo’s Codex Cloud Environment** (other projects use
+their own env id/label):
+
+| Item | Value |
+| --- | --- |
+| Environment | `nathanielecon/cloud` |
+| Env id | `6a52b532673c8191b12b47eb0958625c` |
+| Setup / maintenance | `.codex/cloud-setup.sh` / `.codex/cloud-maintenance.sh` |
+| Caching | Post-setup cache On; avoid Reset unless rebuild needed |
 
 ### 3. AWS / cloud apply (GitOps)
 
@@ -154,7 +172,11 @@ corporate style while expanding the architecture panel to full readability.
 
 ## Harness validation (this repo)
 
-- Fast validation order when touching harness code:
+- Fast validation order when touching harness code (prefer the one-command
+  CI-parity gate first):
+  0. `pwsh -NoLogo -NoProfile -File scripts/Invoke-HarnessReleaseValidation.ps1`
+     (sets CI + HARNESS_CONTRACT_ONLY; use `HARNESS_STRICT_PINS=1` for pin
+     fail-closed; also runs `Verify-ProjectABundle.ps1`)
   1. `pwsh -NoLogo -NoProfile -File tests/Run-ProjectAHarnessTests.ps1`
   2. `pwsh -NoLogo -NoProfile -File tests/Run-ProjectASpecTests.ps1`
   3. `pwsh -NoLogo -NoProfile -File tests/Run-ContractTests.ps1`
