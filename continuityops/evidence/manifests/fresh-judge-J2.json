@@ -1,0 +1,461 @@
+{
+  "judge_id": "J2",
+  "model": "cursor-grok-4.5",
+  "threshold_provided": false,
+  "candidate_sha": "eebf46541b5829805dc184165a29868241469987",
+  "partitions": [
+    {
+      "partition_id": "P_authority",
+      "score": 8.4,
+      "must_haves": [
+        {
+          "id": "scope_independence",
+          "pass": true,
+          "note": "AGENTS.md/PLAN.md confine work to continuityops/; folder-ready path_scope, independence_lock, and project_a_untouched pass at HEAD."
+        },
+        {
+          "id": "harness_validators",
+          "pass": true,
+          "note": "folder-ready.json overall pass (6/6) at candidate_sha matching HEAD; PLAN.md sha256 matches plan-approval pin."
+        },
+        {
+          "id": "secrets_discipline",
+          "pass": true,
+          "note": "secret_scan pass; no credentials in sampled harness/approval artifacts."
+        },
+        {
+          "id": "status_honesty",
+          "pass": true,
+          "note": "plan-approval.json, PLAN.md, and STATUS.md all status=fresh-council-remediation (not build-orchestration); accuracy-final retracted with merge_ready false."
+        },
+        {
+          "id": "operational_usefulness",
+          "pass": true,
+          "note": "orchestration-model.json keeps gate numbers orchestrator-only; postbuild partition includes agentic runtime paths; ORCH-001 archived."
+        }
+      ],
+      "findings": [
+        {
+          "severity": "medium",
+          "note": "ORCH-003.zh-CN.md still asserts Stage 1+2 complete and accuracy-final merge_ready=true (≥9.5), contradicting STATUS/plan-approval remediation posture."
+        },
+        {
+          "severity": "medium",
+          "note": "PLAN.md Stage-2 section still publishes numeric stop language (≥ 9.5 / no judge < 9.0) to workers while judges must score without thresholds."
+        },
+        {
+          "severity": "low",
+          "note": "deterministic-checks.json and postbuild-partition-manifest.json bind candidate_sha 1bfa233c… while folder-ready/HEAD are eebf4654… — evidence SHA lag."
+        }
+      ],
+      "strengths": [
+        "Authority trifecta aligned on fresh-council-remediation.",
+        "Blind-judge design explicit: judges_must_not_receive_gate_numbers.",
+        "Postbuild coverage now lists Evaluate-RemediationProposal runtime + test."
+      ]
+    },
+    {
+      "partition_id": "P_foundation",
+      "score": 8.4,
+      "must_haves": [
+        {
+          "id": "terraform_modules_compose",
+          "pass": true,
+          "note": "network/eks/serverless/observability modules wired into staging and recovery-lab compositions."
+        },
+        {
+          "id": "bootstrap_secrets",
+          "pass": true,
+          "note": "Bootstrap separates remote state; SSE, versioning, public access block; no credentials in-repo."
+        },
+        {
+          "id": "delivery_workflow",
+          "pass": true,
+          "note": "OIDC plan draft under continuityops/.github/workflows/ with draft labeling and placeholders."
+        },
+        {
+          "id": "app_release_ready",
+          "pass": true,
+          "note": "release-contract.json lab_packaged; image_digest equals sha256 of app/build/continuityops-lab-app.tar; endpoints match app contract."
+        },
+        {
+          "id": "eks_network_ops_tags",
+          "pass": true,
+          "note": "EKS/network modules present with env compositions; Project/Environment tagging documented."
+        },
+        {
+          "id": "no_project_ac_edits",
+          "pass": true,
+          "note": "Foundation paths stay under continuityops/; README states separation from Project A state."
+        }
+      ],
+      "findings": [
+        {
+          "severity": "medium",
+          "note": "CI remains draft-only (continuityops-plan.draft.yml); no promoted apply path evidenced."
+        },
+        {
+          "severity": "low",
+          "note": "Digest is tar content hash pending registry push — honestly labeled, but not a pullable OCI digest."
+        }
+      ],
+      "strengths": [
+        "Real composable Terraform with remote-state bootstrap hygiene.",
+        "App contract honestly labels lab digest and non-Project-C provenance.",
+        "Staging vs recovery-lab compositions are distinct."
+      ]
+    },
+    {
+      "partition_id": "P_kubernetes",
+      "score": 8.8,
+      "must_haves": [
+        {
+          "id": "hardened_helm_defaults",
+          "pass": true,
+          "note": "values.yaml: runAsNonRoot 10001, readOnlyRootFilesystem, drop ALL, probes, resources, topology spread; NetworkPolicy template present."
+        },
+        {
+          "id": "digest_policy",
+          "pass": true,
+          "note": "Digest pin in values matches tar hash; Kyverno deny-latest / require-digest / require-nonroot policies present."
+        },
+        {
+          "id": "failure_scenarios",
+          "pass": true,
+          "note": "Five inject/restore pairs (crashloop, dns-fail, networkpolicy-deny, readiness-fail, resource-pressure) with docs."
+        },
+        {
+          "id": "chart_tests",
+          "pass": true,
+          "note": "Test-ContinuityOpsChart.ps1 validates chart structure and values constraints repo-only."
+        },
+        {
+          "id": "deployable_image",
+          "pass": true,
+          "note": "app/build/continuityops-lab-app.tar present; digest consistent across chart and release-contract."
+        },
+        {
+          "id": "secrets_discipline",
+          "pass": true,
+          "note": "Secret template keys-driven; no embedded credentials in sampled chart files."
+        }
+      ],
+      "findings": [
+        {
+          "severity": "low",
+          "note": "Chart tests are structural/repo-only; no evidenced helm template against a live cluster."
+        },
+        {
+          "severity": "low",
+          "note": "Ingress disabled by default — fine for lab, hosted ingress path unproven."
+        }
+      ],
+      "strengths": [
+        "Production-minded Helm defaults without overclaiming live deploy.",
+        "Paired inject/restore scripts make failure drills actionable.",
+        "Admission policies align with chart securityContext."
+      ]
+    },
+    {
+      "partition_id": "P_serverless",
+      "score": 8.4,
+      "must_haves": [
+        {
+          "id": "worker_behavior",
+          "pass": true,
+          "note": "handler returns batchItemFailures; poison path; structured correlation_id logging; visibility/concurrency notes in source."
+        },
+        {
+          "id": "unit_tests",
+          "pass": true,
+          "note": "idempotency.test.js and parse.test.js present; deterministic-checks report serverless_unit pass."
+        },
+        {
+          "id": "honesty_lab_store",
+          "pass": true,
+          "note": "idempotency.js documents in-memory lab store vs DynamoDB production recommendation."
+        },
+        {
+          "id": "deploy_package_integrity",
+          "pass": true,
+          "note": "worker.zip contains index/idempotency/parse/package.json; size check passed in deterministic suite."
+        },
+        {
+          "id": "dlq_ops_docs",
+          "pass": true,
+          "note": "sqs-dlq.md and template.md document redrive/replay; Terraform serverless module creates primary+DLQ."
+        },
+        {
+          "id": "secrets_discipline",
+          "pass": true,
+          "note": "No secrets in worker source or contract."
+        }
+      ],
+      "findings": [
+        {
+          "severity": "medium",
+          "note": "In-memory idempotency cannot survive cold starts across invocations — acceptable for lab but limits durable dedupe claims."
+        },
+        {
+          "severity": "low",
+          "note": "serverless/infra remains markdown scaffolds; deployable IaC lives mainly under terraform modules."
+        }
+      ],
+      "strengths": [
+        "Partial-batch failure + poison handling is real code.",
+        "Contract/docs clearly enumerate lab vs production store expectations.",
+        "Zip artifact and unit tests give a concrete package boundary."
+      ]
+    },
+    {
+      "partition_id": "P_observability",
+      "score": 8.5,
+      "must_haves": [
+        {
+          "id": "slo_catalog",
+          "pass": true,
+          "note": "slo-catalog.json defines availability, latency_p95, worker_success with error budgets and multi-window burn rates."
+        },
+        {
+          "id": "actionable_alerts",
+          "pass": true,
+          "note": "alerts.yaml entries include owner, severity, runbook, dedupe, condition, and recovery_condition."
+        },
+        {
+          "id": "otel_scaffold",
+          "pass": true,
+          "note": "collector-config.yaml has OTLP receivers, batch/memory limiter, auth header redaction, placeholder exporters."
+        },
+        {
+          "id": "alert_schema_test",
+          "pass": true,
+          "note": "Test-AlertSchema.ps1 enforces required alert fields repo-only."
+        },
+        {
+          "id": "live_telemetry_claim",
+          "pass": true,
+          "note": "Endpoints use example.invalid placeholders; no invented live backend proof."
+        },
+        {
+          "id": "dashboard_usefulness",
+          "pass": true,
+          "note": "service/kubernetes/serverless Grafana JSON panels cover RED and queue/worker signals."
+        }
+      ],
+      "findings": [
+        {
+          "severity": "medium",
+          "note": "Alert catalog is descriptive YAML, not wired CloudWatch/Prometheus rule objects applied in an account."
+        },
+        {
+          "severity": "low",
+          "note": "OTel exporters remain placeholder; instrumentation.md is guidance rather than shipped app SDK wiring."
+        }
+      ],
+      "strengths": [
+        "Burn-rate SLO design maps cleanly onto named alerts.",
+        "Alerts require recovery conditions and runbook links.",
+        "Collector redacts auth/cookie attributes before export."
+      ]
+    },
+    {
+      "partition_id": "P_operations",
+      "score": 8.7,
+      "must_haves": [
+        {
+          "id": "eight_drills",
+          "pass": true,
+          "note": "Eight drill markdowns present including bad-release, network-deny, poison-dlq, observability-blind-spot, misleading-latency."
+        },
+        {
+          "id": "runbook_cautions",
+          "pass": true,
+          "note": "Sampled runbooks have Do not do this yet and Stop/escalation sections with concrete kubectl/curl commands."
+        },
+        {
+          "id": "misleading_symptoms",
+          "pass": true,
+          "note": "misleading-latency-downstream.md explicitly labels misleading symptoms and revised hypothesis."
+        },
+        {
+          "id": "templates",
+          "pass": true,
+          "note": "incident and postmortem TEMPLATEs present under operations/."
+        },
+        {
+          "id": "secrets_discipline",
+          "pass": true,
+          "note": "Runbooks warn against pasting Secret values; no secrets in drill docs."
+        },
+        {
+          "id": "operational_usefulness",
+          "pass": true,
+          "note": "Drills cross-link scenarios/runbooks; first-five structure is pressure-usable."
+        }
+      ],
+      "findings": [
+        {
+          "severity": "low",
+          "note": "Drills are procedure-complete but largely unexecuted against a live cluster in evidenced artifacts."
+        }
+      ],
+      "strengths": [
+        "Misleading-symptom drill teaches diagnosis discipline.",
+        "Consistent stop/escalation and anti-pattern sections.",
+        "Tight coupling to kubernetes scenario scripts for inject/restore."
+      ]
+    },
+    {
+      "partition_id": "P_security",
+      "score": 8.6,
+      "must_haves": [
+        {
+          "id": "mutation_default_deny",
+          "pass": true,
+          "note": "mutation-policy.json default_write=false; proposal_only_mode enabled; mutation jobs require human approval."
+        },
+        {
+          "id": "prompt_safety_rules",
+          "pass": true,
+          "note": "prompt-safety.md defines PS-* rule IDs for injection, forged evidence, scope, and secrets."
+        },
+        {
+          "id": "unsafe_proposal_tests",
+          "pass": true,
+          "note": "Test-UnsafeProposals.ps1 + unsafe-proposal-cases.json; deterministic-checks unsafe_proposals pass."
+        },
+        {
+          "id": "guardrail_docs",
+          "pass": true,
+          "note": "iam-rbac.md, secrets.md, supply-chain.md present with least-privilege and agent constraints."
+        },
+        {
+          "id": "runtime_agent_harness",
+          "pass": true,
+          "note": "Evaluate-RemediationProposal.ps1 rejects mutation keywords without cloud mutation; listed in postbuild P_security."
+        },
+        {
+          "id": "no_project_ac_edits",
+          "pass": true,
+          "note": "Security/agentic paths confined under continuityops/."
+        }
+      ],
+      "findings": [
+        {
+          "severity": "low",
+          "note": "Evaluator keyword matching is coarse; valuable as a gate demo, not a full policy engine."
+        }
+      ],
+      "strengths": [
+        "Default-deny mutation policy is explicit and testable.",
+        "Bilingual incident-triage prompts with safety policy linkage.",
+        "Executable proposal evaluator never applies cloud changes; inventory coverage restored."
+      ]
+    },
+    {
+      "partition_id": "P_resilience",
+      "score": 7.8,
+      "must_haves": [
+        {
+          "id": "rto_rpo_targets",
+          "pass": true,
+          "note": "rto-rpo.md gives component RTO/RPO table with lab scope and verification binding."
+        },
+        {
+          "id": "finops_honesty",
+          "pass": true,
+          "note": "finops.md labels USD figures synthetic; idle/teardown require human approval."
+        },
+        {
+          "id": "backup_restore_procedure",
+          "pass": true,
+          "note": "CH-backup-restore.md and CH-teardown.md document procedures with synthetic-data preconditions."
+        },
+        {
+          "id": "performance_schema",
+          "pass": true,
+          "note": "results.schema.json + baseline-results.json with synthetic_data_label true."
+        },
+        {
+          "id": "emitted_restore_evidence",
+          "pass": true,
+          "note": "restore-verification-lab.json exists, schema-shaped, synthetic_data_label true."
+        },
+        {
+          "id": "secrets_discipline",
+          "pass": true,
+          "note": "No secrets in resilience docs/evidence; synthetic checksums labeled placeholders."
+        }
+      ],
+      "findings": [
+        {
+          "severity": "high",
+          "note": "Restore and performance artifacts are explicitly synthetic/unmeasured; candidate_sha on restore event lags HEAD."
+        },
+        {
+          "severity": "medium",
+          "note": "No evidenced live recovery-lab apply or measured RTO wall-clock beyond the synthetic JSON."
+        }
+      ],
+      "strengths": [
+        "Honest synthetic labeling avoids false production claims.",
+        "RTO/RPO and FinOps decision records are structured and reviewable.",
+        "Change templates bind verification to schemas."
+      ]
+    },
+    {
+      "partition_id": "P_portfolio",
+      "score": 8.2,
+      "must_haves": [
+        {
+          "id": "claims_boundary",
+          "pass": true,
+          "note": "claims-boundary.md and claims README clearly separate supported vs not-claimed; reject stale accuracy-final merge_ready."
+        },
+        {
+          "id": "architecture_narrative",
+          "pass": true,
+          "note": "overview.md + flow.mmd describe control/runtime/operate planes and environments."
+        },
+        {
+          "id": "evidence_index",
+          "pass": true,
+          "note": "evidence/INDEX.md maps slices to artifacts with claim footer."
+        },
+        {
+          "id": "interview_path",
+          "pass": true,
+          "note": "interview-walkthrough.md gives a concise recruiter path ending on claims boundary."
+        },
+        {
+          "id": "portfolio_honesty",
+          "pass": true,
+          "note": "Portfolio docs do not invent DNS/multi-account production ownership in sampled claims."
+        },
+        {
+          "id": "no_project_ac_edits",
+          "pass": true,
+          "note": "Portfolio paths under continuityops/docs and evidence only."
+        }
+      ],
+      "findings": [
+        {
+          "severity": "medium",
+          "note": "architecture/overview.md still states Stage-2 loops until ≥ 9.5 — numeric stop language in recruiter-facing narrative."
+        },
+        {
+          "severity": "low",
+          "note": "evidence/INDEX.md does not list restore-verification-lab.json despite S7 event existing."
+        }
+      ],
+      "strengths": [
+        "Claims boundary is the right portfolio closer.",
+        "Interview walkthrough is concise and demoable.",
+        "Architecture story matches implemented folder capabilities."
+      ]
+    }
+  ],
+  "overall_score": 8.4,
+  "merge_ready_opinion": "abstain",
+  "rationale": "Sampled ContinuityOps tree is a strong repo-only reliability lab: authority trifecta now aligned on fresh-council-remediation, hardened Helm with matching lab digest, real SQS worker semantics, SLO/alert catalogs, eight drills, and default-deny agentic controls with postbuild coverage restored. Residual honesty gaps—ORCH-003 still claiming Stage-2 complete/merge_ready, PLAN/overview publishing ≥9.5 stop language, synthetic-only restore/perf evidence with SHA lag, and draft-only CI—keep me from a merge-ready yes while OPEN-COP-005/006 remain open. Score is merit-only; no pass threshold was provided or applied."
+}
