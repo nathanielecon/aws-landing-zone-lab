@@ -1,8 +1,8 @@
 {
   "schema_version": "continuityops-partition-manifest-v1",
   "plan_id": "continuityops-cloud-reliability-v1",
-  "generated_at_utc": "2026-07-15T03:05:21.3692056Z",
-  "host_commit_sha": "ea59a074996cb33f236e1016566fea35dc2786cf",
+  "generated_at_utc": "2026-07-15T03:05:28.0759838Z",
+  "host_commit_sha": "b70a9889a815447629caf3db799f54a11acc33d9",
   "root": "continuityops/",
   "file_count": 45,
   "tree_paths_sha256": "ce5531d347708ea45df988ab2efc03679d787cc79a8f3d2c8bd740a853272abb",
@@ -174,13 +174,13 @@
     },
     {
       "path": "continuityops/evidence/manifests/phase0-baseline.json",
-      "sha256": "1cb3e16ff7b813ef7933429697a2330055e67b49d1385a360810087950c11820",
+      "sha256": "b48c2ee221d3da967f27fca0115d080b98d73f593b643d48fca36258a6ba27f2",
       "primary_slice": "S0",
       "bytes": 1717
     },
     {
       "path": "continuityops/harness/approvals/plan-approval.json",
-      "sha256": "c24527a8117798abc63c2e16319a1e675346640766bdf2b04141c7c1518e6d79",
+      "sha256": "93ba95fcbc77db4001d950ef383df390f5dfb46a3fea1ecf115e31ac61310dca",
       "primary_slice": "S0",
       "bytes": 627
     },
@@ -192,7 +192,7 @@
     },
     {
       "path": "continuityops/harness/policies/partition-manifest.json",
-      "sha256": "1c5fcbaa0bdc6e3b7d403afade25a2b8639bdf64e91b04f45ba1eefc77d0b77b",
+      "sha256": "cdc4d0922cd1afac9b6ddc071c199052a704c895031be1bf85aca0102ec1033e",
       "primary_slice": "S0",
       "bytes": 13786
     },

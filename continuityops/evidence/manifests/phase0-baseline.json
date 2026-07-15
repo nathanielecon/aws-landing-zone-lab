@@ -1,21 +1,21 @@
 {
   "schema_version": "continuityops-evidence-event-v1",
   "event_id": "phase0-baseline",
-  "candidate_sha": "ea59a074996cb33f236e1016566fea35dc2786cf",
+  "candidate_sha": "b70a9889a815447629caf3db799f54a11acc33d9",
   "environment": "repo_only",
   "identity": "continuityops-phase0-validator",
-  "timestamp_utc": "2026-07-15T03:05:21.3332885Z",
+  "timestamp_utc": "2026-07-15T03:05:28.0532273Z",
   "command": "pwsh -File continuityops/scripts/Invoke-ContinuityOpsValidators.ps1",
   "exit_code": 0,
   "result": "pass",
-  "artifact_sha256": "3f8be82402d2fda0fa22e8f99d59d088e2e05001cf2d652868a6973f52085c04",
+  "artifact_sha256": "b508561b8e7fffd57917159bf23089a58178a070299212ab89a9f512e41004d2",
   "slice": "S0",
   "notes": "Phase 0 allowlisted validator summary",
   "validation": {
     "schema_version": "continuityops-phase0-validation-v1",
     "task_id": "COP-001",
-    "candidate_sha": "ea59a074996cb33f236e1016566fea35dc2786cf",
-    "timestamp_utc": "2026-07-15T03:05:21.3332885Z",
+    "candidate_sha": "b70a9889a815447629caf3db799f54a11acc33d9",
+    "timestamp_utc": "2026-07-15T03:05:28.0532273Z",
     "results": [
       {
         "id": "path_scope",
