@@ -4,7 +4,8 @@
 
 .DESCRIPTION
   Writes ONLY the gzb64 string to stdout. Never logs token contents.
-  Used by Invoke-CursorCloudWorker.ps1 -Role Orchestrator.
+  Primary: Publish-CodexAuthRuntimeSecret.ps1 → Cursor Runtime Secret.
+  Advanced/optional: Invoke-CursorCloudWorker.ps1 -Role Orchestrator.
 
 .PARAMETER AuthPath
   Path to auth.json (default: $HOME/.codex/auth.json or $CODEX_HOME/auth.json).

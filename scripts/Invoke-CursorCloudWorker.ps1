@@ -1,12 +1,16 @@
 <#
 .SYNOPSIS
-  Launch a Cursor Cloud worker or Orchestrator via @cursor/sdk.
+  Advanced/optional: launch a Cursor Cloud worker or Orchestrator via @cursor/sdk.
 
 .DESCRIPTION
-  Requires CURSOR_API_KEY from https://cursor.com/dashboard/integrations.
+  Primary Orchestrator path does **not** use this script — start a Cloud Agent
+  in the Cursor UI with Runtime Secret CODEX_AUTH_JSON_GZB64
+  (see Publish-CodexAuthRuntimeSecret.ps1 + ORCHESTRATOR_UI_PROMPT.md).
+
+  This SDK launcher is optional and requires CURSOR_API_KEY from
+  https://cursor.com/dashboard/integrations.
   -Role Worker (default): repo edits only; no Codex auth.
-  -Role Orchestrator: injects CODEX_AUTH_JSON_GZB64 from local ~/.codex/auth.json
-  so the Cursor Cloud agent can dispatch Codex Cloud workers on your Codex sub.
+  -Role Orchestrator: injects CODEX_AUTH_JSON_GZB64 from local ~/.codex/auth.json.
 
 .PARAMETER Prompt
   User task for the cloud agent.
@@ -27,6 +31,7 @@
   Wait for the run to finish (default: $true).
 
 .EXAMPLE
+  # Advanced only — prefer UI + Runtime Secret for day-to-day use.
   $env:CURSOR_API_KEY = 'cursor_...'
   pwsh -File scripts/Invoke-CursorCloudWorker.ps1 -Role Orchestrator `
     -Prompt 'Bootstrap auth, then Dispatch-CodexCloudWorker with: Reply codex cloud ok; make no file changes.'
