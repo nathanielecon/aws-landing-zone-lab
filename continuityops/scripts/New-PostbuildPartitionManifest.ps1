@@ -87,7 +87,7 @@ $manifest = [ordered]@{
     notes            = @(
         'Logical post-build partition by operational capability, independent of construction-stream ownership.',
         'Coverage is every git-tracked path under continuityops/ excluding .terraform/, plus self-describing postbuild policy/script artifacts.',
-        'This manifest does not score quality and does not embed numeric pass thresholds.'
+        'This manifest does not score quality.'
     )
 }
 
