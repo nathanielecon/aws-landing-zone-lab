@@ -26,6 +26,7 @@ live drill explicitly replaces placeholders and binds candidate SHA.
 | Backup/restore change | [operations/changes/CH-backup-restore.md](../../operations/changes/CH-backup-restore.md) | Procedure + verification checklist |
 | Teardown change | [operations/changes/CH-teardown.md](../../operations/changes/CH-teardown.md) | Resource inventory + evidence retention |
 | Restore verification schema | [tests/recovery/restore-verification.schema.json](../../tests/recovery/restore-verification.schema.json) | JSON schema for drill evidence |
+| Restore verification lab check | [tests/recovery/Invoke-RestoreVerificationLab.ps1](../../tests/recovery/Invoke-RestoreVerificationLab.ps1) | Lightweight schema validation for lab JSON |
 | Recovery tests README | [tests/recovery/README.md](../../tests/recovery/README.md) | Schema usage and example |
 | Load scenario | [tests/performance/load-scenario.md](../../tests/performance/load-scenario.md) | Traffic profile and success criteria |
 | Performance results schema | [tests/performance/results.schema.json](../../tests/performance/results.schema.json) | Structured load test output |
@@ -35,13 +36,16 @@ live drill explicitly replaces placeholders and binds candidate SHA.
 ## Evidence events
 
 Format follows `harness/schemas/evidence-event.schema.json` where applicable.
-Synthetic lab artifacts are labeled `synthetic_data_label: true`.
+Synthetic lab artifacts are labeled `synthetic_data_label: true` / `synthetic: true`.
+
+Candidate SHA for emitted events: `554471bc6d8e964d78824f8883c2c66732e55f2f`.
 
 | Event id | Candidate SHA | Result | Linked artifact |
 | --- | --- | --- | --- |
-| `s7-restore-drill` | `90ba9818c1911d43c31cc0c87c9111f6bb87e29c` | pass (synthetic) | [restore-verification-lab.json](../events/restore-verification-lab.json) |
-| `s7-load-baseline` | `90ba9818c1911d43c31cc0c87c9111f6bb87e29c` | illustrative | [baseline-results.json](../../tests/performance/baseline-results.json) (synthetic) |
-| `s7-teardown` | _pending_ | _pending_ | Teardown manifest JSON |
+| `s7-restore-drill` | `554471bc6d8e964d78824f8883c2c66732e55f2f` | pass (synthetic, emitted) | [restore-verification-lab.json](../events/restore-verification-lab.json) |
+| `s7-load-test` | `554471bc6d8e964d78824f8883c2c66732e55f2f` | illustrative (synthetic, emitted) | [load-test-lab.json](../events/load-test-lab.json) |
+| `s7-teardown` | `554471bc6d8e964d78824f8883c2c66732e55f2f` | pass (synthetic, emitted) | [teardown-lab.json](../events/teardown-lab.json) |
+| `s7-load-baseline` | `554471bc6d8e964d78824f8883c2c66732e55f2f` | illustrative (synthetic) | [baseline-results.json](../../tests/performance/baseline-results.json) |
 | `s7-finops-review` | _pending_ | _pending_ | Idle candidate report |
 
 ## Cross-slice dependencies
