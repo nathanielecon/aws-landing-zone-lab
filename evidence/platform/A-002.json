@@ -1,0 +1,98 @@
+{
+  "schema_version": "project-a-evidence-v1",
+  "profile_id": "project-a",
+  "mode": "repo_only",
+  "cloud_validated": false,
+  "aws_implemented": false,
+  "azure_implemented": false,
+  "execution_bundle_sha256": "CD2B6AD040743E3C5CFE1B28B2F8F4F6465A27E3B68D64DCF2FCA0492F4C2CCE",
+  "validator_implementation_sha256": "E70FD94B7E55ED0A1B314C70245B2EA5AEFDEB83F9CA076898D87EEC60C351DE",
+  "policy_sha256": "3A964F2EE6D558559DA94798CF90C43809F43D68A0694A58F5033F8310A9BECF",
+  "run_id": "20260711T001108Z-1563c047",
+  "task_id": "A-002",
+  "phase_passed": "sol",
+  "terra_attempts": 2,
+  "sol_attempts": 2,
+  "starting_commit": "9c6629dda3b73a3d7e6b382af9469c1caf1e4510",
+  "diff_sha256": "1218361DC0131C25DA13767A355BD153E7EC8158E8637ABD9EBA7212198A542B",
+  "changed_entries": [
+    {
+      "path": "platform/docs/architecture/accounts.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1597,
+      "content_sha256": "B74EB76D859521D856246D2BB35C3CDE29E28DD077AB35BDB74647008FDFC75B"
+    },
+    {
+      "path": "platform/docs/guardrails/organizations.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1270,
+      "content_sha256": "C09AD5C270FA0008B827AE0E39E5627C3B95E74A403C3792C586005B64F81B25"
+    },
+    {
+      "path": "platform/terraform/organization/.terraform.lock.hcl",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1409,
+      "content_sha256": "F7EE91C10B628C916F2AED6C1B57C94CCECEC09886E974540F2BE77FA5C0C2A3"
+    },
+    {
+      "path": "platform/terraform/organization/main.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 2097,
+      "content_sha256": "7D1CE30A126EC99B7D5D6D4DCB32190EA7F661F9A7CBB4770913025E5FEA95BF"
+    },
+    {
+      "path": "platform/terraform/organization/outputs.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 600,
+      "content_sha256": "86CA43080BCBE6BBAC47A9EF0D12D94320327C790B5BE3908FDC7F173D93F757"
+    },
+    {
+      "path": "platform/terraform/organization/README.md",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1505,
+      "content_sha256": "CCA4025E313076BEF591B38EC7031C60E92690072ED9DB919786C46076789C07"
+    },
+    {
+      "path": "platform/terraform/organization/variables.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 1432,
+      "content_sha256": "36DC41A969C34EC2CF0C035D2F96A23B0C449DAE6B099780B1EAF81DF71EC1A0"
+    },
+    {
+      "path": "platform/terraform/organization/versions.tf",
+      "status": "present",
+      "git_status": "untracked",
+      "old_mode": "000000",
+      "new_mode": "100644",
+      "length": 152,
+      "content_sha256": "58FD2578149E351B59C53AE4FAE825D0AC4C9589BAE9CE6C3B4E48A635658571"
+    }
+  ],
+  "validation_digest": "28894F35F27FCFF35A023A4863099810DD28B351D83C5004F628FDB68854D7BC",
+  "approval_required": true,
+  "approval_receipt_digest": "CFC64406649D8B0A29C397456DE4928A4065F85F97B437CE1E22FEC385BAB7DA",
+  "completed_at": "2026-07-11T00:11:44.8455528+00:00",
+  "commit_parent": "9c6629dda3b73a3d7e6b382af9469c1caf1e4510",
+  "commit_lookup": "git log -1 --format=%H -- evidence/platform/A-002.json"
+}
