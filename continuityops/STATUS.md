@@ -3,45 +3,39 @@
 | Field | Value |
 | --- | --- |
 | Plan ID | `continuityops-cloud-reliability-v1` |
-| Status | `candidate-specification` |
-| Active phase | `0` — Baseline, authority, and proof harness |
+| Status | `build-orchestration` |
+| Stage | `1` — Create project via orchestration |
+| Next stage | `2` — Multi-threaded accuracy loops until ≥ 9.5 |
+| Human gates while building | **none** |
 | Orchestrator | Grok 4.5 High Fast |
-| Baseline SHA (host repo) | `4c702f0a26b80b742c9d05e10d2b14bc9a1e6e42` |
-| ContinuityOps branch | `cursor/continuityops-phase0-f0b8` |
-| ContinuityOps tip | `495d08c` |
+| Scope | `continuityops/` only (no Project A/C edits) |
+| Branch | `cursor/continuityops-phase0-f0b8` |
 | PR | https://github.com/nathanielecon/cloud/pull/19 |
-| Execution approved | `false` (awaiting human gate H0) |
-| Cloud mutation | none |
-| Phase 0 validators | `pass` (path_scope, secret_scan, upstream_lock, partition_manifest, unauthorized_phase_rejection, project_a_untouched) |
-| Unauthorized Phase 1 probe | correctly rejected |
-| Plan SHA-256 | `7176d719bf09215d366daaba2dbed66eb76f33ceb4592decddc848434d053275` |
-| Last updated | `2026-07-15T03:05:00Z` |
+| Last updated | `2026-07-15T14:20:00Z` |
 
-## Slice board
+## Stage board
+
+| Stage | Purpose | State |
+| --- | --- | --- |
+| 1 Build orchestration | Create full ContinuityOps project | `in_progress` |
+| 2 Accuracy / no-error loops | Multi-threaded Ralphy until ≥ 9.5 | `waiting_for_stage_1` |
+
+## Slice board (Stage 1 ownership)
 
 | Slice | Capability | State |
 | --- | --- | --- |
-| S0 | Authority, harness, schemas, upstream pins | `in_progress` |
-| S1 | Cloud foundation and delivery integration | `blocked` (Phase 1 unauthorized) |
-| S2 | Kubernetes runtime | `not_started` |
-| S3 | Serverless and SaaS operating contracts | `not_started` |
-| S4 | Observability and SLOs | `not_started` |
-| S5 | Incident, Linux, and network operations | `not_started` |
-| S6 | Security, governance, and agentic workflow | `not_started` |
-| S7 | Resilience, DR, performance, and FinOps | `not_started` |
-| S8 | Integrated evidence and portfolio delivery | `not_started` |
+| S0 | Authority + orchestration harness | `in_progress` |
+| S1 | Cloud foundation + delivery | `ready_for_build` |
+| S2 | Kubernetes runtime | `ready_for_build` |
+| S3 | Serverless + SaaS | `ready_for_build` |
+| S4 | Observability + SLOs | `ready_for_build` |
+| S5 | Incident / Linux / network | `ready_for_build` |
+| S6 | Security + agentic | `ready_for_build` |
+| S7 | Resilience / DR / FinOps | `ready_for_build` |
+| S8 | Evidence + portfolio | `ready_for_build` |
 
-## Open blockers
+## Open items
 
-1. Project C repository `nathanielecon/project-c-cloud` is not reachable from
-   this agent identity (HTTP 404). Image digest and commit pin remain
-   `REQUIRED_OR_EXPLICITLY_UNAVAILABLE` until a ContinuityOps-side adapter or
-   authorized pin is provided.
-2. Human gate H0 (scope, architecture, cost cap, upstream pins) is unsigned.
-3. Phase 1 live apply remains waiting-human by design.
-
-## Recent events
-
-- `2026-07-15` — ContinuityOps tree scaffolded under `continuityops/`; Phase 0
-  inventory, partition manifest, upstream lock, and unauthorized-Phase-1
-  rejection validators introduced. No Project A paths modified.
+1. Stage 1 implementation streams not yet fully populated (folder prepared).
+2. Project C is **out of scope** — ContinuityOps owns lab artifacts locally.
+3. Accuracy loops (Stage 2) start only after Stage 1 project-complete signal.

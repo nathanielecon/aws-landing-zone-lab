@@ -1,0 +1,18 @@
+{
+  "service": "continuityops-lab",
+  "slos": [
+    {
+      "name": "availability",
+      "sli": "successful_requests / total_requests",
+      "objective": 0.99,
+      "window": "28d"
+    },
+    {
+      "name": "latency_p95",
+      "sli": "http_request_duration_p95",
+      "objective_ms": 500,
+      "window": "28d"
+    }
+  ],
+  "status": "scaffold"
+}

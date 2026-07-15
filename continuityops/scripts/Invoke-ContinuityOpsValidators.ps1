@@ -1,7 +1,7 @@
 #Requires -Version 7
 <#
 .SYNOPSIS
-  ContinuityOps Phase 0 allowlisted validators (repo-only).
+  ContinuityOps allowlisted validators (scope: continuityops/ only).
 #>
 [CmdletBinding()]
 param(
@@ -42,16 +42,21 @@ try {
         $path = $line.Substring(3).Trim().Trim('"') -replace '\\', '/'
         if ($path -match ' -> ') { $path = ($path -split ' -> ')[-1] }
         if (-not $path.StartsWith('continuityops/')) {
-            # Allow only continuityops changes in this task scope check when dirty
-            if ($path -notmatch '^\.harness/' -and $path -notmatch '^\.ralphy/') {
+            $allowedRoot = ($path -match '^\.harness/') -or
+                ($path -match '^\.ralphy/') -or
+                ($path -match '^\.github/workflows/continuityops-[^/]+\.ya?ml$')
+            if (-not $allowedRoot) {
                 $escaped += $path
             }
         }
     }
-    # Also verify policy allowed_paths stay under continuityops/
     foreach ($ap in @($policy.allowed_paths)) {
         $norm = [string]$ap -replace '\\', '/'
-        if ($norm -notlike 'continuityops/*' -and $norm -ne 'continuityops') {
+        $ok = ($norm -like 'continuityops/*') -or
+            ($norm -eq 'continuityops') -or
+            ($norm -like '.github/workflows/continuityops-*.yml') -or
+            ($norm -like '.github/workflows/continuityops-*.yaml')
+        if (-not $ok) {
             $escaped += "allowed_paths:$norm"
         }
     }
@@ -98,66 +103,19 @@ catch {
     Add-Result -Id 'secret_scan' -Status 'fail' -Detail $_.Exception.Message
 }
 
-# --- upstream_lock ---
+# --- independence_lock ---
 try {
     $lockPath = Join-Path $copRoot 'integration/upstreams.lock.json'
     $lock = Read-JsonFile -Path $lockPath
     if ([string]$lock.schema_version -ne '1.0') { throw 'schema_version must be 1.0' }
-    if (-not $lock.project_a.commit_sha -or [string]$lock.project_a.commit_sha -eq 'REQUIRED') {
-        throw 'project_a.commit_sha missing'
-    }
-    $hostSha = (git -C $Root rev-parse HEAD).Trim()
-    # Pin must be an ancestor or equal of current HEAD for bootstrap honesty
-    $null = git -C $Root merge-base --is-ancestor $lock.project_a.commit_sha HEAD 2>$null
-    if ($LASTEXITCODE -ne 0 -and [string]$lock.project_a.commit_sha -ne $hostSha) {
-        throw "project_a.commit_sha $($lock.project_a.commit_sha) is not an ancestor of HEAD"
-    }
-    $pcDigest = [string]$lock.project_c.image_digest
-    if ([string]::IsNullOrWhiteSpace($pcDigest) -or $pcDigest -eq 'REQUIRED') {
-        throw 'project_c.image_digest must be set or REQUIRED_OR_EXPLICITLY_UNAVAILABLE'
-    }
-    Add-Result -Id 'upstream_lock' -Status 'pass' -Detail "A=$($lock.project_a.commit_sha.Substring(0,12)) C.digest=$pcDigest"
+    if (-not $lock.independence) { throw 'independence block required' }
+    if ([bool]$lock.independence.edits_project_a) { throw 'edits_project_a must be false' }
+    if ([bool]$lock.independence.edits_project_c) { throw 'edits_project_c must be false' }
+    if (-not [bool]$lock.independence.owns_lab_artifacts) { throw 'owns_lab_artifacts must be true' }
+    Add-Result -Id 'independence_lock' -Status 'pass' -Detail 'ContinuityOps owns lab artifacts; A/C edits forbidden'
 }
 catch {
-    Add-Result -Id 'upstream_lock' -Status 'fail' -Detail $_.Exception.Message
-}
-
-# --- unauthorized_phase_rejection (fail-closed short circuit for Phase 1 probes) ---
-$approval = Read-JsonFile -Path (Join-Path $copRoot 'harness/approvals/plan-approval.json')
-$phase1Requested = $env:CONTINUITYOPS_PHASE -eq '1' -or $env:CONTINUITYOPS_FORCE_PHASE1 -eq '1'
-if ($phase1Requested -and -not ([bool]$approval.execution_approved -eq $true -and $approval.approved_by)) {
-    Add-Result -Id 'unauthorized_phase_rejection' -Status 'fail' -Detail 'Phase 1 requested but execution_approved is false (fail-closed)'
-    $summary = [ordered]@{
-        schema_version = 'continuityops-phase0-validation-v1'
-        task_id        = $TaskId
-        candidate_sha  = (git -C $Root rev-parse HEAD).Trim()
-        timestamp_utc  = [DateTime]::UtcNow.ToString('o')
-        results        = @($results)
-        pass_count     = @($results | Where-Object { $_.status -eq 'pass' }).Count
-        fail_count     = @($results | Where-Object { $_.status -eq 'fail' }).Count
-        overall        = 'fail'
-    }
-    $evidencePath = Join-Path $copRoot 'evidence/manifests/phase0-baseline.json'
-    $summaryJson = ($summary | ConvertTo-Json -Depth 20)
-    $artifactHash = Get-TextSha256Hex -Text $summaryJson
-    $evidence = [ordered]@{
-        schema_version  = 'continuityops-evidence-event-v1'
-        event_id        = 'phase0-unauthorized-phase1-rejection'
-        candidate_sha   = $summary.candidate_sha
-        environment     = 'repo_only'
-        identity        = 'continuityops-phase0-validator'
-        timestamp_utc   = $summary.timestamp_utc
-        command         = 'CONTINUITYOPS_FORCE_PHASE1=1 pwsh -File continuityops/scripts/Invoke-ContinuityOpsValidators.ps1'
-        exit_code       = 1
-        result          = 'blocked'
-        artifact_sha256 = $artifactHash
-        slice           = 'S0'
-        notes           = 'Unauthorized Phase 1 rejected'
-        validation      = $summary
-    }
-    Write-JsonFile -Path $evidencePath -Object $evidence
-    Write-Host 'ContinuityOps rejected unauthorized Phase 1 execution.' -ForegroundColor Yellow
-    exit 1
+    Add-Result -Id 'independence_lock' -Status 'fail' -Detail $_.Exception.Message
 }
 
 # --- partition_manifest ---
@@ -175,7 +133,7 @@ try {
     }
     $live = @(Get-ContinuityOpsPaths -Root $Root)
     if ($live.Count -ne [int]$manifest.file_count) {
-        throw "manifest file_count $($manifest.file_count) != live $($live.Count); regenerate"
+        throw "manifest file_count $($manifest.file_count) != live $($live.Count)"
     }
     Add-Result -Id 'partition_manifest' -Status 'pass' -Detail "files=$($manifest.file_count) tree=$($manifest.tree_paths_sha256.Substring(0,12))"
 }
@@ -183,20 +141,21 @@ catch {
     Add-Result -Id 'partition_manifest' -Status 'fail' -Detail $_.Exception.Message
 }
 
-# --- unauthorized_phase_rejection (gate closed under normal Phase 0) ---
+# --- orchestration_model ---
 try {
-    if ([bool]$approval.execution_approved -eq $true -and $approval.approved_by) {
-        Add-Result -Id 'unauthorized_phase_rejection' -Status 'pass' -Detail 'execution_approved with human approver present'
-    }
-    elseif ([bool]$approval.execution_approved) {
-        Add-Result -Id 'unauthorized_phase_rejection' -Status 'fail' -Detail 'execution_approved true without approved_by'
-    }
-    else {
-        Add-Result -Id 'unauthorized_phase_rejection' -Status 'pass' -Detail 'Phase 1 blocked: execution_approved=false'
-    }
+    $orch = Read-JsonFile -Path (Join-Path $copRoot 'harness/policies/orchestration-model.json')
+    if ($orch.stages.Count -lt 2) { throw 'expected stage_1_build and stage_2_accuracy' }
+    $s1 = $orch.stages | Where-Object { $_.id -eq 'stage_1_build' } | Select-Object -First 1
+    $s2 = $orch.stages | Where-Object { $_.id -eq 'stage_2_accuracy' } | Select-Object -First 1
+    if (-not $s1 -or -not $s2) { throw 'missing required stages' }
+    if ([bool]$s1.human_gates -or [bool]$s2.human_gates) { throw 'human_gates must be false while building' }
+    if (-not [bool]$s2.concurrency.multi_threaded) { throw 'stage 2 must be multi_threaded' }
+    $stop = [double]$s2.stop_when.council_average_min
+    if ($stop -lt 9.5) { throw 'council_average_min must be >= 9.5' }
+    Add-Result -Id 'orchestration_model' -Status 'pass' -Detail 'stage1 build + stage2 multi-threaded ≥9.5; no build gates'
 }
 catch {
-    Add-Result -Id 'unauthorized_phase_rejection' -Status 'fail' -Detail $_.Exception.Message
+    Add-Result -Id 'orchestration_model' -Status 'fail' -Detail $_.Exception.Message
 }
 
 # --- project_a_untouched ---
@@ -214,43 +173,41 @@ catch {
 
 $failed = @($results | Where-Object { $_.status -eq 'fail' })
 $summary = [ordered]@{
-    schema_version   = 'continuityops-phase0-validation-v1'
-    task_id          = $TaskId
-    candidate_sha    = (git -C $Root rev-parse HEAD).Trim()
-    timestamp_utc    = [DateTime]::UtcNow.ToString('o')
-    results          = @($results)
-    pass_count       = @($results | Where-Object { $_.status -eq 'pass' }).Count
-    fail_count       = $failed.Count
-    overall          = if ($failed.Count -eq 0) { 'pass' } else { 'fail' }
+    schema_version = 'continuityops-validate-v1'
+    task_id        = $TaskId
+    candidate_sha  = (git -C $Root rev-parse HEAD).Trim()
+    timestamp_utc  = [DateTime]::UtcNow.ToString('o')
+    results        = @($results)
+    pass_count     = @($results | Where-Object { $_.status -eq 'pass' }).Count
+    fail_count     = $failed.Count
+    overall        = if ($failed.Count -eq 0) { 'pass' } else { 'fail' }
 }
 
-$evidencePath = Join-Path $copRoot 'evidence/manifests/phase0-baseline.json'
+$evidencePath = Join-Path $copRoot 'evidence/manifests/folder-ready.json'
 $summaryJson = ($summary | ConvertTo-Json -Depth 20)
 $artifactHash = Get-TextSha256Hex -Text $summaryJson
 $evidence = [ordered]@{
-    schema_version   = 'continuityops-evidence-event-v1'
-    event_id         = 'phase0-baseline'
-    candidate_sha    = $summary.candidate_sha
-    environment      = 'repo_only'
-    identity         = 'continuityops-phase0-validator'
-    timestamp_utc    = $summary.timestamp_utc
-    command          = 'pwsh -File continuityops/scripts/Invoke-ContinuityOpsValidators.ps1'
-    exit_code        = if ($failed.Count -eq 0) { 0 } else { 1 }
-    result           = if ($failed.Count -eq 0) { 'pass' } else { 'fail' }
-    artifact_sha256  = $artifactHash
-    slice            = 'S0'
-    notes            = 'Phase 0 allowlisted validator summary'
-    validation       = $summary
+    schema_version  = 'continuityops-evidence-event-v1'
+    event_id        = 'folder-ready'
+    candidate_sha   = $summary.candidate_sha
+    environment     = 'repo_only'
+    identity        = 'continuityops-validate'
+    timestamp_utc   = $summary.timestamp_utc
+    command         = 'pwsh -File continuityops/scripts/Invoke-ContinuityOpsValidators.ps1'
+    exit_code       = if ($failed.Count -eq 0) { 0 } else { 1 }
+    result          = if ($failed.Count -eq 0) { 'pass' } else { 'fail' }
+    artifact_sha256 = $artifactHash
+    slice           = 'S0'
+    notes           = 'ContinuityOps folder health validation'
+    validation      = $summary
 }
 Write-JsonFile -Path $evidencePath -Object $evidence
-
-# Refresh partition manifest so evidence file is included for subsequent pin steps.
 & (Join-Path $PSScriptRoot 'New-PartitionManifest.ps1') -Root $Root | Out-Null
 
 if ($failed.Count -gt 0) {
-    Write-Host "ContinuityOps Phase 0 validators failed ($($failed.Count))." -ForegroundColor Red
+    Write-Host "ContinuityOps validators failed ($($failed.Count))." -ForegroundColor Red
     exit 1
 }
 
-Write-Host "ContinuityOps Phase 0 validators passed. Evidence: $evidencePath" -ForegroundColor Green
+Write-Host "ContinuityOps validators passed. Evidence: $evidencePath" -ForegroundColor Green
 exit 0

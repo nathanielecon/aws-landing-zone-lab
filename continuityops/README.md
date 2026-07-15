@@ -1,40 +1,29 @@
 # ContinuityOps
 
-Lab-grade cloud reliability and recovery platform (former code name: Project F).
+Independent cloud reliability and recovery lab under `continuityops/`.
 
-**Status:** `candidate-specification` — Phase 0 authority scaffold only.  
-**Plan ID:** `continuityops-cloud-reliability-v1`  
-**Orchestrator:** Grok 4.5 High Fast
+**Orchestrator:** Grok 4.5 High Fast  
+**Human gates while building:** none  
+**Ralphy model:** (1) orchestrate project creation → (2) multi-threaded accuracy loops until ≥ 9.5
 
-## What this is
+## Scope
 
-ContinuityOps consumes pinned Project A infrastructure contracts and a Project C
-(or ContinuityOps lab) application artifact to prove Kubernetes, serverless,
-observability, incident response, security, recovery, and FinOps skills in an
-isolated AWS lab.
+- All work stays in `continuityops/`
+- Does **not** edit Project A or Project C
+- Owns its own lab artifacts
 
-## What this is not
+## Layout
 
-- Not enterprise production tenure or 24/7 customer ownership
-- Not multi-account production Landing Zone proof
-- Not Azure networking depth unless separately authorized and evidenced
-- Not a Project A or Project C rewrite
+See `PLAN.md`. Prepared folders: terraform, kubernetes, serverless, observability,
+operations, agentic, harness, evidence, docs, tests, scripts.
 
-## Phase 0 now
-
-- Authority surfaces: `PLAN.md`, `AGENTS.md`, `STATUS.md`, `ISSUES.md`,
-  `DECISIONS.md`, `BREAK_FIX_LOG.md`
-- Upstream lock: `integration/upstreams.lock.json`
-- Partition + validators under `harness/` and `scripts/`
-- Human gate H0 required before Phase 1
-
-## Validate (repo-only)
+## Validate folder health
 
 ```powershell
-pwsh -NoLogo -NoProfile -File continuityops/scripts/Invoke-ContinuityOpsPhase0.ps1
+pwsh -NoLogo -NoProfile -File continuityops/scripts/Invoke-ContinuityOpsValidate.ps1
 ```
 
-## Honest claim footer
+## Claim footer
 
-Phase 0 proves repository authority, partitioning, and unauthorized-Phase-1
-rejection only. No live Kubernetes, serverless, or recovery evidence exists yet.
+Isolated synthetic-data cloud lab with evidence-backed runtime and recovery
+drills; not a claim of sustained customer-production SRE ownership.

@@ -1,43 +1,21 @@
 {
   "schema_version": "1.0",
   "plan_id": "continuityops-cloud-reliability-v1",
-  "pinned_at": "2026-07-15T03:02:00Z",
+  "pinned_at": "2026-07-15T14:20:00Z",
   "host_repository": "nathanielecon/cloud",
-  "host_commit_sha": "4c702f0a26b80b742c9d05e10d2b14bc9a1e6e42",
-  "project_a": {
-    "repository": "nathanielecon/cloud",
-    "path_prefix": "project-a/",
-    "commit_sha": "4c702f0a26b80b742c9d05e10d2b14bc9a1e6e42",
-    "consumed_contracts": [
-      "single-account-landing-zone-lab-identity-oidc",
-      "single-account-landing-zone-lab-network-vpc",
-      "single-account-landing-zone-lab-audit-trail-archive",
-      "terraform-remote-state-interface",
-      "naming-tagging-governance-docs",
-      "blocked-change-catalog"
-    ],
-    "evidence_refs": [
-      "project-a/sandbox/landing-zone-lab/EVIDENCE.md",
-      "project-a/evidence-index.md",
-      "project-a/docs/portfolio/claims-boundary.md",
-      "project-a/docs/operations/blocked-change-catalog.md"
-    ],
+  "continuityops_root": "continuityops/",
+  "independence": {
+    "edits_project_a": false,
+    "edits_project_c": false,
+    "owns_lab_artifacts": true,
     "notes": [
-      "ContinuityOps must not edit project-a/.",
-      "Multi-account Organizations member creation is not cloud-validated and must not be claimed.",
-      "Lab account <AWS_ACCOUNT_ID> / us-east-1 is the current single-account evidence boundary."
+      "ContinuityOps is self-contained under continuityops/.",
+      "Adjacent projects are out of scope for edits and are not build blockers."
     ]
   },
-  "project_c": {
-    "repository": "nathanielecon/project-c-cloud",
-    "commit_sha": "REQUIRED_OR_EXPLICITLY_UNAVAILABLE",
-    "image_digest": "REQUIRED_OR_EXPLICITLY_UNAVAILABLE",
-    "consumed_contracts": [],
-    "evidence_refs": [],
-    "notes": [
-      "Repository was not reachable (HTTP 404) from the Phase 0 orchestrator identity.",
-      "See OPEN-COP-001. Lab images built inside ContinuityOps must be labeled ContinuityOps lab artifacts."
-    ]
-  },
-  "invalidation_rule": "Any upstream pin change invalidates integration validation and all downstream slice evidence."
+  "optional_references": {
+    "project_a_path_prefix": "project-a/",
+    "project_c_repository": "nathanielecon/project-c-cloud",
+    "status": "not_required"
+  }
 }

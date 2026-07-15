@@ -1,0 +1,13 @@
+{
+  "name": "continuityops-event-worker",
+  "runtime": "nodejs20.x",
+  "trigger": "sqs",
+  "features": [
+    "idempotency",
+    "bounded_retries",
+    "visibility_timeout",
+    "dlq",
+    "replay"
+  ],
+  "status": "scaffold"
+}

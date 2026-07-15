@@ -1,8 +1,10 @@
 {
   "schema_version": "continuityops-app-contract-v1",
-  "status": "stub",
-  "source": "continuityops-lab-or-project-c",
-  "image_digest": "REQUIRED_OR_EXPLICITLY_UNAVAILABLE",
+  "status": "scaffold",
+  "source": "continuityops-lab",
+  "image_repository": "ghcr.io/continuityops/lab-app",
+  "image_digest": "sha256:PENDING_BUILD",
+  "version": "0.0.0-scaffold",
   "endpoints": {
     "liveness": "/healthz",
     "readiness": "/readyz",
@@ -10,7 +12,7 @@
     "business_smoke": "/api/smoke"
   },
   "notes": [
-    "Do not invent digests.",
-    "Label lab-built images as ContinuityOps lab artifacts."
+    "ContinuityOps-owned lab artifact — not a Project C production release.",
+    "Digest filled when Stage 1 builds the image."
   ]
 }
