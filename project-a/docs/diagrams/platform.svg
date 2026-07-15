@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560">
   <rect width="960" height="560" fill="#f5f1e8"/>
   <rect x="40" y="40" width="880" height="480" rx="24" fill="#fffaf0" stroke="#3b3a36" stroke-width="2"/>
-  <text x="70" y="85" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#1f2933">Project A Platform Contract</text>
+  <text x="70" y="85" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#1f2933">AWS Landing Zone Architecture (legacy SVG)</text>
   <text x="70" y="115" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#52606d">Foundation (A-001…A-007): repo-only multi-account design — not multi-account cloud-validated</text>
   <text x="70" y="138" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#52606d">Separate single-account lab (sandbox/landing-zone-lab): APPLIED identity+network+audit only — not Orgs members</text>
 

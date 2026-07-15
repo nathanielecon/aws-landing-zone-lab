@@ -1,37 +1,46 @@
-# Project A
+# AWS Landing Zone Lab (`project-a/`)
 
-Plain-English map of what this folder is:
+Terraform modules, CI-gated apply, and written evidence for an AWS Landing Zone design plus a single-account live lab.
+
+## Architecture
 
 <p align="center">
-  <img src="docs/diagrams/project-a-landing-zone-infographic.png" alt="Project A AWS Landing Zone Lab flow" width="100%">
+  <img src="docs/diagrams/aws-landing-zone-architecture.png" alt="AWS Landing Zone Architecture" width="100%">
 </p>
 
 <p align="center">
-  <a href="docs/diagrams/project-a-landing-zone.drawio">draw.io source</a>
+  <a href="docs/diagrams/aws-landing-zone-architecture.drawio">draw.io</a>
   ·
-  <a href="docs/diagrams/platform-eli5.svg">ELI5 SVG</a>
+  <a href="docs/diagrams/aws-landing-zone-architecture.svg">SVG</a>
   ·
-  <a href="docs/diagrams/platform.svg">platform contract SVG</a>
+  <a href="docs/diagrams/platform.svg">legacy platform SVG</a>
   ·
   <a href="docs/diagrams/network.svg">network SVG</a>
 </p>
 
-Project A is mostly a repo-only reference contract for a multi-account AWS
-platform: inspectable Terraform, docs, harness gates, and evidence for
-A-001…A-007 that is **not** cloud-validated. Azure Government stays
-translation-only.
+## How the live lab works
 
-Separately, a **single-account Landing Zone lab** under
+<p align="center">
+  <img src="docs/diagrams/aws-landing-zone-how-it-works.png" alt="AWS Landing Zone Lab — How It Works" width="100%">
+</p>
+
+<p align="center">
+  <a href="docs/diagrams/aws-landing-zone-how-it-works.drawio">draw.io</a>
+  ·
+  <a href="docs/diagrams/aws-landing-zone-how-it-works.svg">SVG</a>
+</p>
+
+Most of this folder is a **repo-only** multi-account platform contract: inspectable Terraform, docs, harness gates, and A-001…A-007 evidence that is **not** cloud-validated. Azure Government stays translation-only.
+
+Separately, the **single-account Landing Zone lab** under
 [`sandbox/landing-zone-lab`](sandbox/landing-zone-lab/EVIDENCE.md) was
 **cloud-validated** in account `283077380808` / `us-east-1` via GitHub OIDC →
 Terraform CI (role `project-a-lzlab-gha`): identity + private network + audit
-(CloudTrail/KMS Log Archive). Organizations member accounts are **not**
-created; the Orgs/OU/SCP module stays a design interface
+(CloudTrail/KMS Log Archive). Organizations member accounts were **not**
+created; Orgs/OU/SCP stays a design interface
 ([`ORGS_INTERFACE.md`](sandbox/landing-zone-lab/ORGS_INTERFACE.md)).
 
-An earlier audit-only sandbox
-([`sandbox/aws-proof`](sandbox/aws-proof/EVIDENCE.md)) is historical evidence
-of the first live audit-module apply.
+Earlier audit-only sandbox: [`sandbox/aws-proof`](sandbox/aws-proof/EVIDENCE.md).
 
 ### Honest resume bullet
 
@@ -40,14 +49,7 @@ of the first live audit-module apply.
 > network, and audit (CloudTrail/KMS Log Archive) in `us-east-1` with
 > Terraform, evidence, and CI-gated delivery.
 
-Start with the [architecture overview](docs/architecture/overview.md), then
-the [backend](docs/decisions/backend.md) and [secrets](docs/decisions/secrets.md)
-decisions. Cite lab evidence for live resources; other examples stay
-placeholders for human review.
-
-### Delivery path (zero orphans)
-
-README → architecture → evidence → review:
+### Delivery path
 
 1. [Architecture overview](docs/architecture/overview.md)
 2. [Evidence index](evidence-index.md)
@@ -55,9 +57,7 @@ README → architecture → evidence → review:
 4. [Pushback and handoff](docs/review/pushback-and-handoff.md)
 5. [Azure Government readiness](docs/azure-government/readiness.md) (translation-only)
 
-The [Graphify report](graphify-out/GRAPH_REPORT.md) is a navigation aid only.
-It is not a substitute for Terraform, policy, security, or human validation,
-and it does not prove cloud behavior.
+[Graphify report](graphify-out/GRAPH_REPORT.md) is navigation only — not cloud proof.
 
 Fresh-clone Windows one-command proof matching CI (pin fail-closed):
 
@@ -68,7 +68,6 @@ pwsh -NoLogo -NoProfile -File ../scripts/Invoke-HarnessReleaseValidation.ps1
 
 Details: [HARNESS.md](HARNESS.md).
 
-This repository proves a documented junior-to-mid level infrastructure design
-exercise plus an honest single-account live lab; it does **not** prove
-production readiness, senior ownership, enterprise operations, or
-multi-account cloud validation.
+This folder proves junior-to-mid infrastructure design work plus an honest
+single-account live lab. It does **not** prove production readiness, senior
+ownership, enterprise operations, or multi-account cloud validation.

@@ -1,0 +1,61 @@
+<mxfile host="app.diagrams.net" modified="2026-07-15T00:20:00.000Z" agent="Cursor" version="24.7.8" type="device">
+  <diagram id="aws-lz-architecture" name="AWS Landing Zone Architecture">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="AWS Landing Zone Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=28;fontStyle=1;fontColor=#1F2933;" vertex="1" parent="1">
+          <mxGeometry x="60" y="30" width="900" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="subtitle" value="Multi-account design (on paper) + what the live lab actually applied" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontColor=#52606D;" vertex="1" parent="1">
+          <mxGeometry x="60" y="70" width="900" height="28" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="b1" value="&lt;b&gt;1. Bootstrap&lt;/b&gt;&lt;br&gt;State backend &amp; secrets" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9E2EC;strokeColor=#243B53;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="60" y="140" width="220" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="b2" value="&lt;b&gt;2. Organization&lt;/b&gt;&lt;br&gt;Accounts, OUs, SCPs (design)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8DCBF;strokeColor=#7C5E10;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="360" y="140" width="240" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="b3" value="&lt;b&gt;3. Identity&lt;/b&gt;&lt;br&gt;IAM policies &amp; OIDC trust" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F2E6;strokeColor=#18794E;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="680" y="140" width="220" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="a12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#243B53;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="b1" target="b2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#243B53;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="b2" target="b3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="b4" value="&lt;b&gt;4. Network&lt;/b&gt;&lt;br&gt;Private VPC boundary" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9D6BF;strokeColor=#8D2B0B;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="60" y="320" width="220" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="b5" value="&lt;b&gt;5. Audit&lt;/b&gt;&lt;br&gt;CloudTrail, Config, KMS logs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8E8FF;strokeColor=#1D4D8F;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="360" y="320" width="240" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="b6" value="&lt;b&gt;6. Validation &amp; Evidence&lt;/b&gt;&lt;br&gt;Tests, runbooks, claims" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFE3FF;strokeColor=#653CAD;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="680" y="320" width="220" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="a14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#243B53;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="b1" target="b4">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#243B53;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="b4" target="b5">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a56" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#243B53;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="b5" target="b6">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#243B53;strokeWidth=2;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="b3" target="b6">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="caption" value="Orgs member accounts = design only. Live lab applied Identity + Network + Audit in one account." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1F2933;strokeColor=#1F2933;fontColor=#FFFFFF;fontSize=13;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="480" width="840" height="44" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

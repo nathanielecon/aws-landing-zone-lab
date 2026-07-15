@@ -89,8 +89,9 @@ Zero-orphan reviewer path: README → architecture → evidence → review.
 - Pushback and handoff: [`docs/review/pushback-and-handoff.md`](../review/pushback-and-handoff.md)
 - Azure Government readiness (translation-only):
   [`docs/azure-government/readiness.md`](../azure-government/readiness.md)
-- Platform diagram: [`docs/diagrams/platform.svg`](../diagrams/platform.svg)
-- Network diagram: [`docs/diagrams/network.svg`](../diagrams/network.svg)
+- Architecture (image2 + draw.io): [`docs/diagrams/aws-landing-zone-architecture.png`](../diagrams/aws-landing-zone-architecture.png) · [`.drawio`](../diagrams/aws-landing-zone-architecture.drawio) · [`.svg`](../diagrams/aws-landing-zone-architecture.svg)
+- How the live lab works: [`docs/diagrams/aws-landing-zone-how-it-works.png`](../diagrams/aws-landing-zone-how-it-works.png) · [`.drawio`](../diagrams/aws-landing-zone-how-it-works.drawio)
+- Legacy platform / network SVGs: [`platform.svg`](../diagrams/platform.svg) · [`network.svg`](../diagrams/network.svg)
 - Graphify navigation aid (not a validation substitute):
   [`graphify-out/GRAPH_REPORT.md`](../../graphify-out/GRAPH_REPORT.md)
 - Fresh-clone CI-parity gate:
