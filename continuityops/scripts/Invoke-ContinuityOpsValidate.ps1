@@ -35,12 +35,15 @@ $approval.partition_manifest_sha256 = (Get-FileSha256Hex -Path $manifestPath)
 $approval.validator_implementation_sha256 = (Get-FileSha256Hex -Path $validatorPath)
 $approval.human_gates_while_building = $false
 $approval.execution_approved = $true
-$approval.status = 'build-orchestration'
+# Preserve remediation/complete status; never force a stale build label.
+if (-not $approval.status -or [string]$approval.status -eq 'candidate-specification') {
+    $approval.status = 'build-orchestration'
+}
 if (-not $approval.approved_by) {
     $approval.approved_by = 'operator-directive-no-gates-while-building'
 }
 Write-JsonFile -Path $approvalPath -Object $approval
 
-Write-Host ("Pinned plan_sha256={0}" -f $approval.plan_sha256) -ForegroundColor Yellow
+Write-Host ("Pinned plan_sha256={0} status={1}" -f $approval.plan_sha256, $approval.status) -ForegroundColor Yellow
 Write-Host 'Build gates: disabled. Stage 1 orchestration may proceed.' -ForegroundColor Green
 exit 0

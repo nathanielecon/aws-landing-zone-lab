@@ -1,13 +1,13 @@
 {
   "schema_version": "continuityops-plan-approval-v1",
   "plan_id": "continuityops-cloud-reliability-v1",
-  "status": "build-orchestration",
+  "status": "fresh-council-remediation",
   "human_gates_while_building": false,
   "execution_approved": true,
   "approved_by": "operator-directive-no-gates-while-building",
   "approved_at": "2026-07-15",
   "plan_sha256": "7aae4dc91091b0c1731ce7d1cef93ed1e81a30e4a5efe10bb09e720ebc3ce54f",
-  "partition_manifest_sha256": "cea7b13f28fbc36e7a1888eef14fb9ba31e8b4d3646d842424a0d60c4e947eda",
+  "partition_manifest_sha256": "41499339f12bc75a0bd93d4795cb5bde63adfca16eaee65fc3ee55ffe93e4af2",
   "validator_implementation_sha256": "3f5829ecea060294057b479d25a852888171eb137a9381a2f622a1e9a887e50c",
   "ralphy_model": {
     "stage_1": "build_orchestration_create_project",

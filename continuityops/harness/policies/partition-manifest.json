@@ -1,14 +1,14 @@
 {
   "schema_version": "continuityops-partition-manifest-v1",
   "plan_id": "continuityops-cloud-reliability-v1",
-  "generated_at_utc": "2026-07-15T14:54:50.1333348Z",
-  "host_commit_sha": "1f7102b3a95b94af4f59b77f55923a11d2b70a88",
+  "generated_at_utc": "2026-07-15T14:57:52.3768519Z",
+  "host_commit_sha": "bc894f5cb0ecf67024db362f95ad3b4540828e1a",
   "root": "continuityops/",
-  "file_count": 204,
-  "tree_paths_sha256": "219defea08cac0ffea86efe6f19fb5549e484dbf76206083fc04dbb7b019b2aa",
+  "file_count": 209,
+  "tree_paths_sha256": "4c49db4061c303672a3f8613171aa6ed71c0b1f9e6869a692f62f335d9cd8ec1",
   "slices": {
     "S0": {
-      "path_count": 56,
+      "path_count": 61,
       "paths": [
         "continuityops/AGENTS.md",
         "continuityops/app/build/continuityops-lab-app.tar",
@@ -25,11 +25,16 @@
         "continuityops/evidence/manifests/fresh-council-round1/fresh-judge-J1.json",
         "continuityops/evidence/manifests/fresh-council-round1/fresh-judge-J2.json",
         "continuityops/evidence/manifests/fresh-council-round1/fresh-judge-J3.json",
+        "continuityops/evidence/manifests/fresh-council-round2/fresh-council-aggregate.json",
+        "continuityops/evidence/manifests/fresh-council-round2/fresh-judge-J1.json",
+        "continuityops/evidence/manifests/fresh-council-round2/fresh-judge-J2.json",
+        "continuityops/evidence/manifests/fresh-council-round2/fresh-judge-J3.json",
         "continuityops/evidence/manifests/fresh-judge-J1.json",
         "continuityops/evidence/manifests/fresh-judge-J2.json",
         "continuityops/evidence/manifests/fresh-judge-J3.json",
         "continuityops/evidence/manifests/phase0-baseline.json",
         "continuityops/harness/approvals/plan-approval.json",
+        "continuityops/harness/handoffs/ORCH-001.zh-CN.historical.md",
         "continuityops/harness/handoffs/ORCH-001.zh-CN.md",
         "continuityops/harness/handoffs/ORCH-002.zh-CN.md",
         "continuityops/harness/handoffs/ORCH-003.zh-CN.md",
@@ -67,7 +72,7 @@
         "continuityops/tests/observability/Test-AlertSchema.ps1",
         "continuityops/tests/phase0/README.md"
       ],
-      "paths_sha256": "a9733ecf29cb5cf7c2af38dae65a416f33a70605a218a1208e15b628eb04f477"
+      "paths_sha256": "d9518fd68b167f7fb672b49281ff34dafb1e19513549bcde7d0742f03037f0a4"
     },
     "S1": {
       "path_count": 39,
@@ -490,9 +495,9 @@
     },
     {
       "path": "continuityops/evidence/manifests/accuracy-final.json",
-      "sha256": "c15ef89b083d8c22459d478e74cb9ba82cbfd7979f248b765ab3c6f00e014611",
+      "sha256": "ebf48643d1603bf235571b0b99ae9c603129b7751e8aaefa0653367c63b108e0",
       "primary_slice": "S0",
-      "bytes": 835
+      "bytes": 950
     },
     {
       "path": "continuityops/evidence/manifests/accuracy-round-1.json",
@@ -508,15 +513,15 @@
     },
     {
       "path": "continuityops/evidence/manifests/folder-ready.json",
-      "sha256": "e9b5d32f54d50adb45e5ddb252ba6cbe43237ba5c80b8b3939b5027298cc8929",
+      "sha256": "2a4ac55dae115833444f2e2948b30c819bd44cf02a2628044c579effaf26d031",
       "primary_slice": "S0",
       "bytes": 1708
     },
     {
       "path": "continuityops/evidence/manifests/fresh-council-aggregate.json",
-      "sha256": "1feb0d077e664f47c8b737841af4388a8215c0aa329197a6d4d1d5339ae86f92",
+      "sha256": "47cc6e470aab68e01f07f268f804a17ab0b914de4fb07075658b0cfb804823e4",
       "primary_slice": "S0",
-      "bytes": 2409
+      "bytes": 2387
     },
     {
       "path": "continuityops/evidence/manifests/fresh-council-round1/fresh-judge-J1.json",
@@ -537,22 +542,46 @@
       "bytes": 16309
     },
     {
-      "path": "continuityops/evidence/manifests/fresh-judge-J1.json",
+      "path": "continuityops/evidence/manifests/fresh-council-round2/fresh-council-aggregate.json",
+      "sha256": "1feb0d077e664f47c8b737841af4388a8215c0aa329197a6d4d1d5339ae86f92",
+      "primary_slice": "S0",
+      "bytes": 2409
+    },
+    {
+      "path": "continuityops/evidence/manifests/fresh-council-round2/fresh-judge-J1.json",
       "sha256": "1d79d3a1aa8b3ad79032b42bbacf6949596fe9fdb8c8b2f037e253f6fd64d051",
       "primary_slice": "S0",
       "bytes": 15918
     },
     {
-      "path": "continuityops/evidence/manifests/fresh-judge-J2.json",
+      "path": "continuityops/evidence/manifests/fresh-council-round2/fresh-judge-J2.json",
       "sha256": "a5f6bc6193e1e6c938ed722558d1092c961b08b7026d2e6269a4c95c435ec106",
       "primary_slice": "S0",
       "bytes": 18311
     },
     {
-      "path": "continuityops/evidence/manifests/fresh-judge-J3.json",
+      "path": "continuityops/evidence/manifests/fresh-council-round2/fresh-judge-J3.json",
       "sha256": "8e77b2b521614c633c945bc7a7e13c439aedef6eb4dab4f3de4d351759af18f2",
       "primary_slice": "S0",
       "bytes": 16777
+    },
+    {
+      "path": "continuityops/evidence/manifests/fresh-judge-J1.json",
+      "sha256": "7c84809c59a59091c3e89adb65a5961def46d6ddc544600fee07a584b876c8cf",
+      "primary_slice": "S0",
+      "bytes": 15654
+    },
+    {
+      "path": "continuityops/evidence/manifests/fresh-judge-J2.json",
+      "sha256": "31968372ba9d659a7bbcf7d99ebd71f18cde130a38cf24946d54e8e121b35787",
+      "primary_slice": "S0",
+      "bytes": 18201
+    },
+    {
+      "path": "continuityops/evidence/manifests/fresh-judge-J3.json",
+      "sha256": "4a25c75f4e9b449c1ca5e6755d3b48b1f89a485e57a2cb0b01ecb6f1e141f85c",
+      "primary_slice": "S0",
+      "bytes": 16516
     },
     {
       "path": "continuityops/evidence/manifests/phase0-baseline.json",
@@ -574,15 +603,21 @@
     },
     {
       "path": "continuityops/harness/approvals/plan-approval.json",
-      "sha256": "995763d2522fd0bc8d0bab41a660e16ee4727b94bda9c646b158d2e79854d60f",
+      "sha256": "f13ea5fa696fcda6d03092990154d7670204d068a98bdbc97c9bf68abe10c219",
       "primary_slice": "S0",
-      "bytes": 872
+      "bytes": 1019
     },
     {
-      "path": "continuityops/harness/handoffs/ORCH-001.zh-CN.md",
+      "path": "continuityops/harness/handoffs/ORCH-001.zh-CN.historical.md",
       "sha256": "9eda2bca7b685f2fe0b6b7ca1a88407fbd54c7bd67d3f994bb5d300af49a4478",
       "primary_slice": "S0",
       "bytes": 1155
+    },
+    {
+      "path": "continuityops/harness/handoffs/ORCH-001.zh-CN.md",
+      "sha256": "0ee2d0233079fc11f8f1ac93c27487e1a5a7b8ace18ea3f32bf9f8f4c701ff27",
+      "primary_slice": "S0",
+      "bytes": 189
     },
     {
       "path": "continuityops/harness/handoffs/ORCH-002.zh-CN.md",
@@ -610,13 +645,13 @@
     },
     {
       "path": "continuityops/harness/policies/partition-manifest.json",
-      "sha256": "3fddb4c8a7cccf236ac501385b625c8b0580cb2c802ad82a3224d8759150d896",
+      "sha256": "9b37cc66de5cbb43673a57c08bc9cdd35e2a92b819e959f685222766628e4696",
       "primary_slice": "S0",
-      "bytes": 58310
+      "bytes": 59913
     },
     {
       "path": "continuityops/harness/policies/postbuild-partition-manifest.json",
-      "sha256": "9952b3d78463a57b43f6d17e4287df5708cf2d554fd222adc9839411c818740c",
+      "sha256": "bb04f04f203959544d1f6bb22ca5f5b15e42e09009c671873876706858f82d76",
       "primary_slice": "S0",
       "bytes": 15692
     },
@@ -1114,9 +1149,9 @@
     },
     {
       "path": "continuityops/scripts/Invoke-ContinuityOpsValidate.ps1",
-      "sha256": "0cea158712cd4277bbd2dd27a92a080001e30cc96ebc863faf606c0e38ac2b21",
+      "sha256": "20f8dbef09de55b48d704ea853935a672a17d188ac773c4b371e50dee90527fd",
       "primary_slice": "S0",
-      "bytes": 1802
+      "bytes": 1998
     },
     {
       "path": "continuityops/scripts/Invoke-ContinuityOpsValidators.ps1",
@@ -1216,9 +1251,9 @@
     },
     {
       "path": "continuityops/STATUS.md",
-      "sha256": "f4489f0fac43d25c10eeb39d6c6bc44bee6a2e1774646ddc69648a5da5839f7d",
+      "sha256": "d3e1ff05a7a4740a7bf6422bc2e55a9119a05820b1eae4b0e9734eea406dd844",
       "primary_slice": "S0",
-      "bytes": 883
+      "bytes": 716
     },
     {
       "path": "continuityops/terraform/bootstrap/main.tf",
