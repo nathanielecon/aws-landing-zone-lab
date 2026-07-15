@@ -6,10 +6,15 @@ One-time root in this account. Creates:
 - IAM role `project-a-lzlab-gha` for GitHub Actions plan/apply
 
 Default trust pins GitHub **`repository_id=1296742987`** (this repo) and
-**`repository_owner_id=177059064`** (`nathanielecon`), with `sub` patterns
-`repo:nathanielecon/*:(main|pull_request|cursor/*|environment:lab)` so a GitHub
-rename does not brick OIDC. Live AWS resource name prefixes such as
-`project-a-lzlab-*` are unchanged.
+**`repository_owner_id=177059064`** (`nathanielecon`).
+
+**Important (2026-07-15+):** GitHub renames adopt **immutable subject claims**:
+`repo:OWNER@OWNER_ID/REPO@REPO_ID:...`. Name-only `repo:OWNER/REPO:...` subs no
+longer match. Trust uses:
+
+`repo:nathanielecon@177059064/*@1296742987:(main|pull_request|cursor/*|environment:lab)`
+
+Live AWS resource name prefixes such as `project-a-lzlab-*` are unchanged.
 
 ## Apply once (local break-glass)
 
@@ -29,16 +34,12 @@ If Actions fails at **Configure AWS credentials (OIDC)** after a rename,
 self-heal from GHA cannot run (needs the role). Fix in **AWS CloudShell**
 (Linux paths — do not use `C:\...`), account `<AWS_ACCOUNT_ID>`.
 
-The repo is private — do **not** rely on `curl` from raw.githubusercontent.com.
-Paste the contents of [`fix-oidc-trust-cloudshell.sh`](./fix-oidc-trust-cloudshell.sh)
-into CloudShell (or clone this branch and run it):
-
 ```bash
 bash platform/sandbox/landing-zone-lab/ci-bootstrap/fix-oidc-trust-cloudshell.sh
 # or: terraform apply in this directory (same trust shape)
 ```
 
-Inline paste (CloudShell):
+Inline paste (CloudShell) — immutable `sub` format:
 
 ```bash
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
@@ -59,10 +60,10 @@ cat > /tmp/trust.json <<EOF
       },
       "StringLike": {
         "token.actions.githubusercontent.com:sub": [
-          "repo:nathanielecon/*:ref:refs/heads/main",
-          "repo:nathanielecon/*:pull_request",
-          "repo:nathanielecon/*:ref:refs/heads/cursor/*",
-          "repo:nathanielecon/*:environment:lab"
+          "repo:nathanielecon@177059064/*@1296742987:ref:refs/heads/main",
+          "repo:nathanielecon@177059064/*@1296742987:pull_request",
+          "repo:nathanielecon@177059064/*@1296742987:ref:refs/heads/cursor/*",
+          "repo:nathanielecon@177059064/*@1296742987:environment:lab"
         ]
       }
     }
@@ -80,3 +81,4 @@ step is green. Cloud Agents do **not** hold apply credentials for this step.
 
 The lab root **reads** this OIDC provider via a data source; it does not create
 a second one.
+<!-- oidc-verify 2026-07-15T21:37:32Z -->

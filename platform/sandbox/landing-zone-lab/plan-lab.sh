@@ -12,7 +12,7 @@ case "$CALLER_ARN" in
   *[:/]root) echo "Refusing to plan as account root: $CALLER_ARN" >&2; exit 2 ;;
 esac
 
-# Retarget GHA OIDC trust (rename-resilient repository_id lock; idempotent).
+# Retarget GHA OIDC trust (immutable sub after 2026-07-15 renames; idempotent).
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 OIDC_ARN="arn:aws:iam::${ACCOUNT_ID}:oidc-provider/token.actions.githubusercontent.com"
 ROLE_NAME="project-a-lzlab-gha"
@@ -34,10 +34,10 @@ cat > "$TRUST_FILE" <<EOF
         },
         "StringLike": {
           "token.actions.githubusercontent.com:sub": [
-            "repo:nathanielecon/*:ref:refs/heads/main",
-            "repo:nathanielecon/*:pull_request",
-            "repo:nathanielecon/*:ref:refs/heads/cursor/*",
-            "repo:nathanielecon/*:environment:lab"
+            "repo:nathanielecon@177059064/*@1296742987:ref:refs/heads/main",
+            "repo:nathanielecon@177059064/*@1296742987:pull_request",
+            "repo:nathanielecon@177059064/*@1296742987:ref:refs/heads/cursor/*",
+            "repo:nathanielecon@177059064/*@1296742987:environment:lab"
           ]
         }
       }
