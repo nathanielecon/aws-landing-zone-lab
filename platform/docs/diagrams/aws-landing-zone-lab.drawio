@@ -80,7 +80,7 @@
         <mxCell id="subb" value="&lt;b&gt;Private subnet B&lt;/b&gt;&lt;br&gt;No default route" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F2E6;strokeColor=#18794E;" vertex="1" parent="vpc">
           <mxGeometry x="290" y="50" width="240" height="80" as="geometry"/>
         </mxCell>
-        <mxCell id="sg" value="Default-deny SG. Private VPC baseline — no public edge in this lab; multi-account egress patterns are out of scope." style="text;html=1;align=left;fontSize=11;fontColor=#1D4D8F;" vertex="1" parent="vpc">
+        <mxCell id="sg" value="Default-deny SG (ingress/egress empty). No internet, NAT, peering, TGW, or cross-account route." style="text;html=1;align=left;fontSize=11;fontColor=#1D4D8F;" vertex="1" parent="vpc">
           <mxGeometry x="20" y="150" width="510" height="50" as="geometry"/>
         </mxCell>
         <mxCell id="sec" value="&lt;b&gt;Security Tooling&lt;/b&gt;&lt;br&gt;trail / Config path" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8E8FF;strokeColor=#1D4D8F;" vertex="1" parent="1">
