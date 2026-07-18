@@ -1,5 +1,19 @@
 # Break/Fix Log
 
+## 2026-07-18 (CursorCloudAgent injection absent — stop; no keys)
+
+- Break: After asking for in-pod AWS, seat still `NoCredentials` (exit 253).
+  `CURSOR_AWS_ASSUME_IAM_ROLE_ARN=…/CursorCloudAgent` set;
+  `AWS_PROFILE` / `AWS_CONFIG_FILE` / `AWS_SHARED_CREDENTIALS_FILE` /
+  `AWS_WEB_IDENTITY_TOKEN_FILE` all unset; `~/.aws/config` absent.
+- Diagnosis: **injection did not land** — Cursor never wrote the
+  `cursor-cloud-agent` profile / credential_process. Not yet an External ID
+  mismatch on assume (no assume attempted).
+- Fix (agent): report the table, **stop**, do not invent keys. Fix (operator,
+  Teams only): Bedrock IAM Role panel → External ID → trust
+  `roleAssumer` + `sts:ExternalId` → **new** agent. Else escalate to GHA OIDC
+  / local `aws login`. Wired into `AGENTS.md` § injection check.
+
 ## 2026-07-18 (BF-2026-010 — NoCredentials vs prior “fix”; control plane)
 
 - Break (claim): Cloud seat preflight fails `NoCredentials` while
