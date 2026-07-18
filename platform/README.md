@@ -27,6 +27,14 @@ aws-landing-zone-lab/          ← portfolio face (root README + Image2 figure)
   <img src="docs/diagrams/aws-landing-zone-lab.png" alt="AWS Landing Zone Lab consolidated figure" width="100%">
 </p>
 
+<p align="center"><sub>
+GitHub® and the Invertocat logo are trademarks of GitHub, Inc.
+Terraform and the Terraform logo are trademarks of HashiCorp.
+AWS and AWS service names / architecture icons are trademarks of Amazon.com, Inc. or its affiliates.
+Marks identify tools used in this lab and do not imply affiliation or endorsement.
+See <a href="docs/brand/README.md">docs/brand/</a>.
+</sub></p>
+
 ## Honest resume bullet
 
 > Designed a multi-account AWS Landing Zone (Orgs/OU/SCP interfaces) and
