@@ -43,6 +43,7 @@
         <mxCell id="e56" style="endArrow=block;html=1;strokeColor=#243B53;strokeWidth=2;" edge="1" parent="1" source="a5" target="a6"><mxGeometry relative="1" as="geometry"/></mxCell>
 
         <!-- B -->
+        <!-- Canonical polished export: aws-landing-zone-lab.png (official marks in platform/docs/brand/). -->
         <mxCell id="b-label" value="B. How the live lab works" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="40" y="340" width="400" height="24" as="geometry"/>
         </mxCell>
@@ -79,7 +80,7 @@
         <mxCell id="subb" value="&lt;b&gt;Private subnet B&lt;/b&gt;&lt;br&gt;No default route" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F2E6;strokeColor=#18794E;" vertex="1" parent="vpc">
           <mxGeometry x="290" y="50" width="240" height="80" as="geometry"/>
         </mxCell>
-        <mxCell id="sg" value="Default-deny SG (ingress/egress empty). No internet, NAT, peering, TGW, or cross-account route." style="text;html=1;align=left;fontSize=11;fontColor=#8B0000;" vertex="1" parent="vpc">
+        <mxCell id="sg" value="Default-deny SG. Private VPC baseline — no public edge in this lab; multi-account egress patterns are out of scope." style="text;html=1;align=left;fontSize=11;fontColor=#1D4D8F;" vertex="1" parent="vpc">
           <mxGeometry x="20" y="150" width="510" height="50" as="geometry"/>
         </mxCell>
         <mxCell id="sec" value="&lt;b&gt;Security Tooling&lt;/b&gt;&lt;br&gt;trail / Config path" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8E8FF;strokeColor=#1D4D8F;" vertex="1" parent="1">
