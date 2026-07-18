@@ -19,7 +19,7 @@ Formerly the `cloud` monorepo; the Ralphy smoke harness now lives in
 |-------|----------------|
 | **A. Architecture** | Bootstrap → Organization (design) → Identity → Network → Audit → Validation. Live lab applied identity + network + audit in one account. |
 | **B. How it works** | Push → OIDC → Terraform (one account) → live resources → evidence. |
-| **C. Private network** | Private subnets, default-deny SG, Flow Logs → Log Archive. Private VPC baseline (no public edge in this lab). |
+| **C. Private network** | Private subnets, default-deny SG, Flow Logs → Log Archive. No internet, NAT, peering, Transit Gateway, or cross-account route. |
 
 <p align="center"><sub>
 GitHub® and the Invertocat logo are trademarks of GitHub, Inc.
