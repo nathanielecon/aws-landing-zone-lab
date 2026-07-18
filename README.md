@@ -22,14 +22,14 @@ Formerly the `cloud` monorepo; the Ralphy smoke harness now lives in
 | **C. Private network** | Private subnets, default-deny SG, Flow Logs → Log Archive. No internet, NAT, peering, Transit Gateway, or cross-account route. |
 
 <p align="center"><sub>
+Diagrams use generic icons and plain product-name text only (no third-party logo artwork).
 GitHub® and the Invertocat logo are trademarks of GitHub, Inc.
 Terraform and the Terraform logo are trademarks of HashiCorp.
-AWS and AWS service names / architecture icons are trademarks of Amazon.com, Inc. or its affiliates
-(<a href="https://aws.amazon.com/architecture/icons/">AWS Architecture Icons</a>).
-Marks identify tools used in this lab and do not imply affiliation or endorsement.
+AWS and AWS service names are trademarks of Amazon.com, Inc. or its affiliates.
+Names identify tools used in this lab and do not imply affiliation or endorsement.
 </sub></p>
 
-Official mark files: [`platform/docs/brand/`](platform/docs/brand/).
+Reference mark files (not used in these figures): [`platform/docs/brand/`](platform/docs/brand/).
 
 ## Repo map
 

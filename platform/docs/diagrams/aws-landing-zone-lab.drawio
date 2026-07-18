@@ -43,7 +43,7 @@
         <mxCell id="e56" style="endArrow=block;html=1;strokeColor=#243B53;strokeWidth=2;" edge="1" parent="1" source="a5" target="a6"><mxGeometry relative="1" as="geometry"/></mxCell>
 
         <!-- B -->
-        <!-- Canonical polished export: aws-landing-zone-lab.png (official marks in platform/docs/brand/). -->
+        <!-- Canonical polished export: aws-landing-zone-lab.png (generic icons + plain word marks; no third-party logos). -->
         <mxCell id="b-label" value="B. How the live lab works" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="40" y="340" width="400" height="24" as="geometry"/>
         </mxCell>
