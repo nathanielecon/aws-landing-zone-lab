@@ -37,3 +37,25 @@ NoCredentials is expected on Pro+ without team External ID. CursorCloudAgent has
 Prior fix (2026-07-14/15): GitHub OIDC → project-a-lzlab-gha via landing-zone-lab.yml, or local aws login bottleneck.
 Do not block on CURSOR_AWS_ASSUME_IAM_ROLE_ARN. Escalate live AWS to GHA or local; continue repo-only here.
 ```
+
+## CursorCloudAgent injection check — stop if empty
+
+If `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` is set but STS fails, run this once, then **stop**
+(do not invent keys):
+
+| Check | Expected if injection landed | Fail = stop |
+| --- | --- | --- |
+| `aws sts get-caller-identity` | `assumed-role/CursorCloudAgent/...` | `NoCredentials` |
+| `AWS_PROFILE` | `cursor-cloud-agent` | unset |
+| `AWS_CONFIG_FILE` | Cursor-managed path | unset |
+| `~/.aws/config` | present with credential_process | absent |
+
+**Fail means injection never started** (profile not written) — not a wrong
+role policy yet. Operator path for in-pod AWS (Teams/Enterprise only):
+
+1. Settings → Advanced / **Bedrock IAM Role** → placeholder ARN → Validate & Save → copy External ID  
+2. Trust on `CursorCloudAgent`: principal `arn:aws:iam::289469326074:role/roleAssumer` + `sts:ExternalId`  
+3. **New** Cloud Agent (old pods do not heal)  
+4. Re-run the table; expect `assumed-role/CursorCloudAgent`
+
+Until then: GHA OIDC / local `aws login`; Cloud seat stays repo-only.
