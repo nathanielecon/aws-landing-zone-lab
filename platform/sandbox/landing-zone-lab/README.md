@@ -21,12 +21,19 @@ Organizations apply.
 2. Merge Terraform changes via PR — workflow **plans** on PR.
 3. Push/merge to `main` (or `workflow_dispatch` → apply) — workflow **applies**.
 4. Cursor/Cloud Agents edit the repo only; they do **not** need AWS apply creds
-   (`NoCredentials` in Cloud Agent pods is expected).
+   (`NoCredentials` in Cloud Agent pods is expected — BF-2026-010; see
+   `AGENTS.md`).
 
 Workflow: [`.github/workflows/landing-zone-lab.yml`](../../../.github/workflows/landing-zone-lab.yml).
 
+```bash
+gh workflow run landing-zone-lab.yml --repo nathanielecon/aws-landing-zone-lab -f action=plan
+gh workflow run landing-zone-lab.yml --repo nathanielecon/aws-landing-zone-lab -f action=apply
+```
+
 Do **not** recreate `github-oidc/` / `GitHubActionsLZLab` — use `ci-bootstrap/`
-+ `project-a-lzlab-gha`. Do **not** chase `CURSOR_AWS_ASSUME_IAM_ROLE_ARN`.
++ `project-a-lzlab-gha`. Do **not** chase `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` /
+`CursorCloudAgent` injection (never assumed; lab fixed via GHA OIDC).
 
 ## Roots
 
