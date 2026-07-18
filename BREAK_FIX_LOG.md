@@ -1,5 +1,27 @@
 # Break/Fix Log
 
+## 2026-07-18 (BF-2026-010 — NoCredentials vs prior “fix”; control plane)
+
+- Break (claim): Cloud seat preflight fails `NoCredentials` while
+  `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` points at `283077380808` /
+  `CursorCloudAgent` — “role ARN present but nothing to assume.”
+- Clarification: the Jul 14/15 lab “fix” did **not** finish Cursor STS.
+  | Path | Evidence |
+  | --- | --- |
+  | GitHub OIDC → `project-a-lzlab-gha` | Role used 2026-07-15; green `landing-zone-lab.yml`; live evidence under `assumed-role/project-a-lzlab-gha` |
+  | `CursorCloudAgent` injection | Role created Jul 14; **never assumed** (`RoleLastUsed` empty; CloudTrail only Create/Attach) |
+- Why Cloud seat still fails: secret may be set and role may trust
+  `arn:aws:iam::289469326074:role/roleAssumer`, but Cursor injects
+  `AWS_PROFILE=cursor-cloud-agent` only with a **team External ID**
+  (Settings → Advanced / Bedrock IAM Role; Teams/Enterprise). Pro+ has no
+  panel → no External ID → NoCredentials even with the secret. Do not use
+  Team ID as External ID; do not put long-lived keys in Cloud secrets.
+- Fix / doctrine (wire into `AGENTS.md`): change control plane — Cloud Agent
+  stays repo-only; escalate live AWS to (1) GHA OIDC
+  `landing-zone-lab.yml` → `project-a-lzlab-gha`, or (2) local `aws login`
+  bottleneck. Optional in-pod AWS only after Teams External ID + trust
+  `sts:ExternalId` + **new** agent pod.
+
 ## 2026-07-15 (GHA OIDC after rename cloud → aws-landing-zone-lab) — FIXED
 
 - Break: Renamed `nathanielecon/cloud` → `nathanielecon/aws-landing-zone-lab`.
