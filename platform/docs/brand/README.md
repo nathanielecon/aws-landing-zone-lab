@@ -1,7 +1,9 @@
 # Brand assets (third-party marks)
 
-Official marks used in portfolio diagrams. Do not modify colors, proportions, or artwork.
-Do not AI-redraw these marks — composite unmodified files via `platform/docs/diagrams/composite_official_marks.py`.
+Official mark files are kept for reference / future licensed use. Portfolio PNGs currently
+use **generic icons + plain word marks** only (no third-party logo artwork), via
+`platform/docs/diagrams/composite_official_marks.py` on pristine Image2 sources.
+Do not AI-redraw vendor logos.
 
 | File | Source | Notes |
 |------|--------|--------|
