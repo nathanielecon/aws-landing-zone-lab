@@ -139,15 +139,15 @@ def generic_flow_icon(canvas: Image.Image, cx: int, cy: int, scale: int = 22) ->
 
 def composite_lab(src: Path, dst: Path) -> None:
     canvas = load_rgba(src)
-    plate = (254, 254, 255, 255)
-    plate_tf = (251, 251, 251, 255)
+    plate = (252, 252, 252, 255)
+    plate_tf = (252, 252, 252, 255)
 
     # B1 Invertocat → git branch (caption already says GitHub)
     cover_rect(canvas, (40, 850, 190, 985), plate)
     generic_git_icon(canvas, 115, 915, 24)
 
-    # B3 Terraform mark/cube → generic blocks (caption already says Terraform)
-    cover_rect(canvas, (435, 695, 545, 815), plate_tf)
+    # B3 Terraform mark/cube + jagged remnant → generic blocks only
+    cover_rect(canvas, (430, 690, 550, 850), plate_tf)
     generic_blocks_icon(canvas, 490, 755, 20)
 
     # C AWS service redraws → generic icons (labels already in diagram)
