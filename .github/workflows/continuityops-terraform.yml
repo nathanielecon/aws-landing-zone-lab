@@ -1,0 +1,113 @@
+# ContinuityOps live AWS: GitHub OIDC → continuityops-gha (not CursorCloudAgent).
+name: ContinuityOps Terraform
+
+on:
+  pull_request:
+    paths:
+      - 'continuityops/terraform/**'
+      - '.github/workflows/continuityops-terraform.yml'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: plan or apply
+        required: true
+        default: plan
+        type: choice
+        options:
+          - plan
+          - apply
+      environment:
+        description: Terraform environment root
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - recovery-lab
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: continuityops-tf-${{ github.ref }}-${{ github.event.inputs.environment || 'staging' }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  TF_IN_AUTOMATION: '1'
+  TF_INPUT: 'false'
+  TF_VAR_aws_account_id: '<AWS_ACCOUNT_ID>'
+
+jobs:
+  plan:
+    name: Terraform plan
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.action == 'plan')
+    runs-on: ubuntu-latest
+    env:
+      COPS_ENV: ${{ github.event.inputs.environment || 'staging' }}
+    defaults:
+      run:
+        working-directory: continuityops/terraform/environments/${{ env.COPS_ENV }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.0
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN_CONTINUITYOPS || 'arn:aws:iam::<AWS_ACCOUNT_ID>:role/continuityops-gha' }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-cops-plan-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d276a5e4e92cbfd89fb1e4a5217d # v3.1.2
+        with:
+          terraform_version: 1.5.7
+
+      - name: Caller identity
+        run: aws sts get-caller-identity
+
+      - name: Terraform init
+        run: terraform init -backend=false -input=false
+
+      - name: Terraform validate
+        run: terraform validate -no-color
+
+      - name: Terraform plan
+        run: terraform plan -input=false -no-color
+
+  apply:
+    name: Terraform apply
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'apply'
+    runs-on: ubuntu-latest
+    environment: continuityops
+    env:
+      COPS_ENV: ${{ github.event.inputs.environment || 'staging' }}
+    defaults:
+      run:
+        working-directory: continuityops/terraform/environments/${{ env.COPS_ENV }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.0
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN_CONTINUITYOPS || 'arn:aws:iam::<AWS_ACCOUNT_ID>:role/continuityops-gha' }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-cops-apply-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d276a5e4e92cbfd89fb1e4a5217d # v3.1.2
+        with:
+          terraform_version: 1.5.7
+
+      - name: Caller identity
+        run: aws sts get-caller-identity
+
+      - name: Terraform init
+        run: terraform init -backend=false -input=false
+
+      - name: Terraform apply
+        run: terraform apply -input=false -auto-approve -no-color

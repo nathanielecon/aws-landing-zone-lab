@@ -18,6 +18,36 @@ Scope: **`continuityops/` only** — never edit `project-a/` or Project C.
 - Runtime state and verbose logs remain untracked and sanitized.
 - Do not clean, reset, stash, or overwrite unexplained user changes.
 
+## Live AWS control plane (not CursorCloudAgent)
+
+- Cloud seats often have `NoCredentials` (BF-2026-010 / Pro+). **Expected.**
+- Do **not** block on `CURSOR_AWS_ASSUME_IAM_ROLE_ARN` / CursorCloudAgent.
+- Live ContinuityOps AWS = **GitHub OIDC → `continuityops-gha`** via
+  `.github/workflows/continuityops-terraform.yml`.
+- Do **not** use `landing-zone-lab.yml` / `project-a-lzlab-gha` for ContinuityOps.
+- One-time role bootstrap (operator CloudShell):
+  `continuityops/terraform/ci-bootstrap/bootstrap-oidc-cloudshell.sh`
+- Escalate plan/apply:
+
+  ```bash
+  gh workflow run continuityops-terraform.yml \
+    --repo nathanielecon/aws-landing-zone-lab \
+    -f action=plan -f environment=staging
+  # after plan OK:
+  gh workflow run continuityops-terraform.yml \
+    --repo nathanielecon/aws-landing-zone-lab \
+    -f action=apply -f environment=staging
+  ```
+
+- Cloud Agent stays **repo-only**; prepare Terraform / open PRs; CI assumes the role.
+
+### Paste for stuck ContinuityOps agents
+
+```text
+ContinuityOps live AWS is GHA OIDC → continuityops-gha (continuityops-terraform.yml), not this Cloud VM and not CursorCloudAgent / project-a-lzlab-gha.
+NoCredentials here is expected. Dispatch continuityops-terraform.yml plan/apply (after CloudShell bootstrap-oidc-cloudshell.sh once). Continue repo-only in this seat.
+```
+
 ## Ralphy operating model (ContinuityOps-specific)
 
 Two stages only:

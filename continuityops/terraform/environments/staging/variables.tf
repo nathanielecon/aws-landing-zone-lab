@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "aws_account_id" {
   description = "Target AWS account ID. Replace before apply; never commit real production IDs."
   type        = string
-  default     = "REPLACE_ME"
+  default     = "<AWS_ACCOUNT_ID>"  # ContinuityOps lab account
 }
 
 variable "vpc_cidr" {

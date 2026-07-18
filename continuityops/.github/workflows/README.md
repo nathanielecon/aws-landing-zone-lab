@@ -1,22 +1,19 @@
 # Workflow sources for ContinuityOps
 
-GitHub Actions only loads workflows from the repository root
-`.github/workflows/`. ContinuityOps workflows are therefore published at:
+GitHub Actions loads workflows from the repository root `.github/workflows/`.
 
-| Purpose | Repo-root path |
-|---------|----------------|
-| Validate (offline contract) | `.github/workflows/continuityops-validate.yml` |
-| Plan/apply (draft — promote when OIDC is wired) | See `continuityops-plan.draft.yml` in this directory |
+| Purpose | Path |
+|---------|------|
+| Validate (offline) | `.github/workflows/continuityops-validate.yml` |
+| Plan/apply (OIDC live) | `.github/workflows/continuityops-terraform.yml` |
+| Draft retained | `continuityops/.github/workflows/continuityops-plan.draft.yml` |
 
-## Draft vs published
+## Live AWS
 
-Files in `continuityops/.github/workflows/` are **drafts** owned by the
-ContinuityOps partition. Copy or adapt them to the repo root when OIDC roles
-and backend placeholders are approved. Do not store secrets or account IDs in
-drafts — use `REPLACE_ME` variables and GitHub environment configuration.
+1. Operator CloudShell once:
+   `bash continuityops/terraform/ci-bootstrap/bootstrap-oidc-cloudshell.sh`
+2. Create GitHub Environment `continuityops` (for apply) if missing.
+3. Dispatch **ContinuityOps Terraform** → plan, then apply.
 
-## Stage 1 delivery
-
-- `continuityops-plan.draft.yml` — plan-only Terraform for staging/recovery-lab
-  using GitHub OIDC `role-to-assume` placeholders.
-- Apply jobs remain blocked until human approval and backend bootstrap complete.
+Role: `arn:aws:iam::<AWS_ACCOUNT_ID>:role/continuityops-gha`  
+Optional repo variable: `AWS_ROLE_ARN_CONTINUITYOPS`.

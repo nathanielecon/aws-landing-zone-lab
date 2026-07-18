@@ -1,3 +1,18 @@
+# ContinuityOps Break/Fix Log
+
+## 2026-07-18 (ContinuityOps live AWS via GHA OIDC — wired)
+
+- Break: ContinuityOps Cloud agents treated live AWS as impossible / blocked on
+  CursorCloudAgent `NoCredentials` (BF-2026-010). Draft workflow still had
+  `REPLACE_ME` / `continuityops-gha-plan`; no promoted CI apply path.
+- Fix: Add `continuityops/terraform/ci-bootstrap/` + CloudShell
+  `bootstrap-oidc-cloudshell.sh` creating `continuityops-gha` with immutable
+  GitHub OIDC trust. Promote `.github/workflows/continuityops-terraform.yml`
+  (plan/apply). AGENTS.md doctrine: escalate via GHA, not Cursor STS; do not
+  reuse `project-a-lzlab-gha`.
+- Operator still required once: run CloudShell bootstrap script, create GitHub
+  Environment `continuityops`, dispatch plan then apply.
+
 # ContinuityOps break/fix log
 
 | Timestamp (UTC) | Context | Break | Fix | Evidence |

@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "aws_account_id" {
   description = "Target AWS account ID for recovery drills. Replace before apply."
   type        = string
-  default     = "REPLACE_ME"
+  default     = "<AWS_ACCOUNT_ID>"  # ContinuityOps lab account
 }
 
 variable "vpc_cidr" {

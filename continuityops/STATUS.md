@@ -19,3 +19,9 @@
 - Judges must not receive pass-bar numbers.
 - `orchestrator-gate.private.json` is orchestrator-only after blind scoring.
 - `Invoke-ContinuityOpsAccuracyCouncil.ps1` (old) leaked bars — superseded by deterministic checks + fresh Grok judges.
+
+## Live AWS (2026-07-18)
+
+- Control plane: GitHub OIDC → `continuityops-gha` (`.github/workflows/continuityops-terraform.yml`)
+- Bootstrap: `continuityops/terraform/ci-bootstrap/bootstrap-oidc-cloudshell.sh` (operator once)
+- Cloud Agent: repo-only; `NoCredentials` expected (not CursorCloudAgent)

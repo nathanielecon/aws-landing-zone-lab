@@ -2,6 +2,15 @@
 
 Append-only.
 
+## OPEN-COP-007 — ContinuityOps GHA OIDC bootstrap (operator CloudShell)
+
+- **Opened:** 2026-07-18
+- **Summary:** Repo wiring for `continuityops-gha` + `continuityops-terraform.yml`
+  is in place. Live role must be created via CloudShell
+  `continuityops/terraform/ci-bootstrap/bootstrap-oidc-cloudshell.sh` before
+  OIDC plan goes green. GitHub Environment `continuityops` required for apply.
+- **Status:** open
+
 ## CLOSED-COP-001 — Project C pin not required
 
 - **Opened:** 2026-07-15
