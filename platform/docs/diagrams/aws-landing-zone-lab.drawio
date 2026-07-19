@@ -71,17 +71,17 @@
         <mxCell id="c-label" value="C. Private network detail" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="40" y="500" width="400" height="24" as="geometry"/>
         </mxCell>
-        <mxCell id="vpc" value="Network account · VPC (RFC 1918)" style="swimlane;rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FB;strokeColor=#205493;startSize=30;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="vpc" value="VPC 10.0.0.0/16 · private by design" style="swimlane;rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FB;strokeColor=#205493;startSize=30;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="40" y="540" width="560" height="220" as="geometry"/>
         </mxCell>
-        <mxCell id="suba" value="&lt;b&gt;Private subnet A&lt;/b&gt;&lt;br&gt;No public IPs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F2E6;strokeColor=#18794E;" vertex="1" parent="vpc">
-          <mxGeometry x="20" y="50" width="240" height="80" as="geometry"/>
+        <mxCell id="suba" value="&lt;b&gt;Private subnet A&lt;/b&gt;&lt;br&gt;Workloads use private addresses only (10.0.1.0/24)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F2E6;strokeColor=#18794E;" vertex="1" parent="vpc">
+          <mxGeometry x="20" y="50" width="250" height="80" as="geometry"/>
         </mxCell>
-        <mxCell id="subb" value="&lt;b&gt;Private subnet B&lt;/b&gt;&lt;br&gt;No default route" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F2E6;strokeColor=#18794E;" vertex="1" parent="vpc">
-          <mxGeometry x="290" y="50" width="240" height="80" as="geometry"/>
+        <mxCell id="subb" value="&lt;b&gt;Private subnet B&lt;/b&gt;&lt;br&gt;Routing stays inside the VPC boundary (10.0.2.0/24)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F2E6;strokeColor=#18794E;" vertex="1" parent="vpc">
+          <mxGeometry x="290" y="50" width="250" height="80" as="geometry"/>
         </mxCell>
-        <mxCell id="sg" value="Default-deny SG (ingress/egress empty). No internet, NAT, peering, TGW, or cross-account route." style="text;html=1;align=left;fontSize=11;fontColor=#1D4D8F;" vertex="1" parent="vpc">
-          <mxGeometry x="20" y="150" width="510" height="50" as="geometry"/>
+        <mxCell id="sg" value="Default-deny SG. Private-only by design: workloads stay inside the VPC with a closed network edge — traffic remains private unless you add an explicit path. Closed edge: no IGW, NAT, peering, TGW, or cross-account route added." style="text;html=1;align=left;fontSize=11;fontColor=#1D4D8F;" vertex="1" parent="vpc">
+          <mxGeometry x="20" y="140" width="520" height="60" as="geometry"/>
         </mxCell>
         <mxCell id="sec" value="&lt;b&gt;Security Tooling&lt;/b&gt;&lt;br&gt;trail / Config path" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8E8FF;strokeColor=#1D4D8F;" vertex="1" parent="1">
           <mxGeometry x="660" y="540" width="160" height="70" as="geometry"/>
