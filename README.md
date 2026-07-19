@@ -19,7 +19,7 @@ Formerly the `cloud` monorepo; the Ralphy smoke harness now lives in
 |-------|----------------|
 | **A. Architecture** | Bootstrap → Organization (design) → Identity → Network → Audit → Validation. Live lab applied identity + network + audit in one account. |
 | **B. How it works** | Push → OIDC → Terraform (one account) → live resources → evidence. |
-| **C. Private network** | Private subnets, default-deny SG, Flow Logs → Log Archive. No internet, NAT, peering, Transit Gateway, or cross-account route. |
+| **C. Private network** | Private-by-design VPC: private subnets, default-deny SG, closed network edge (no IGW/NAT/peering/TGW unless added). Flow Logs → Log Archive. |
 
 <p align="center"><sub>
 Diagrams use generic icons and plain product-name text only (no third-party logo artwork).
