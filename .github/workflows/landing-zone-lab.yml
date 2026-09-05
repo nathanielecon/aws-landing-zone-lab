@@ -11,14 +11,6 @@ on:
       - 'platform/terraform/network/**'
       - 'platform/terraform/audit/**'
       - '.github/workflows/landing-zone-lab.yml'
-  push:
-    branches: [main]
-    paths:
-      - 'platform/sandbox/landing-zone-lab/**'
-      - 'platform/terraform/identity/**'
-      - 'platform/terraform/network/**'
-      - 'platform/terraform/audit/**'
-      - '.github/workflows/landing-zone-lab.yml'
   workflow_dispatch:
     inputs:
       action:
@@ -73,7 +65,7 @@ jobs:
 
   apply:
     name: Terraform apply
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.action == 'apply')
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'apply'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: lab
