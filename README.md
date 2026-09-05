@@ -18,18 +18,10 @@ Formerly the `cloud` monorepo; the Ralphy smoke harness now lives in
 | Panel | What it shows |
 |-------|----------------|
 | **A. Architecture** | Bootstrap → Organization (design) → Identity → Network → Audit → Validation. Live lab applied identity + network + audit in one account. |
-| **B. How it works** | Push → OIDC → Terraform (one account) → live resources → evidence. |
+| **B. How it works** | PR plan or protected manual dispatch → OIDC → Terraform (one account) → live resources → evidence. |
 | **C. Private network** | Private-by-design VPC: private subnets, default-deny SG, closed network edge (no IGW/NAT/peering/TGW unless added). Flow Logs → Log Archive. |
 
-<p align="center"><sub>
-Diagrams use generic icons and plain product-name text only (no third-party logo artwork).
-GitHub® and the Invertocat logo are trademarks of GitHub, Inc.
-Terraform and the Terraform logo are trademarks of HashiCorp.
-AWS and AWS service names are trademarks of Amazon.com, Inc. or its affiliates.
-Names identify tools used in this lab and do not imply affiliation or endorsement.
-</sub></p>
-
-Reference mark files (not used in these figures): [`platform/docs/brand/`](platform/docs/brand/).
+The displayed figure uses generic symbols. Legacy brandmarked assets were removed; see [`platform/docs/BRANDMARK_REMOVAL.md`](platform/docs/BRANDMARK_REMOVAL.md).
 
 ## Repo map
 
@@ -62,3 +54,9 @@ Details: [`platform/docs/portfolio/claims-boundary.md`](platform/docs/portfolio/
 | Live lab evidence | [`platform/sandbox/landing-zone-lab/EVIDENCE.md`](platform/sandbox/landing-zone-lab/EVIDENCE.md) |
 | Orgs design interface | [`platform/sandbox/landing-zone-lab/ORGS_INTERFACE.md`](platform/sandbox/landing-zone-lab/ORGS_INTERFACE.md) |
 | OIDC trust after repo rename | [`platform/sandbox/landing-zone-lab/ci-bootstrap/README.md`](platform/sandbox/landing-zone-lab/ci-bootstrap/README.md) |
+
+> Three independent, evidence-backed cloud engineering labs; presented as a reinforcing portfolio, not a claim of one sustained customer-production platform.
+
+## License
+
+Apache-2.0. See [`LICENSE`](LICENSE).
