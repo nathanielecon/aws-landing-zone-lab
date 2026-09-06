@@ -2,15 +2,14 @@
 set -euo pipefail
 umask 077
 
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/common.sh"
+exec 2> >(sanitize_error >&2)
+
 OUT=${1:?private output directory required}
 mkdir -p "$OUT/regions"
 
-CALLER_ARN=$(aws sts get-caller-identity --query Arn --output text)
-case "$CALLER_ARN" in
-  *assumed-role/project-a-lzlab-gha/*) ;;
-  *) echo "Refusing inventory outside the expected non-root OIDC role." >&2; exit 2 ;;
-esac
-echo "Verified non-root protected inventory role."
+require_role "${PREFIX}-gha"
 
 aws sts get-caller-identity --output json >"$OUT/caller.json"
 ACCOUNT=$(jq -r .Account "$OUT/caller.json")

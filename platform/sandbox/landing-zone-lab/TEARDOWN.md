@@ -1,37 +1,49 @@
-# Landing Zone lab — teardown and cost notes
+# Project A retirement controls
 
-Status: runbook only. This file does **not** claim a teardown was performed
-in this Cloud Agent pod.
+Status: staged for reviewer-gated execution. A later evidence commit records
+the outcome; this document does not claim retirement completed.
 
-## Cost drivers (order-of-magnitude, interview-sized)
+The public workflow exposes only operation categories and sanitized outcomes.
+Raw inventory, policy simulation, Terraform state, plans, and Cost Explorer
+responses are short-retention private artifacts.
 
-| Driver | Why it costs | Notes |
-| --- | --- | --- |
-| CloudTrail + S3 archive | Multi-region trail + SSE-KMS storage | Dominant ongoing cost for a quiet lab |
-| VPC Flow Logs → archive | Continuous log delivery | Scale with traffic; lab is low |
-| AWS Config recorder | Configuration items + delivery | One recorder per account/region |
-| KMS | Key + request charges | Shared with trail/archive/state |
-| NAT / public edge | **Not** in this baseline | Private-only lab |
+## Protected stages
 
-## One-time bootstrap posture
+All stages are manual, main-only, serialized, and exact-input gated.
 
-- Preferred ongoing apply identity: GitHub OIDC → `project-a-lzlab-gha`
-  (non-root), evidenced by apply run `29366105164`.
-- `state-bootstrap/` README applies with the **non-root operator** after
-  `operator/` exists (`AWS_PROFILE=lzlab-operator` or equivalent).
-- Root / break-glass may be used **at most** for one-time `ci-bootstrap/`
-  (OIDC provider + GHA role) when no operator path exists yet. Subsequent
-  plan/apply evidence must be non-root GHA OIDC.
-- Cloud Agents do **not** hold lab apply creds (`NoCredentials` expected).
+1. `inventory` reads every enabled region and privately backs up live state.
+2. `bootstrap` derives an exact-resource retirement policy from live inventory,
+   validates every action against AWS's machine-readable Service Authorization
+   Reference, simulates the policy, creates the short-lived environment-only
+   role, narrows the legacy role trust, and captures a deterministic 30-day
+   Cost Explorer baseline.
+3. `state-transfer` imports archive/state S3 and KMS resources into the retained
+   root. It requires a zero-change retained plan before removing their old
+   state ownership, then requires a delete-only lab plan that contains no S3 or
+   KMS resource.
+4. `teardown` repeats both gates and removes trails (including superseded
+   project trails), Config recorder/channel and writer role, flow logs, private
+   networking, and workload IAM.
+5. `verify` checks every enabled region and proves both retained buckets, both
+   KMS aliases/keys, both Terraform state objects, and the existing 90-day
+   archive lifecycle remain readable.
+6. `cleanup` removes the operator, legacy CI role, and short-lived teardown
+   role. The account-wide GitHub OIDC provider is intentionally preserved.
 
-## Teardown order (manual / CI `workflow_dispatch` destroy when authorized)
+The protected job name displays the affected categories before approval. The
+`lab` and `lab-teardown` environments require the repository owner as reviewer.
 
-1. Confirm non-root caller (`project-a-lzlab-gha` or operator) — never root for
-   routine destroy.
-2. `lab/` destroy (identity + network + audit composition) with remote state.
-3. Empty/version-clean archive + tfstate buckets if `force_destroy` is false.
-4. `state-bootstrap/` destroy only after lab state is gone.
-5. `ci-bootstrap/` / OIDC provider last (breaks CI apply path).
-6. `operator/` IAM last if no longer needed.
+## Retained spend
 
-Record the destroy run URL and caller ARN in EVIDENCE if/when executed.
+Retirement intentionally does not mean a zero-dollar AWS account. Expected
+Project A residuals are S3 object/version storage and requests plus two
+customer-managed KMS keys and their requests. The archive keeps its existing
+90-day current/noncurrent lifecycle. Cost Explorer comparison is meaningful
+only after AWS's reporting delay; unrelated account spend is outside this lab's
+baseline.
+
+## Recovery
+
+Execution requires a verified encrypted local repository mirror and encrypted
+Terraform-state/inventory backup. No destructive stage runs before those
+backups, the zero-change retained plan, and the exact removal-plan audit exist.
