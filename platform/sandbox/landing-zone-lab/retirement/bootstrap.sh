@@ -179,12 +179,24 @@ while IFS=: read -r prefix action; do
 done <"$OUT/policy-actions.txt"
 printf 'Every policy action passed the AWS Service Authorization Reference check.\n'
 
-# Simulation is read-only: it evaluates the exact generated policy and does not
-# perform any listed operation. Raw results stay in the private artifact.
-mapfile -t ACTIONS <"$OUT/policy-actions.txt"
-for ((offset=0, chunk=1; offset<${#ACTIONS[@]}; offset+=100, chunk++)); do
-  aws iam simulate-custom-policy --policy-input-list "file://$OUT/teardown-policy.json" \
-    --action-names "${ACTIONS[@]:offset:100}" --output json \
+# Simulation is read-only. The API caps each policy input at 2,000 characters,
+# so evaluate every exact generated statement independently and retain all raw
+# results in the private artifact.
+STATEMENT_COUNT=$(jq '.Statement | length' "$OUT/teardown-policy.json")
+for ((index=0; index<STATEMENT_COUNT; index++)); do
+  chunk=$((index + 1))
+  jq -c --argjson index "$index" \
+    '{Version:"2012-10-17",Statement:[.Statement[$index]]}' \
+    "$OUT/teardown-policy.json" >"$OUT/policy-statement-${chunk}.json"
+  if [[ $(wc -c <"$OUT/policy-statement-${chunk}.json") -gt 2000 ]]; then
+    printf 'Generated policy statement exceeds the simulation API limit.\n' >&2
+    exit 1
+  fi
+  mapfile -t ACTIONS < <(jq -r '.Statement[0].Action | if type=="array" then .[] else . end' \
+    "$OUT/policy-statement-${chunk}.json")
+  aws iam simulate-custom-policy \
+    --policy-input-list "file://$OUT/policy-statement-${chunk}.json" \
+    --action-names "${ACTIONS[@]}" --output json \
     >"$OUT/policy-simulation-${chunk}.json"
 done
 printf 'Exact generated teardown policy simulation completed.\n'
