@@ -9,7 +9,7 @@ orchestration/evidence packaging, including:
 - `platform/docs/portfolio/claims-boundary.md`
 - `platform/docs/review/pushback-and-handoff.md`
 - `platform/docs/azure-government/readiness.md`
-- `platform/docs/diagrams/aws-landing-zone-architecture.png` (and network diagram linkage)
+- `platform/docs/diagrams/aws-landing-zone-architecture.drawio` (and network diagram linkage)
 - `platform/graphify-out/GRAPH_REPORT.md`
 - `platform/docs/architecture/orchestration.md`
 - frozen rubrics under `harness/rubrics/`
