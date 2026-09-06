@@ -180,8 +180,9 @@ done <"$OUT/policy-actions.txt"
 printf 'Every policy action passed the AWS Service Authorization Reference check.\n'
 
 # Simulation is read-only. The API caps each policy input at 2,000 characters,
-# so evaluate every exact generated statement independently and retain all raw
-# results in the private artifact.
+# so evaluate every exact generated statement independently against its exact
+# resource set, assert that every action reaches the statement's intended
+# decision, and retain all raw results in the private artifact.
 STATEMENT_COUNT=$(jq '.Statement | length' "$OUT/teardown-policy.json")
 for ((index=0; index<STATEMENT_COUNT; index++)); do
   chunk=$((index + 1))
@@ -194,12 +195,43 @@ for ((index=0; index<STATEMENT_COUNT; index++)); do
   fi
   mapfile -t ACTIONS < <(jq -r '.Statement[0].Action | if type=="array" then .[] else . end' \
     "$OUT/policy-statement-${chunk}.json")
-  aws iam simulate-custom-policy \
-    --policy-input-list "$(<"$OUT/policy-statement-${chunk}.json")" \
-    --action-names "${ACTIONS[@]}" --output json \
+  mapfile -t RESOURCES < <(jq -r '.Statement[0].Resource | if type=="array" then .[] else . end' \
+    "$OUT/policy-statement-${chunk}.json")
+  EFFECT=$(jq -r '.Statement[0].Effect' "$OUT/policy-statement-${chunk}.json")
+  if [[ "$EFFECT" == "Allow" ]]; then
+    EXPECTED_DECISION=allowed
+  elif [[ "$EFFECT" == "Deny" ]]; then
+    EXPECTED_DECISION=explicitDeny
+  else
+    printf 'Generated policy statement has an unsupported effect.\n' >&2
+    exit 1
+  fi
+
+  SIMULATION_ARGS=(
+    --policy-input-list "$(<"$OUT/policy-statement-${chunk}.json")"
+    --action-names "${ACTIONS[@]}"
+  )
+  if (( ${#RESOURCES[@]} != 1 )) || [[ "${RESOURCES[0]}" != "*" ]]; then
+    SIMULATION_ARGS+=(--resource-arns "${RESOURCES[@]}")
+  fi
+  aws iam simulate-custom-policy "${SIMULATION_ARGS[@]}" --output json \
     >"$OUT/policy-simulation-${chunk}.json"
+
+  jq -e --arg expected "$EXPECTED_DECISION" \
+    --slurpfile statement "$OUT/policy-statement-${chunk}.json" '
+      . as $simulation
+      | ($statement[0].Statement[0].Action
+          | if type == "array" then . else [.] end) as $actions
+      | all($actions[];
+          . as $action
+          | any($simulation.EvaluationResults[];
+              .EvalActionName == $action and .EvalDecision == $expected))
+    ' "$OUT/policy-simulation-${chunk}.json" >/dev/null || {
+      printf 'Policy statement %s failed exact-resource simulation.\n' "$chunk" >&2
+      exit 1
+    }
 done
-printf 'Exact generated teardown policy simulation completed.\n'
+printf 'Exact generated teardown policy simulation passed.\n'
 
 if aws iam get-role --role-name "$TEARDOWN_ROLE" >/dev/null 2>&1; then
   run_quietly "Update dedicated teardown role trust" aws iam update-assume-role-policy \

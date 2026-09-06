@@ -55,6 +55,9 @@ jobs:
         shell: pwsh
         run: ./platform/scripts/validate-project-a.ps1
 
+      - name: Validate retirement shell without AWS credentials
+        run: bash -n ./platform/sandbox/landing-zone-lab/retirement/*.sh
+
   protected-plan:
     name: Protected live Terraform plan
     if: github.event_name == 'workflow_dispatch' && inputs.action == 'plan'
