@@ -125,10 +125,17 @@ jq -n \
       "iam:ListRolePolicies","iam:ListRoleTags","iam:ListUserPolicies","iam:ListUserTags"
     ],Resource:(($roles[0]+$users[0]+$policies[0]+[$old_role,$teardown_role])|unique)},
     {Sid:"ReadPreservedOidcProvider",Effect:"Allow",Action:"iam:GetOpenIDConnectProvider",Resource:$oidc},
-    {Sid:"DeleteInventoriedEc2",Effect:"Allow",Action:[
-      "ec2:DeleteFlowLogs","ec2:DeleteRouteTable","ec2:DeleteSecurityGroup","ec2:DeleteSubnet",
-      "ec2:DeleteVpc","ec2:DisassociateRouteTable"
-    ],Resource:($ec2[0]|unique)},
+    {Sid:"DeleteInventoriedFlowLogs",Effect:"Allow",Action:"ec2:DeleteFlowLogs",
+      Resource:([$ec2[0][] | select(contains(":vpc-flow-log/"))] | unique)},
+    {Sid:"DeleteInventoriedRouteTables",Effect:"Allow",
+      Action:["ec2:DeleteRouteTable","ec2:DisassociateRouteTable"],
+      Resource:([$ec2[0][] | select(contains(":route-table/"))] | unique)},
+    {Sid:"DeleteInventoriedSecurityGroups",Effect:"Allow",Action:"ec2:DeleteSecurityGroup",
+      Resource:([$ec2[0][] | select(contains(":security-group/"))] | unique)},
+    {Sid:"DeleteInventoriedSubnets",Effect:"Allow",Action:"ec2:DeleteSubnet",
+      Resource:([$ec2[0][] | select(contains(":subnet/"))] | unique)},
+    {Sid:"DeleteInventoriedVpcs",Effect:"Allow",Action:"ec2:DeleteVpc",
+      Resource:([$ec2[0][] | select(contains(":vpc/"))] | unique)},
     {Sid:"DeleteInventoriedTrails",Effect:"Allow",Action:["cloudtrail:DeleteTrail","cloudtrail:StopLogging"],Resource:$trails[0]},
     {Sid:"RetireConfig",Effect:"Allow",Action:["config:DeleteConfigurationRecorder","config:DeleteDeliveryChannel","config:StopConfigurationRecorder"],Resource:"*"},
     {Sid:"RetireInventoriedIam",Effect:"Allow",Action:[
