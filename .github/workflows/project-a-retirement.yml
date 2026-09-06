@@ -48,7 +48,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN_LZ_LAB }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_LZ_LAB }}
           aws-region: us-east-1
           role-session-name: gha-lzlab-inventory-${{ github.run_id }}
           mask-aws-account-id: true
@@ -86,7 +86,7 @@ jobs:
       - name: Configure AWS credentials using the legacy protected role
         uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN_LZ_LAB }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_LZ_LAB }}
           aws-region: us-east-1
           role-session-name: gha-lzlab-bootstrap-${{ github.run_id }}
           mask-aws-account-id: true
@@ -125,7 +125,7 @@ jobs:
       - name: Configure short-lived exact-resource credentials
         uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
         with:
-          role-to-assume: ${{ vars.PROJECT_A_TEARDOWN_ROLE_ARN }}
+          role-to-assume: ${{ secrets.PROJECT_A_TEARDOWN_ROLE_ARN }}
           aws-region: us-east-1
           role-session-name: gha-lzlab-state-transfer-${{ github.run_id }}
           mask-aws-account-id: true
@@ -170,7 +170,7 @@ jobs:
       - name: Configure short-lived exact-resource credentials
         uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
         with:
-          role-to-assume: ${{ vars.PROJECT_A_TEARDOWN_ROLE_ARN }}
+          role-to-assume: ${{ secrets.PROJECT_A_TEARDOWN_ROLE_ARN }}
           aws-region: us-east-1
           role-session-name: gha-lzlab-teardown-${{ github.run_id }}
           mask-aws-account-id: true
@@ -215,7 +215,7 @@ jobs:
       - name: Configure short-lived exact-resource credentials
         uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
         with:
-          role-to-assume: ${{ vars.PROJECT_A_TEARDOWN_ROLE_ARN }}
+          role-to-assume: ${{ secrets.PROJECT_A_TEARDOWN_ROLE_ARN }}
           aws-region: us-east-1
           role-session-name: gha-lzlab-verify-${{ github.run_id }}
           mask-aws-account-id: true
@@ -254,7 +254,7 @@ jobs:
       - name: Configure short-lived exact-resource credentials
         uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
         with:
-          role-to-assume: ${{ vars.PROJECT_A_TEARDOWN_ROLE_ARN }}
+          role-to-assume: ${{ secrets.PROJECT_A_TEARDOWN_ROLE_ARN }}
           aws-region: us-east-1
           role-session-name: gha-lzlab-cleanup-${{ github.run_id }}
           mask-aws-account-id: true

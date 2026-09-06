@@ -6,11 +6,11 @@ name: Landing Zone lab (Terraform)
 on:
   pull_request:
     paths:
-      - 'platform/sandbox/landing-zone-lab/**'
-      - 'platform/terraform/identity/**'
-      - 'platform/terraform/network/**'
-      - 'platform/terraform/audit/**'
-      - '.github/workflows/landing-zone-lab.yml'
+      - "platform/sandbox/landing-zone-lab/**"
+      - "platform/terraform/identity/**"
+      - "platform/terraform/network/**"
+      - "platform/terraform/audit/**"
+      - ".github/workflows/landing-zone-lab.yml"
   workflow_dispatch:
     inputs:
       action:
@@ -30,8 +30,8 @@ concurrency:
 
 env:
   AWS_REGION: us-east-1
-  TF_IN_AUTOMATION: '1'
-  TF_INPUT: 'false'
+  TF_IN_AUTOMATION: "1"
+  TF_INPUT: "false"
 
 jobs:
   offline-validation:
@@ -73,7 +73,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN_LZ_LAB }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_LZ_LAB }}
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: gha-lzlab-plan-${{ github.run_id }}
 

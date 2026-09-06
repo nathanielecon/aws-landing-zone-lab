@@ -25,11 +25,11 @@ if [[ -z "$OIDC_ARN" || "$OIDC_ARN" == "None" ]]; then
 fi
 
 cat >"$OUT/teardown-trust.json" <<EOF
-{"Version":"2012-10-17","Statement":[{"Sid":"ProtectedGitHubEnvironment","Effect":"Allow","Principal":{"Federated":"${OIDC_ARN}"},"Action":"sts:AssumeRoleWithWebIdentity","Condition":{"StringEquals":{"token.actions.githubusercontent.com:aud":"sts.amazonaws.com","token.actions.githubusercontent.com:repository_id":"1296742987","token.actions.githubusercontent.com:repository_owner_id":"177059064","token.actions.githubusercontent.com:sub":"repo:nathanielecon@177059064/*@1296742987:environment:lab-teardown"}}}]}
+{"Version":"2012-10-17","Statement":[{"Sid":"ProtectedGitHubEnvironment","Effect":"Allow","Principal":{"Federated":"${OIDC_ARN}"},"Action":"sts:AssumeRoleWithWebIdentity","Condition":{"StringEquals":{"token.actions.githubusercontent.com:aud":"sts.amazonaws.com","token.actions.githubusercontent.com:repository_id":"1296742987","token.actions.githubusercontent.com:repository_owner_id":"177059064"},"StringLike":{"token.actions.githubusercontent.com:sub":"repo:nathanielecon@177059064/*@1296742987:environment:lab-teardown"}}}]}
 EOF
 
 cat >"$OUT/lab-trust.json" <<EOF
-{"Version":"2012-10-17","Statement":[{"Sid":"ProtectedGitHubEnvironment","Effect":"Allow","Principal":{"Federated":"${OIDC_ARN}"},"Action":"sts:AssumeRoleWithWebIdentity","Condition":{"StringEquals":{"token.actions.githubusercontent.com:aud":"sts.amazonaws.com","token.actions.githubusercontent.com:repository_id":"1296742987","token.actions.githubusercontent.com:repository_owner_id":"177059064","token.actions.githubusercontent.com:sub":"repo:nathanielecon@177059064/*@1296742987:environment:lab"}}}]}
+{"Version":"2012-10-17","Statement":[{"Sid":"ProtectedGitHubEnvironment","Effect":"Allow","Principal":{"Federated":"${OIDC_ARN}"},"Action":"sts:AssumeRoleWithWebIdentity","Condition":{"StringEquals":{"token.actions.githubusercontent.com:aud":"sts.amazonaws.com","token.actions.githubusercontent.com:repository_id":"1296742987","token.actions.githubusercontent.com:repository_owner_id":"177059064"},"StringLike":{"token.actions.githubusercontent.com:sub":"repo:nathanielecon@177059064/*@1296742987:environment:lab"}}}]}
 EOF
 
 aws ec2 describe-regions --all-regions --query \
