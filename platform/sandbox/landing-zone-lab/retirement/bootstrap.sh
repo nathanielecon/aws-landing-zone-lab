@@ -75,6 +75,26 @@ aws iam list-policies --scope Local --query \
   "Policies[?starts_with(PolicyName, '${PREFIX}-') || starts_with(PolicyName, 'workload-audit-')].Arn" \
   --output json >"$OUT/policy-resources.json"
 
+printf '[]\n' >"$OUT/instance-profile-resources.json"
+while IFS= read -r role_arn; do
+  role_name=${role_arn##*/}
+  aws iam list-instance-profiles-for-role --role-name "$role_name" \
+    --query 'InstanceProfiles[].Arn' --output json >"$OUT/instance-profiles.json"
+  jq -s 'add | unique' "$OUT/instance-profile-resources.json" \
+    "$OUT/instance-profiles.json" >"$OUT/instance-profile-resources.next.json"
+  mv "$OUT/instance-profile-resources.next.json" "$OUT/instance-profile-resources.json"
+done < <(jq -r '.[]' "$OUT/role-resources.json")
+
+printf '[]\n' >"$OUT/group-resources.json"
+while IFS= read -r user_arn; do
+  user_name=${user_arn##*/}
+  aws iam list-groups-for-user --user-name "$user_name" \
+    --query 'Groups[].Arn' --output json >"$OUT/user-groups.json"
+  jq -s 'add | unique' "$OUT/group-resources.json" "$OUT/user-groups.json" \
+    >"$OUT/group-resources.next.json"
+  mv "$OUT/group-resources.next.json" "$OUT/group-resources.json"
+done < <(jq -r '.[]' "$OUT/user-resources.json")
+
 ARCHIVE_BUCKET="${PREFIX}-archive-${ACCOUNT}"
 STATE_BUCKET="${PREFIX}-tfstate-${ACCOUNT}"
 AUDIT_KEY=$(aws kms list-aliases --region "$REGION" --query \
@@ -102,6 +122,8 @@ jq -n \
   --slurpfile roles "$OUT/role-resources.json" \
   --slurpfile users "$OUT/user-resources.json" \
   --slurpfile policies "$OUT/policy-resources.json" \
+  --slurpfile instance_profiles "$OUT/instance-profile-resources.json" \
+  --slurpfile groups "$OUT/group-resources.json" \
   --slurpfile keys "$OUT/kms-resources.json" \
   '{Version:"2012-10-17",Statement:[
     {Sid:"IdentityAndInventoryRead",Effect:"Allow",Action:[
@@ -138,12 +160,19 @@ jq -n \
       Resource:([$ec2[0][] | select(contains(":vpc/"))] | unique)},
     {Sid:"DeleteInventoriedTrails",Effect:"Allow",Action:["cloudtrail:DeleteTrail","cloudtrail:StopLogging"],Resource:$trails[0]},
     {Sid:"RetireConfig",Effect:"Allow",Action:["config:DeleteConfigurationRecorder","config:DeleteDeliveryChannel","config:StopConfigurationRecorder"],Resource:"*"},
-    {Sid:"RetireInventoriedIam",Effect:"Allow",Action:[
-      "iam:DeletePolicy","iam:DeletePolicyVersion","iam:DeleteRole","iam:DeleteRolePermissionsBoundary",
-      "iam:DeleteRolePolicy","iam:DeleteUser","iam:DeleteUserPermissionsBoundary","iam:DeleteUserPolicy",
-      "iam:DeleteLoginProfile","iam:DetachRolePolicy","iam:DetachUserPolicy","iam:RemoveRoleFromInstanceProfile",
-      "iam:RemoveUserFromGroup"
-    ],Resource:(($roles[0]+$users[0]+$policies[0]+[$old_role,$teardown_role])|unique)},
+    {Sid:"RetireInventoriedPolicies",Effect:"Allow",
+      Action:["iam:DeletePolicy","iam:DeletePolicyVersion"],Resource:($policies[0]|unique)},
+    {Sid:"RetireInventoriedRoles",Effect:"Allow",Action:[
+      "iam:DeleteRole","iam:DeleteRolePermissionsBoundary","iam:DeleteRolePolicy","iam:DetachRolePolicy"
+    ],Resource:(($roles[0]+[$old_role,$teardown_role])|unique)},
+    {Sid:"RetireInventoriedUsers",Effect:"Allow",Action:[
+      "iam:DeleteUser","iam:DeleteUserPermissionsBoundary","iam:DeleteUserPolicy",
+      "iam:DeleteLoginProfile","iam:DetachUserPolicy"
+    ],Resource:($users[0]|unique)},
+    {Sid:"DetachInventoriedInstanceProfiles",Effect:"Allow",
+      Action:"iam:RemoveRoleFromInstanceProfile",Resource:($instance_profiles[0]|unique)},
+    {Sid:"RemoveInventoriedGroupMemberships",Effect:"Allow",
+      Action:"iam:RemoveUserFromGroup",Resource:($groups[0]|unique)},
     {Sid:"ReadRetainedBuckets",Effect:"Allow",Action:[
       "s3:GetAccelerateConfiguration","s3:GetBucketAcl","s3:GetBucketCORS","s3:GetBucketLocation",
       "s3:GetBucketLogging","s3:GetBucketObjectLockConfiguration","s3:GetBucketPolicy",
