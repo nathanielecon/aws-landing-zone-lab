@@ -15,12 +15,12 @@ All stages are manual, main-only, serialized, and exact-input gated.
 2. `bootstrap` derives an exact-resource retirement policy from live inventory,
    validates every action against AWS's machine-readable Service Authorization
    Reference, simulates the policy, creates the short-lived environment-only
-   role, narrows the legacy role trust, and captures a deterministic 30-day
-   Cost Explorer baseline.
-3. `state-transfer` imports archive/state S3 and KMS resources into the retained
-   root. It requires a zero-change retained plan before removing their old
-   state ownership, then requires a delete-only lab plan that contains no S3 or
-   KMS resource.
+   role, and narrows the legacy role trust.
+3. `state-transfer` first captures a deterministic 30-day Cost Explorer
+   baseline under the newly issued exact role, then imports archive/state S3
+   and KMS resources into the retained root. It requires a zero-change retained
+   plan before removing their old state ownership, then requires a delete-only
+   lab plan that contains no S3 or KMS resource.
 4. `teardown` repeats both gates and removes trails (including superseded
    project trails), Config recorder/channel and writer role, flow logs, private
    networking, and workload IAM.

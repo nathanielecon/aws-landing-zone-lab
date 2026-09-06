@@ -16,6 +16,20 @@ require_role "${PREFIX}-teardown"
 ACCOUNT=$(private_account)
 STATE_BUCKET="${PREFIX}-tfstate-${ACCOUNT}"
 ARCHIVE_BUCKET="${PREFIX}-archive-${ACCOUNT}"
+
+# Capture the cost baseline under the newly issued exact role before the first
+# state write. The legacy OIDC session cannot widen its session scope at runtime.
+START=$(date -u -d '30 days ago' +%F)
+END=$(date -u -d 'tomorrow' +%F)
+aws ce get-cost-and-usage --time-period "Start=$START,End=$END" \
+  --granularity DAILY --metrics UnblendedCost \
+  --group-by Type=DIMENSION,Key=SERVICE --output json >"$OUT/cost-baseline.json"
+jq -n --slurpfile raw "$OUT/cost-baseline.json" \
+  --arg start "$START" --arg end "$END" \
+  '{method:"sum of unrounded AWS Cost Explorer daily UnblendedCost service groups",start:$start,end_exclusive:$end,currency:"USD",amount:([$raw[0].ResultsByTime[].Groups[].Metrics.UnblendedCost.Amount|tonumber]|add // 0)}' \
+  >"$OUT/cost-baseline-summary.json"
+printf 'Deterministic 30-day Cost Explorer baseline captured privately.\n'
+
 AUDIT_KEY=$(aws kms list-aliases --region "$REGION" --query \
   "Aliases[?AliasName=='alias/${PREFIX}-audit'].TargetKeyId | [0]" --output text)
 STATE_KEY=$(aws kms list-aliases --region "$REGION" --query \

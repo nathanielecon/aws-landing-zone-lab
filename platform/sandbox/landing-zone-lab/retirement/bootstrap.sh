@@ -201,36 +201,6 @@ for ((index=0; index<STATEMENT_COUNT; index++)); do
 done
 printf 'Exact generated teardown policy simulation completed.\n'
 
-START=$(date -u -d '30 days ago' +%F)
-END=$(date -u -d 'tomorrow' +%F)
-COST_POLICY_ATTACHED=0
-remove_cost_policy() {
-  if [[ $COST_POLICY_ATTACHED -eq 1 ]]; then
-    aws iam delete-role-policy --role-name "$OLD_ROLE" \
-      --policy-name ProjectACostBaselineRead >/dev/null 2>&1 || true
-  fi
-}
-trap remove_cost_policy EXIT
-cat >"$OUT/cost-policy.json" <<'EOF'
-{"Version":"2012-10-17","Statement":[{"Sid":"CostBaselineRead","Effect":"Allow","Action":"ce:GetCostAndUsage","Resource":"*"}]}
-EOF
-run_quietly "Attach temporary Cost Explorer read" aws iam put-role-policy \
-  --role-name "$OLD_ROLE" --policy-name ProjectACostBaselineRead \
-  --policy-document "file://$OUT/cost-policy.json"
-COST_POLICY_ATTACHED=1
-aws ce get-cost-and-usage --time-period "Start=$START,End=$END" \
-  --granularity DAILY --metrics UnblendedCost \
-  --group-by Type=DIMENSION,Key=SERVICE --output json >"$OUT/cost-baseline.json"
-jq -n --slurpfile raw "$OUT/cost-baseline.json" \
-  --arg start "$START" --arg end "$END" \
-  '{method:"sum of unrounded AWS Cost Explorer daily UnblendedCost service groups",start:$start,end_exclusive:$end,currency:"USD",amount:([$raw[0].ResultsByTime[].Groups[].Metrics.UnblendedCost.Amount|tonumber]|add // 0)}' \
-  >"$OUT/cost-baseline-summary.json"
-run_quietly "Remove temporary Cost Explorer read" aws iam delete-role-policy \
-  --role-name "$OLD_ROLE" --policy-name ProjectACostBaselineRead
-COST_POLICY_ATTACHED=0
-trap - EXIT
-printf 'Deterministic 30-day Cost Explorer baseline captured privately.\n'
-
 if aws iam get-role --role-name "$TEARDOWN_ROLE" >/dev/null 2>&1; then
   run_quietly "Update dedicated teardown role trust" aws iam update-assume-role-policy \
     --role-name "$TEARDOWN_ROLE" --policy-document "file://$OUT/teardown-trust.json"

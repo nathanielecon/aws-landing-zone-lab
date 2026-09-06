@@ -66,7 +66,7 @@ jobs:
           include-hidden-files: true
 
   bootstrap:
-    name: "APPROVAL: create exact-resource role and capture cost baseline"
+    name: "APPROVAL: create and simulate exact-resource retirement role"
     if: >-
       github.ref == 'refs/heads/main' &&
       inputs.operation == 'bootstrap' &&
@@ -105,7 +105,7 @@ jobs:
           include-hidden-files: true
 
   state-transfer:
-    name: "APPROVAL: transfer S3/KMS ownership; require zero-change plan"
+    name: "APPROVAL: baseline cost; transfer S3/KMS; prove zero change"
     if: >-
       github.ref == 'refs/heads/main' &&
       inputs.operation == 'state-transfer' &&
