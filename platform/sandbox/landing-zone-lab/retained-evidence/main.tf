@@ -169,6 +169,9 @@ resource "aws_s3_bucket_versioning" "archive" {
 resource "aws_s3_bucket_server_side_encryption_configuration" "archive" {
   bucket = aws_s3_bucket.archive.id
   rule {
+    blocked_encryption_types = ["SSE-C"]
+    bucket_key_enabled       = false
+
     apply_server_side_encryption_by_default {
       kms_master_key_id = aws_kms_key.audit.arn
       sse_algorithm     = "aws:kms"
@@ -213,6 +216,12 @@ resource "aws_kms_key" "audit" {
   deletion_window_in_days = 30
   enable_key_rotation     = true
   policy                  = data.aws_iam_policy_document.audit_kms.json
+
+  # AWS does not return these creation/deletion controls when an existing key
+  # is imported, so provider 6.x otherwise proposes a state-only update.
+  lifecycle {
+    ignore_changes = [bypass_policy_lockout_safety_check, deletion_window_in_days]
+  }
 }
 
 resource "aws_kms_alias" "audit" {
@@ -226,6 +235,12 @@ resource "aws_kms_key" "state" {
   enable_key_rotation     = true
   policy                  = data.aws_iam_policy_document.state_kms.json
   tags                    = local.state_tags
+
+  # AWS does not return these creation/deletion controls when an existing key
+  # is imported, so provider 6.x otherwise proposes a state-only update.
+  lifecycle {
+    ignore_changes = [bypass_policy_lockout_safety_check, deletion_window_in_days]
+  }
 }
 
 resource "aws_kms_alias" "state" {
@@ -250,6 +265,9 @@ resource "aws_s3_bucket_versioning" "state" {
 resource "aws_s3_bucket_server_side_encryption_configuration" "state" {
   bucket = aws_s3_bucket.state.id
   rule {
+    blocked_encryption_types = ["SSE-C"]
+    bucket_key_enabled       = false
+
     apply_server_side_encryption_by_default {
       kms_master_key_id = aws_kms_key.state.arn
       sse_algorithm     = "aws:kms"
