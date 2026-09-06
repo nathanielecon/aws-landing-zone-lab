@@ -4,6 +4,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+$tempRoot = [System.IO.Path]::GetTempPath()
 $terraform = (Get-Command terraform -ErrorAction Stop).Source
 $modules = @(
   '.',
@@ -27,7 +28,7 @@ function Invoke-ProjectATerraform {
 
   $originalTfDataDir = $env:TF_DATA_DIR
   $activeDataDir = if ([string]::IsNullOrWhiteSpace($DataDir)) {
-    Join-Path $env:TEMP ('project-a-tfdata-' + [Guid]::NewGuid().ToString('N'))
+    Join-Path $tempRoot ('project-a-tfdata-' + [Guid]::NewGuid().ToString('N'))
   } else {
     $DataDir
   }
@@ -51,7 +52,7 @@ if ($LASTEXITCODE -ne 0) { throw 'terraform fmt failed.' }
 
 foreach ($relative in $modules) {
   $path = if ($relative -eq '.') { $root } else { Join-Path $root $relative }
-  $dataDir = Join-Path $env:TEMP ('project-a-tfdata-' + [Guid]::NewGuid().ToString('N'))
+  $dataDir = Join-Path $tempRoot ('project-a-tfdata-' + [Guid]::NewGuid().ToString('N'))
   try {
     Invoke-ProjectATerraform -Path $path -Arguments @('init','-backend=false','-input=false','-lockfile=readonly') -DataDir $dataDir
     if ($LASTEXITCODE -ne 0) { throw "terraform init failed for $relative" }
