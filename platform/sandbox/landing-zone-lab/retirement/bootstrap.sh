@@ -134,7 +134,7 @@ jq -n \
       "cloudtrail:DescribeTrails","cloudtrail:ListChannels","cloudtrail:ListTrails",
       "config:DescribeConfigurationRecorderStatus","config:DescribeConfigurationRecorders",
       "config:DescribeDeliveryChannelStatus","config:DescribeDeliveryChannels",
-      "iam:ListPolicies","iam:ListRoles","iam:ListUsers","kms:ListAliases"
+      "iam:ListOpenIDConnectProviders","iam:ListPolicies","iam:ListRoles","iam:ListUsers","kms:ListAliases"
     ],Resource:"*"},
     {Sid:"ReadInventoriedTrails",Effect:"Allow",Action:[
       "cloudtrail:GetEventSelectors","cloudtrail:GetInsightSelectors","cloudtrail:GetTrail",
