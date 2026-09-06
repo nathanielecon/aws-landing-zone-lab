@@ -110,10 +110,11 @@ run "log_archive_arn_prefix_contract_alignment" {
       # String equality: identity / network / audit offline fixtures share one bucket name token.
       regex("(?m)^\\s*audit_bucket_name\\s*=\\s*\"([^\"]+)\"", file("${path.root}/tests/iam/identity.tftest.hcl")) == regex("(?m)^\\s*archive_bucket_name\\s*=\\s*\"([^\"]+)\"", file("${path.root}/tests/audit/audit.tftest.hcl")) &&
       regex("(?m)^\\s*flow_logs_destination_arn\\s*=\\s*\"arn:aws:s3:::([^\"]+)\"", file("${path.root}/tests/network/network.tftest.hcl")) == regex("(?m)^\\s*archive_bucket_name\\s*=\\s*\"([^\"]+)\"", file("${path.root}/tests/audit/audit.tftest.hcl")) &&
-      # Lab composition wires identity + network flow logs to the same audit archive outputs.
-      can(regex("(?s)audit_bucket_name\\s*=\\s*module\\.audit\\.archive_bucket_name", file("${path.root}/sandbox/landing-zone-lab/lab/main.tf"))) &&
-      can(regex("(?s)flow_logs_destination_arn\\s*=\\s*\"\\$\\{module\\.audit\\.archive_bucket_arn\\}/", file("${path.root}/sandbox/landing-zone-lab/lab/main.tf")))
+      # The live lab root is absent after retirement; only the retained-evidence
+      # root remains deployable in the sandbox.
+      !fileexists("${path.root}/sandbox/landing-zone-lab/lab/main.tf") &&
+      fileexists("${path.root}/sandbox/landing-zone-lab/retained-evidence/main.tf")
     )
-    error_message = "Shared Log Archive bucket token must be string-equal across identity audit_bucket_name, network flow_logs_destination_arn, and audit archive_bucket_name/ARN (fixtures + lab wiring); env compositions keep example-log-archive + is_organization_trail=false."
+    error_message = "Shared Log Archive interfaces must stay aligned in reusable fixtures, and the retired live root must remain absent while retained evidence stays managed."
   }
 }

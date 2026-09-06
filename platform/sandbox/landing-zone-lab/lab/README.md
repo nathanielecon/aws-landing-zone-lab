@@ -1,21 +1,10 @@
-# Collapsed Landing Zone lab composition
+# Retired live lab root
 
-Composes `identity` + `network` + `audit` in the single live account. No
-cross-account providers. No organization module apply.
+The live single-account lab was destroyed and verified across every enabled
+AWS region on 2026-09-06. This directory intentionally contains no Terraform
+resources, so the current tree cannot recreate the lab. The validated design
+modules remain under `platform/terraform/`, and the prior live composition
+remains available in Git history as portfolio evidence.
 
-## Apply
-
-```bash
-export AWS_PROFILE=lzlab-operator
-export AWS_REGION=us-east-1
-# backend.hcl produced by ../state-bootstrap
-terraform init -backend-config=backend.hcl -input=false
-terraform apply -input=false -auto-approve
-```
-
-## Offline validate (no credentials / local backend)
-
-```bash
-terraform init -backend=false -input=false
-terraform validate
-```
+Retained archive and Terraform-state resources are owned only by the
+[`retained-evidence`](../retained-evidence/) root.

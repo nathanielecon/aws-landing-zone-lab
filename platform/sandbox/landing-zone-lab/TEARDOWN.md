@@ -1,49 +1,30 @@
 # Project A retirement controls
 
-Status: staged for reviewer-gated execution. A later evidence commit records
-the outcome; this document does not claim retirement completed.
+Status: **completed and verified on 2026-09-06**.
 
-The public workflow exposes only operation categories and sanitized outcomes.
-Raw inventory, policy simulation, Terraform state, plans, and Cost Explorer
-responses are short-retention private artifacts.
+The retired workflow used manual, main-only, exact-input stages and protected
+environments with owner review. It captured private inventory, generated an
+exact-resource IAM policy from live inventory and Terraform state, checked its
+actions against AWS Service Authorization Reference data, and simulated every
+statement before use.
 
-## Protected stages
+Before destruction, the archive/state S3 and KMS resources were imported into
+the retained-evidence root and produced a zero-change plan. The remaining lab
+plan contained only deletes and no S3 or KMS resources. Verification then
+checked every enabled region and confirmed the retained buckets, KMS aliases,
+state objects, and 90-day archive lifecycle remained readable.
 
-All stages are manual, main-only, serialized, and exact-input gated.
+The short-lived role, legacy CI role, operator, and project-specific IAM
+policies were removed last. The repository variables and protected-environment
+secrets that named those roles were also deleted. Historical workflow runs are
+retained; the executable retirement workflow was removed from the current tree.
 
-1. `inventory` reads every enabled region and privately backs up live state.
-2. `bootstrap` derives an exact-resource retirement policy from live inventory,
-   validates every action against AWS's machine-readable Service Authorization
-   Reference, simulates the policy, creates the short-lived environment-only
-   role, and narrows the legacy role trust.
-3. `state-transfer` first captures a deterministic 30-day Cost Explorer
-   baseline under the newly issued exact role, then imports archive/state S3
-   and KMS resources into the retained root. It requires a zero-change retained
-   plan before removing their old state ownership, then requires a delete-only
-   lab plan that contains no S3 or KMS resource.
-4. `teardown` repeats both gates and removes trails (including superseded
-   project trails), Config recorder/channel and writer role, flow logs, private
-   networking, and workload IAM.
-5. `verify` checks every enabled region and proves both retained buckets, both
-   KMS aliases/keys, both Terraform state objects, and the existing 90-day
-   archive lifecycle remain readable.
-6. `cleanup` removes the operator, legacy CI role, and short-lived teardown
-   role. The account-wide GitHub OIDC provider is intentionally preserved.
+## Intentional residual spend
 
-The protected job name displays the affected categories before approval. The
-`lab` and `lab-teardown` environments require the repository owner as reviewer.
+Retirement does not mean a zero-dollar AWS account. Project A intentionally
+retains S3 object/version storage and requests plus two customer-managed KMS
+keys and their requests. The archive keeps its existing 90-day current and
+noncurrent-version lifecycle. Cost Explorer comparison remains subject to AWS
+reporting delay, and unrelated account spend is outside this lab's scope.
 
-## Retained spend
-
-Retirement intentionally does not mean a zero-dollar AWS account. Expected
-Project A residuals are S3 object/version storage and requests plus two
-customer-managed KMS keys and their requests. The archive keeps its existing
-90-day current/noncurrent lifecycle. Cost Explorer comparison is meaningful
-only after AWS's reporting delay; unrelated account spend is outside this lab's
-baseline.
-
-## Recovery
-
-Execution requires a verified encrypted local repository mirror and encrypted
-Terraform-state/inventory backup. No destructive stage runs before those
-backups, the zero-change retained plan, and the exact removal-plan audit exist.
+See [`RETIREMENT_EVIDENCE.md`](RETIREMENT_EVIDENCE.md) for sanitized results.
