@@ -16,7 +16,8 @@ $modules = @(
   'sandbox/landing-zone-lab/ci-bootstrap',
   'sandbox/landing-zone-lab/operator',
   'sandbox/landing-zone-lab/state-bootstrap',
-  'sandbox/landing-zone-lab/lab'
+  'sandbox/landing-zone-lab/lab',
+  'sandbox/landing-zone-lab/retained-evidence'
 )
 
 function Invoke-ProjectATerraform {

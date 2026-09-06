@@ -9,8 +9,13 @@ on:
         type: choice
         options:
           - inventory
+          - bootstrap
+          - state-transfer
+          - teardown
+          - verify
+          - cleanup
       confirmation:
-        description: Type INVENTORY PROJECT A exactly
+        description: Type the exact phrase required by the selected protected stage
         required: true
         type: string
 
@@ -46,6 +51,7 @@ jobs:
           role-to-assume: ${{ vars.AWS_ROLE_ARN_LZ_LAB }}
           aws-region: us-east-1
           role-session-name: gha-lzlab-inventory-${{ github.run_id }}
+          mask-aws-account-id: true
 
       - name: Capture private retirement inventory
         run: bash ./platform/sandbox/landing-zone-lab/retirement/inventory.sh "$RUNNER_TEMP/project-a-inventory"
@@ -59,3 +65,199 @@ jobs:
           retention-days: 7
           include-hidden-files: true
 
+  bootstrap:
+    name: "APPROVAL: create exact-resource role and capture cost baseline"
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      inputs.operation == 'bootstrap' &&
+      inputs.confirmation == 'BOOTSTRAP PROJECT A RETIREMENT'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: lab
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Configure AWS credentials using the legacy protected role
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN_LZ_LAB }}
+          aws-region: us-east-1
+          role-session-name: gha-lzlab-bootstrap-${{ github.run_id }}
+          mask-aws-account-id: true
+
+      - name: Generate, validate, simulate, and install retirement policy
+        run: bash ./platform/sandbox/landing-zone-lab/retirement/bootstrap.sh "$RUNNER_TEMP/project-a-bootstrap"
+
+      - name: Upload private bootstrap evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: project-a-private-bootstrap-${{ github.run_id }}
+          path: ${{ runner.temp }}/project-a-bootstrap/
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: true
+
+  state-transfer:
+    name: "APPROVAL: transfer S3/KMS ownership; require zero-change plan"
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      inputs.operation == 'state-transfer' &&
+      inputs.confirmation == 'TRANSFER PROJECT A RETAINED STATE'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: lab-teardown
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Configure short-lived exact-resource credentials
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ vars.PROJECT_A_TEARDOWN_ROLE_ARN }}
+          aws-region: us-east-1
+          role-session-name: gha-lzlab-state-transfer-${{ github.run_id }}
+          mask-aws-account-id: true
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.15.5
+          terraform_wrapper: false
+
+      - name: Transfer retained ownership and prove zero change
+        run: bash ./platform/sandbox/landing-zone-lab/retirement/state-transfer.sh "$RUNNER_TEMP/project-a-state-transfer"
+
+      - name: Upload private state-transfer evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: project-a-private-state-transfer-${{ github.run_id }}
+          path: ${{ runner.temp }}/project-a-state-transfer/
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: true
+
+  teardown:
+    name: "APPROVAL: destroy trails, Config, flow logs, VPC, workload IAM"
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      inputs.operation == 'teardown' &&
+      inputs.confirmation == 'DESTROY PROJECT A LAB'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: lab-teardown
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Configure short-lived exact-resource credentials
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ vars.PROJECT_A_TEARDOWN_ROLE_ARN }}
+          aws-region: us-east-1
+          role-session-name: gha-lzlab-teardown-${{ github.run_id }}
+          mask-aws-account-id: true
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.15.5
+          terraform_wrapper: false
+
+      - name: Recheck retained state and destroy the remaining lab
+        run: bash ./platform/sandbox/landing-zone-lab/retirement/teardown.sh "$RUNNER_TEMP/project-a-teardown"
+
+      - name: Upload private teardown evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: project-a-private-teardown-${{ github.run_id }}
+          path: ${{ runner.temp }}/project-a-teardown/
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: true
+
+  verify:
+    name: "APPROVAL: verify every region and retained evidence"
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      inputs.operation == 'verify' &&
+      inputs.confirmation == 'VERIFY PROJECT A RETIREMENT'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: lab-teardown
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Configure short-lived exact-resource credentials
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ vars.PROJECT_A_TEARDOWN_ROLE_ARN }}
+          aws-region: us-east-1
+          role-session-name: gha-lzlab-verify-${{ github.run_id }}
+          mask-aws-account-id: true
+
+      - name: Verify removal and retained evidence
+        run: bash ./platform/sandbox/landing-zone-lab/retirement/verify.sh "$RUNNER_TEMP/project-a-verification"
+
+      - name: Upload private verification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: project-a-private-verification-${{ github.run_id }}
+          path: ${{ runner.temp }}/project-a-verification/
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: true
+
+  cleanup:
+    name: "APPROVAL: remove operator, legacy CI, and teardown IAM roles"
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      inputs.operation == 'cleanup' &&
+      inputs.confirmation == 'DELETE PROJECT A TEMPORARY IAM'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: lab-teardown
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Configure short-lived exact-resource credentials
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ vars.PROJECT_A_TEARDOWN_ROLE_ARN }}
+          aws-region: us-east-1
+          role-session-name: gha-lzlab-cleanup-${{ github.run_id }}
+          mask-aws-account-id: true
+
+      - name: Remove short-lived and superseded Project A IAM
+        run: bash ./platform/sandbox/landing-zone-lab/retirement/cleanup.sh
