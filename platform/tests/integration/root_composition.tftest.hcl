@@ -42,10 +42,10 @@ run "environment_locals_outputs_contract" {
     condition = (
       fileexists("${path.root}/environments/nonproduction/main.tf") &&
       fileexists("${path.root}/environments/production/main.tf") &&
-      can(regex("(?s)backend_key\\s*=\\s*\"nonproduction/platform\\.tfstate\"", file("${path.root}/environments/nonproduction/main.tf"))) &&
+      can(regex("(?s)backend_key\\s*=\\s*\"nonproduction/project-a\\.tfstate\"", file("${path.root}/environments/nonproduction/main.tf"))) &&
       can(regex("(?s)audit_prefix\\s*=\\s*\"nonproduction/audit\"", file("${path.root}/environments/nonproduction/main.tf"))) &&
       can(regex("(?s)network_boundary\\s*=\\s*\"private-only\"", file("${path.root}/environments/nonproduction/main.tf"))) &&
-      can(regex("(?s)backend_key\\s*=\\s*\"production/platform\\.tfstate\"", file("${path.root}/environments/production/main.tf"))) &&
+      can(regex("(?s)backend_key\\s*=\\s*\"production/project-a\\.tfstate\"", file("${path.root}/environments/production/main.tf"))) &&
       can(regex("(?s)audit_prefix\\s*=\\s*\"production/audit\"", file("${path.root}/environments/production/main.tf"))) &&
       can(regex("(?s)network_boundary\\s*=\\s*\"private-only\"", file("${path.root}/environments/production/main.tf"))) &&
       can(regex("(?s)output\\s+\"environment_name\"", file("${path.root}/environments/nonproduction/main.tf"))) &&

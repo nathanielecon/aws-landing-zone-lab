@@ -1,67 +1,19 @@
 #!/usr/bin/env bash
-# Plan-only sequence for CI PRs (no apply).
+# Protected, manually dispatched live plan. Pull requests use offline validation.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=aws-env.sh
 source "$ROOT/aws-env.sh"
 
-echo "== caller =="
-aws sts get-caller-identity
 CALLER_ARN=$(aws sts get-caller-identity --query Arn --output text)
 case "$CALLER_ARN" in
-  *[:/]root) echo "Refusing to plan as account root: $CALLER_ARN" >&2; exit 2 ;;
+  *assumed-role/project-a-lzlab-gha/*) ;;
+  *) echo "Refusing to plan outside the expected non-root OIDC role." >&2; exit 2 ;;
 esac
-
-# Retarget GHA OIDC trust (immutable sub after 2026-07-15 renames; idempotent).
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-OIDC_ARN="arn:aws:iam::${ACCOUNT_ID}:oidc-provider/token.actions.githubusercontent.com"
-ROLE_NAME="project-a-lzlab-gha"
-TRUST_FILE=$(mktemp)
-cat > "$TRUST_FILE" <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "GitHubActionsOidc",
-      "Effect": "Allow",
-      "Principal": { "Federated": "${OIDC_ARN}" },
-      "Action": "sts:AssumeRoleWithWebIdentity",
-      "Condition": {
-        "StringEquals": {
-          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-          "token.actions.githubusercontent.com:repository_id": "1296742987",
-          "token.actions.githubusercontent.com:repository_owner_id": "177059064"
-        },
-        "StringLike": {
-          "token.actions.githubusercontent.com:sub": [
-            "repo:nathanielecon@177059064/*@1296742987:ref:refs/heads/main",
-            "repo:nathanielecon@177059064/*@1296742987:pull_request",
-            "repo:nathanielecon@177059064/*@1296742987:ref:refs/heads/cursor/*",
-            "repo:nathanielecon@177059064/*@1296742987:environment:lab"
-          ]
-        }
-      }
-    }
-  ]
-}
-EOF
-echo "== retarget OIDC trust on ${ROLE_NAME} =="
-aws iam update-assume-role-policy --role-name "$ROLE_NAME" --policy-document "file://${TRUST_FILE}"
-rm -f "$TRUST_FILE"
-
+echo "Verified expected non-root OIDC role."
 
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 STATE_BUCKET="project-a-lzlab-tfstate-${ACCOUNT}"
-
-echo "== operator plan =="
-cd "$ROOT/operator"
-terraform init -backend=false -input=false
-terraform plan -input=false -no-color
-
-echo "== state-bootstrap plan =="
-cd "$ROOT/state-bootstrap"
-terraform init -backend=false -input=false
-terraform plan -input=false -no-color
 
 echo "== lab plan =="
 cd "$ROOT/lab"
@@ -70,20 +22,35 @@ if [[ ! -f backend.hcl ]]; then
 bucket       = "${STATE_BUCKET}"
 key          = "lab/landing-zone-lab.tfstate"
 region       = "${AWS_REGION}"
-encrypt      = true
-use_lockfile = true
+  encrypt      = true
+  use_lockfile = true
 EOF
-  echo "Wrote provisional lab/backend.hcl"
-  cat backend.hcl
+  echo "Prepared ephemeral backend configuration."
 fi
 
 if aws s3api head-bucket --bucket "$STATE_BUCKET" 2>/dev/null; then
-  terraform init -backend-config=backend.hcl -input=false -reconfigure
-  terraform plan -input=false -no-color
+  PLAN_DIR=$(mktemp -d)
+  PLAN_FILE="$PLAN_DIR/tfplan"
+  PLAN_LOG="$PLAN_DIR/terraform.log"
+  trap 'rm -rf "$PLAN_DIR"' EXIT
+  if ! terraform init -backend-config=backend.hcl -input=false -reconfigure >"$PLAN_LOG" 2>&1; then
+    echo "Terraform backend initialization failed; raw output withheld to protect live identifiers." >&2
+    exit 1
+  fi
+  if ! terraform plan -input=false -lock=false -no-color -out="$PLAN_FILE" >"$PLAN_LOG" 2>&1; then
+    echo "Terraform plan failed; raw output withheld to protect live identifiers." >&2
+    exit 1
+  fi
+  terraform show -json "$PLAN_FILE" | jq -r '
+    [.resource_changes[]?.change.actions] |
+    {create: map(select(index("create"))) | length,
+     update: map(select(index("update"))) | length,
+     delete: map(select(index("delete"))) | length,
+     no_op: map(select(index("no-op"))) | length} |
+    "Plan summary: create=\(.create) update=\(.update) delete=\(.delete) unchanged=\(.no_op)"'
 else
-  echo "State bucket ${STATE_BUCKET} not present yet; validate only (apply state-bootstrap first)."
-  terraform init -backend=false -input=false -reconfigure
-  terraform validate
+  echo "Expected remote state is unavailable; refusing to produce a speculative live plan." >&2
+  exit 1
 fi
 
 echo "plan-ok"

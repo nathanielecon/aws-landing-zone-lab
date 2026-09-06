@@ -32,10 +32,10 @@ run "rejects_missing_permissions_boundary" {
   command = plan
 
   variables {
-    github_organization           = "example-org"
-    github_repository             = "platform"
-    audit_bucket_name             = "example-log-archive"
-    require_permissions_boundary  = false
+    github_organization          = "example-org"
+    github_repository            = "platform"
+    audit_bucket_name            = "example-log-archive"
+    require_permissions_boundary = false
   }
 
   expect_failures = [var.require_permissions_boundary]
@@ -71,10 +71,10 @@ run "rejects_missing_oidc_trust_conditions" {
   command = plan
 
   variables {
-    github_organization            = "example-org"
-    github_repository              = "platform"
-    audit_bucket_name              = "example-log-archive"
-    require_oidc_trust_conditions  = false
+    github_organization           = "example-org"
+    github_repository             = "platform"
+    audit_bucket_name             = "example-log-archive"
+    require_oidc_trust_conditions = false
   }
 
   expect_failures = [var.require_oidc_trust_conditions]
