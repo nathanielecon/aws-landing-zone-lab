@@ -8,6 +8,7 @@
 **/*.tfstate
 **/*.tfstate.*
 **/.terraform.lock.hcl
+!platform/sandbox/landing-zone-lab/**/.terraform.lock.hcl
 project-a/sandbox/**/terraform.tfvars
 project-a/sandbox/**/*.auto.tfvars
 project-a/sandbox/**/backend.hcl
