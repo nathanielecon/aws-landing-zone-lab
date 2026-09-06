@@ -1,7 +1,7 @@
-name: Landing Zone lab (Terraform)
+name: Landing Zone lab (offline validation)
 
-# Pull requests are credential-free. The only live path is a protected,
-# manually dispatched plan using GitHub OIDC.
+# The live lab was retired on 2026-09-06. Pull requests remain credential-free
+# and validate the reusable design modules plus the retained-evidence root.
 
 on:
   pull_request:
@@ -11,32 +11,13 @@ on:
       - "platform/terraform/network/**"
       - "platform/terraform/audit/**"
       - ".github/workflows/landing-zone-lab.yml"
-  workflow_dispatch:
-    inputs:
-      action:
-        description: Protected live plan
-        required: true
-        default: plan
-        type: choice
-        options:
-          - plan
 
 permissions:
   contents: read
 
-concurrency:
-  group: landing-zone-lab-${{ github.ref }}
-  cancel-in-progress: false
-
-env:
-  AWS_REGION: us-east-1
-  TF_IN_AUTOMATION: "1"
-  TF_INPUT: "false"
-
 jobs:
   offline-validation:
     name: Credential-free Terraform validation
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -57,34 +38,3 @@ jobs:
 
       - name: Validate retirement shell without AWS credentials
         run: bash -n ./platform/sandbox/landing-zone-lab/retirement/*.sh
-
-  protected-plan:
-    name: Protected live Terraform plan
-    if: github.event_name == 'workflow_dispatch' && inputs.action == 'plan'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    environment: lab
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          persist-credentials: false
-
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN_LZ_LAB }}
-          aws-region: ${{ env.AWS_REGION }}
-          role-session-name: gha-lzlab-plan-${{ github.run_id }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
-        with:
-          terraform_version: 1.15.5
-          terraform_wrapper: false
-
-      - name: Plan lab without mutation
-        run: bash ./platform/sandbox/landing-zone-lab/plan-lab.sh
