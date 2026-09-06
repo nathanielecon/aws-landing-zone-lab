@@ -195,7 +195,7 @@ for ((index=0; index<STATEMENT_COUNT; index++)); do
   mapfile -t ACTIONS < <(jq -r '.Statement[0].Action | if type=="array" then .[] else . end' \
     "$OUT/policy-statement-${chunk}.json")
   aws iam simulate-custom-policy \
-    --policy-input-list "file://$OUT/policy-statement-${chunk}.json" \
+    --policy-input-list "$(<"$OUT/policy-statement-${chunk}.json")" \
     --action-names "${ACTIONS[@]}" --output json \
     >"$OUT/policy-simulation-${chunk}.json"
 done
