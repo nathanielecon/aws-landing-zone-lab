@@ -73,7 +73,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN_LZ_LAB || 'arn:aws:iam::<AWS_ACCOUNT_ID>:role/project-a-lzlab-gha' }}
+          role-to-assume: ${{ vars.AWS_ROLE_ARN_LZ_LAB }}
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: gha-lzlab-plan-${{ github.run_id }}
 
