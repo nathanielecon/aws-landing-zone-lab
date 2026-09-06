@@ -1,0 +1,61 @@
+name: Project A retirement
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Retirement stage
+        required: true
+        type: choice
+        options:
+          - inventory
+      confirmation:
+        description: Type INVENTORY PROJECT A exactly
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: project-a-retirement
+  cancel-in-progress: false
+
+jobs:
+  inventory:
+    name: Protected inventory and state backup
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      inputs.operation == 'inventory' &&
+      inputs.confirmation == 'INVENTORY PROJECT A'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: lab
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN_LZ_LAB }}
+          aws-region: us-east-1
+          role-session-name: gha-lzlab-inventory-${{ github.run_id }}
+
+      - name: Capture private retirement inventory
+        run: bash ./platform/sandbox/landing-zone-lab/retirement/inventory.sh "$RUNNER_TEMP/project-a-inventory"
+
+      - name: Upload private inventory artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: project-a-private-inventory-${{ github.run_id }}
+          path: ${{ runner.temp }}/project-a-inventory/
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: true
+
