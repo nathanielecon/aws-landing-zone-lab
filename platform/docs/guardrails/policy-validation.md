@@ -13,7 +13,7 @@ principal, action, resource, condition, and permission-boundary scope.
 
 Platform gates for tasks `A-003` through `A-006` select validators by ID from
 the allowlist implemented in
-[`scripts/Invoke-ProjectAValidators.ps1`](../../../scripts/Invoke-ProjectAValidators.ps1).
+[`scripts/validate-project-a.ps1`](../../scripts/validate-project-a.ps1).
 Representative IDs used on those task policies include:
 
 | Task | Representative validator IDs |
@@ -33,7 +33,7 @@ implementation catalog.
 ### Unknown validator ID: fail-closed
 
 If a task policy names a validator ID that is not in the known allowlist, or if
-the switch in `Invoke-ProjectAValidators.ps1` hits an unmatched ID,
+the switch in `validate-project-a.ps1` hits an unmatched ID,
 validation throws `UNKNOWN_VALIDATOR` and the gate fails closed. There is no
 skip, soft-pass, or cloud fallback for an unrecognized ID. Passing these gates
 proves offline policy compliance only; it does not claim a cloud deployment.

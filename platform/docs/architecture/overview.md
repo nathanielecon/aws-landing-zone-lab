@@ -90,7 +90,7 @@ Zero-orphan reviewer path: README → architecture → evidence → review.
 - Azure Government readiness (translation-only):
   [`docs/azure-government/readiness.md`](../azure-government/readiness.md)
 - Consolidated Image2 figure: [`aws-landing-zone-lab.png`](../diagrams/aws-landing-zone-lab.png) · [`lab.drawio`](../diagrams/aws-landing-zone-lab.drawio)
-- Section archives: [`architecture.png`](../diagrams/aws-landing-zone-architecture.png) · [`network.png`](../diagrams/aws-landing-zone-network.png)
+- Section archives: [`architecture.drawio`](../diagrams/aws-landing-zone-architecture.drawio) · [`network.png`](../diagrams/aws-landing-zone-network.png)
 - Graphify navigation aid (not a validation substitute):
   [`graphify-out/GRAPH_REPORT.md`](../../graphify-out/GRAPH_REPORT.md)
 - Fresh-clone CI-parity gate:
