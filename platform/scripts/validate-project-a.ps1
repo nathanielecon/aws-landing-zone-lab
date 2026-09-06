@@ -4,14 +4,18 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$terraform = (Get-Command terraform.exe -ErrorAction Stop).Source
+$terraform = (Get-Command terraform -ErrorAction Stop).Source
 $modules = @(
   '.',
   'terraform/bootstrap',
   'terraform/organization',
   'terraform/identity',
   'terraform/network',
-  'terraform/audit'
+  'terraform/audit',
+  'sandbox/landing-zone-lab/ci-bootstrap',
+  'sandbox/landing-zone-lab/operator',
+  'sandbox/landing-zone-lab/state-bootstrap',
+  'sandbox/landing-zone-lab/lab'
 )
 
 function Invoke-ProjectATerraform {

@@ -9,60 +9,12 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=aws-env.sh
 source "$ROOT/aws-env.sh"
 
-echo "== caller (must be non-root CI/lab role) =="
-aws sts get-caller-identity
 CALLER_ARN=$(aws sts get-caller-identity --query Arn --output text)
 case "$CALLER_ARN" in
-  *[:/]root) echo "Refusing to apply as account root: $CALLER_ARN" >&2; exit 2 ;;
+  *assumed-role/project-a-lzlab-gha/*) ;;
+  *) echo "Refusing to apply outside the expected non-root OIDC role." >&2; exit 2 ;;
 esac
-case "$CALLER_ARN" in
-  *project-a-lzlab-gha*) ;;
-  *project-a-lzlab-operator*|*assumed-role*)
-    echo "Warning: caller is not GHA OIDC role project-a-lzlab-gha: $CALLER_ARN" >&2
-    echo "Preferred scored path is assumed-role/project-a-lzlab-gha via GitHub Actions." >&2
-    ;;
-  *)
-    echo "Warning: caller is not clearly a lab CI role: $CALLER_ARN" >&2
-    echo "Expected assumed-role/project-a-lzlab-gha (GitHub OIDC)." >&2
-    ;;
-esac
-
-# Retarget GHA OIDC trust (immutable sub after 2026-07-15 renames; idempotent).
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-OIDC_ARN="arn:aws:iam::${ACCOUNT_ID}:oidc-provider/token.actions.githubusercontent.com"
-ROLE_NAME="project-a-lzlab-gha"
-TRUST_FILE=$(mktemp)
-cat > "$TRUST_FILE" <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "GitHubActionsOidc",
-      "Effect": "Allow",
-      "Principal": { "Federated": "${OIDC_ARN}" },
-      "Action": "sts:AssumeRoleWithWebIdentity",
-      "Condition": {
-        "StringEquals": {
-          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-          "token.actions.githubusercontent.com:repository_id": "1296742987",
-          "token.actions.githubusercontent.com:repository_owner_id": "177059064"
-        },
-        "StringLike": {
-          "token.actions.githubusercontent.com:sub": [
-            "repo:nathanielecon@177059064/*@1296742987:ref:refs/heads/main",
-            "repo:nathanielecon@177059064/*@1296742987:pull_request",
-            "repo:nathanielecon@177059064/*@1296742987:ref:refs/heads/cursor/*",
-            "repo:nathanielecon@177059064/*@1296742987:environment:lab"
-          ]
-        }
-      }
-    }
-  ]
-}
-EOF
-echo "== retarget OIDC trust on ${ROLE_NAME} =="
-aws iam update-assume-role-policy --role-name "$ROLE_NAME" --policy-document "file://${TRUST_FILE}"
-rm -f "$TRUST_FILE"
+echo "Verified expected non-root OIDC role."
 
 
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
