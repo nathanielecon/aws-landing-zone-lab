@@ -11,6 +11,9 @@ mkdir -p "$OUT"
 require_role "${PREFIX}-gha"
 
 ACCOUNT=$(private_account)
+STATE_BUCKET="${PREFIX}-tfstate-${ACCOUNT}"
+STATE_SNAPSHOT=$(mktemp)
+trap 'rm -f "$STATE_SNAPSHOT"' EXIT
 OIDC_ARN=$(aws iam list-open-id-connect-providers --query \
   'OpenIDConnectProviderList[?contains(Arn, `token.actions.githubusercontent.com`)].Arn | [0]' \
   --output text)
@@ -34,6 +37,30 @@ EOF
 
 aws ec2 describe-regions --all-regions --query \
   'Regions[?OptInStatus!=`not-opted-in`].RegionName' --output json >"$OUT/regions.json"
+
+# Live inventory is authoritative for extant resources, but Terraform can still
+# need delete permissions for state-owned objects that disappeared or stopped
+# matching their tags between inventory and apply. Include only the exact EC2
+# resources recorded in the lab state so a partial destroy can be resumed
+# without introducing wildcard write access.
+aws s3api get-object --bucket "$STATE_BUCKET" \
+  --key lab/landing-zone-lab.tfstate "$STATE_SNAPSHOT" >/dev/null
+jq --arg partition aws --arg region "$REGION" --arg account "$ACCOUNT" '
+  [.resources[]? as $resource
+   | $resource.instances[]?.attributes as $attributes
+   | if $resource.type == "aws_flow_log" then
+       ($attributes.arn // "arn:\($partition):ec2:\($region):\($account):vpc-flow-log/\($attributes.id)")
+     elif $resource.type == "aws_route_table" then
+       "arn:\($partition):ec2:\($region):\($account):route-table/\($attributes.id)"
+     elif $resource.type == "aws_route_table_association" then
+       "arn:\($partition):ec2:\($region):\($account):subnet/\($attributes.subnet_id)"
+     elif $resource.type == "aws_subnet" then
+       "arn:\($partition):ec2:\($region):\($account):subnet/\($attributes.id)"
+     elif $resource.type == "aws_security_group" then
+       "arn:\($partition):ec2:\($region):\($account):security-group/\($attributes.id)"
+     elif $resource.type == "aws_vpc" then
+       "arn:\($partition):ec2:\($region):\($account):vpc/\($attributes.id)"
+     else empty end] | unique' "$STATE_SNAPSHOT" >"$OUT/state-ec2-resources.json"
 
 printf '[]\n' >"$OUT/ec2-resources.json"
 printf '[]\n' >"$OUT/trail-resources.json"
@@ -65,6 +92,9 @@ while IFS= read -r region; do
     >"$OUT/trail-resources.next.json"
   mv "$OUT/trail-resources.next.json" "$OUT/trail-resources.json"
 done < <(jq -r '.[]' "$OUT/regions.json")
+jq -s 'add | unique' "$OUT/ec2-resources.json" "$OUT/state-ec2-resources.json" \
+  >"$OUT/ec2-resources.next.json"
+mv "$OUT/ec2-resources.next.json" "$OUT/ec2-resources.json"
 
 aws iam list-roles --query \
   "Roles[?starts_with(RoleName, '${PREFIX}-') || starts_with(RoleName, 'workload-audit-')].Arn" \
@@ -96,7 +126,6 @@ while IFS= read -r user_arn; do
 done < <(jq -r '.[]' "$OUT/user-resources.json")
 
 ARCHIVE_BUCKET="${PREFIX}-archive-${ACCOUNT}"
-STATE_BUCKET="${PREFIX}-tfstate-${ACCOUNT}"
 AUDIT_KEY=$(aws kms list-aliases --region "$REGION" --query \
   "Aliases[?AliasName=='alias/${PREFIX}-audit'].TargetKeyId | [0]" --output text)
 STATE_KEY=$(aws kms list-aliases --region "$REGION" --query \
@@ -149,9 +178,10 @@ jq -n \
     {Sid:"ReadPreservedOidcProvider",Effect:"Allow",Action:"iam:GetOpenIDConnectProvider",Resource:$oidc},
     {Sid:"DeleteInventoriedFlowLogs",Effect:"Allow",Action:"ec2:DeleteFlowLogs",
       Resource:([$ec2[0][] | select(contains(":vpc-flow-log/"))] | unique)},
-    {Sid:"DeleteInventoriedRouteTables",Effect:"Allow",
-      Action:["ec2:DeleteRouteTable","ec2:DisassociateRouteTable"],
+    {Sid:"DeleteInventoriedRouteTables",Effect:"Allow",Action:"ec2:DeleteRouteTable",
       Resource:([$ec2[0][] | select(contains(":route-table/"))] | unique)},
+    {Sid:"DisassociateInventoriedRouteTables",Effect:"Allow",Action:"ec2:DisassociateRouteTable",
+      Resource:([$ec2[0][] | select(contains(":route-table/") or contains(":subnet/"))] | unique)},
     {Sid:"DeleteInventoriedSecurityGroups",Effect:"Allow",Action:"ec2:DeleteSecurityGroup",
       Resource:([$ec2[0][] | select(contains(":security-group/"))] | unique)},
     {Sid:"DeleteInventoriedSubnets",Effect:"Allow",Action:"ec2:DeleteSubnet",
