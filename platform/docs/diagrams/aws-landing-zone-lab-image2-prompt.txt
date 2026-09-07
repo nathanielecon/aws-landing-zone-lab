@@ -1,0 +1,49 @@
+Use case: infographic-diagram
+Asset type: hyperprofessional GitHub portfolio infographic, 1024x1536 portrait
+Input image: Image 1 is a content and palette reference only. Redraw the entire infographic from the ground up with a new, cleaner enterprise composition. Do not trace or preserve the flawed generic icons.
+Primary request: Create a polished AWS Landing Zone Lab infographic that explains the final verified project state. Use restrained deep navy, teal, white, and small amber accents. Use one consistent family of precise geometric line illustrations. Keep generous spacing, strong hierarchy, crisp typography, and high contrast.
+
+TEXT, VERBATIM:
+Title: "AWS Landing Zone Lab"
+Subtitle: "Cloud-validated and retired single-account lab | Terraform + GitHub OIDC"
+
+Section A heading: "A. Architecture contract"
+Six cards in this exact order:
+"1  Bootstrap" / "Remote state and KMS"
+"2  Organization" / "Accounts, OUs, SCPs | design only"
+"3  Identity" / "IAM and short-lived OIDC"
+"4  Network" / "Private VPC and subnets"
+"5  Audit" / "CloudTrail, Config, Flow Logs"
+"6  Evidence" / "KMS-protected S3 and CI proofs"
+Section A note: "Validated in one AWS account. Multi-account Organizations interfaces remained design-only."
+
+Section B heading: "B. How the validated lab worked"
+Five left-to-right stages with arrows:
+"1  Review change" / "GitHub"
+"2  Prove identity" / "OIDC | no static keys"
+"3  Apply scope" / "Terraform | one account"
+"4  Validate lab" / "Identity | Network | Audit"
+"5  Retain proof" / "Evidence preserved | lab retired"
+Section B result strip: "Retained evidence remained readable. All 17 enabled regions were checked after retirement."
+
+Section C heading: "C. Private network detail"
+Main label: "VPC 10.0.0.0/16 | private by design"
+Card: "Private subnet A" / "10.0.1.0/24"
+Card: "Private subnet B" / "10.0.2.0/24"
+Control strip: "Default-deny security group | closed network edge"
+Evidence flow: "Flow Logs -> KMS-protected S3"
+Audit flow: "CloudTrail + AWS Config -> audit evidence"
+Boundary strip: "No IGW, NAT, peering, TGW, or cross-account route was added."
+Footer: "Cloud-validated and retired in one AWS account. Multi-account Organizations interfaces remained design-only."
+
+ILLUSTRATION REQUIREMENTS:
+Bootstrap icon: a secure remote-state vault with stacked state layers and a small encryption key.
+Organization icon: a clean hierarchy tree inside a dashed boundary, with an amber DESIGN ONLY tag.
+Identity icon: a person credential paired with a short-lived token and small clock, not a generic shield.
+Network icon: a bounded VPC containing exactly two subnet blocks and a closed edge, not a cloud padlock.
+Audit icon: three labeled event streams converging into an encrypted evidence archive.
+Evidence icon: a verified document, checksum/hash marks, and retained archive.
+Workflow icons must match each stage semantically and use no vendor logos.
+Private-network illustration must clearly contain two private subnet blocks inside one VPC boundary, with separate arrows for Flow Logs and audit evidence.
+
+Constraints: no AWS logo, GitHub logo, Terraform logo, third-party marks, account IDs, ARNs, live resource identifiers, extra regions, invented services, autonomous agents, robots, mascots, fake dashboards, gradients that reduce legibility, distorted icons, tiny text, decorative clouds, watermark, or production claim. Spell every label exactly. Do not use the phrases "live lab" or "production". Keep all text inside safe margins and readable at GitHub README width.
