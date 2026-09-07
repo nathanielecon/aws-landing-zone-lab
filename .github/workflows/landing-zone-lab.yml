@@ -6,6 +6,9 @@ name: Landing Zone lab (offline validation)
 on:
   pull_request:
     paths:
+      - "README.md"
+      - "platform/README.md"
+      - "platform/docs/diagrams/aws-landing-zone-lab*"
       - "platform/sandbox/landing-zone-lab/**"
       - "platform/terraform/identity/**"
       - "platform/terraform/network/**"
@@ -31,6 +34,39 @@ jobs:
         with:
           terraform_version: 1.15.5
           terraform_wrapper: false
+
+      - name: Validate public infographic contract
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from hashlib import sha256
+          from pathlib import Path
+          from struct import unpack
+          from xml.etree import ElementTree
+
+          image = Path("platform/docs/diagrams/aws-landing-zone-lab.png")
+          payload = image.read_bytes()
+          assert payload[:8] == b"\x89PNG\r\n\x1a\n"
+          assert unpack(">II", payload[16:24]) == (1024, 1536)
+          assert payload[25] == 2, "approved PNG must remain RGB"
+          assert sha256(payload).hexdigest() == (
+              "a469c9518b3a777ec7b9c91e42cf4e9fa3022755b53c377775caa817dbcf54f4"
+          )
+
+          source = Path("platform/docs/diagrams/aws-landing-zone-lab.drawio")
+          ElementTree.parse(source)
+          text = source.read_text(encoding="utf-8").lower()
+          for required in (
+              "cloud-validated and retired",
+              "all 17 enabled regions checked",
+              "design only",
+              "10.0.0.0/16",
+              "10.0.1.0/24",
+              "10.0.2.0/24",
+          ):
+              assert required in text
+          assert "live lab" not in text
+          PY
 
       - name: Validate Terraform without AWS credentials
         shell: pwsh

@@ -3,5 +3,7 @@
 *.psm1 text eol=lf
 *.json text eol=lf
 *.md text eol=lf
+*.drawio text eol=lf
+platform/docs/diagrams/*.txt text eol=lf
 *.cmd text eol=crlf
 smoke/*.txt text eol=lf

@@ -11,20 +11,22 @@ Formerly the `cloud` monorepo; the Ralphy smoke harness now lives in
 ## Diagram
 
 <p align="center">
-  <img src="platform/docs/diagrams/aws-landing-zone-lab.png" alt="AWS Landing Zone Lab — consolidated architecture, how it works, and private network" width="100%">
+  <img src="platform/docs/diagrams/aws-landing-zone-lab.png" alt="AWS Landing Zone Lab — cloud-validated and retired single-account architecture, historical validation flow, private network, and retained evidence" width="100%">
 </p>
 
 <p align="center">
-  <a href="platform/docs/diagrams/aws-landing-zone-lab.drawio">Editable draw.io source</a>
+  <a href="platform/docs/diagrams/aws-landing-zone-lab.drawio">Editable draw.io content source</a>
+  ·
+  <a href="platform/docs/diagrams/aws-landing-zone-lab-image2-provenance.md">Image2 provenance and validation</a>
 </p>
 
 | Panel | What it shows |
 |-------|----------------|
-| **A. Architecture** | Bootstrap → Organization (design) → Identity → Network → Audit → Validation. Live lab applied identity + network + audit in one account. |
-| **B. How it worked** | Protected GitHub OIDC → Terraform (one account) → live resources → evidence; later reviewer-gated retirement. |
-| **C. Private network** | Private-by-design VPC: private subnets, default-deny SG, closed network edge (no IGW/NAT/peering/TGW unless added). Flow Logs → Log Archive. |
+| **A. Architecture** | Bootstrap → Organization (design only) → Identity → Network → Audit → Evidence. The historical lab applied identity + network + audit in one account. |
+| **B. How it worked** | Review → protected GitHub OIDC → Terraform in one account → validation → retained evidence. The lab is now retired. |
+| **C. Private network** | Private-by-design VPC: two private subnets, a default-deny security group, and a closed edge with no IGW, NAT, peering, TGW, or cross-account route. Flow Logs and audit records fed protected evidence. |
 
-The displayed figure uses generic symbols. Legacy brandmarked assets were removed; see [`platform/docs/BRANDMARK_REMOVAL.md`](platform/docs/BRANDMARK_REMOVAL.md).
+The displayed figure uses purpose-specific, logo-free line illustrations. The draw.io file is the editable content authority; the Image2 PNG is a presentation derivative. Legacy brandmarked assets were removed; see [`platform/docs/BRANDMARK_REMOVAL.md`](platform/docs/BRANDMARK_REMOVAL.md).
 
 ## Repo map
 
